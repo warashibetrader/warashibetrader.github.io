@@ -1,0 +1,13 @@
+name: Warashibe Trader
+excerpt_separator: "\n\n\n"
+
+permalink: /:year/:month/:day/:title
+plugins:
+  - jekyll-seo-tag
+defaults:
+  -
+    scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: "page"
