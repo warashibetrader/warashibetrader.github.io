@@ -1,0 +1,185 @@
+<!DOCTYPE html><html>	
+<head>
+	{% if page.title %}			
+		<title>{{ page.title }} | {{ site.name }}</title>
+	{% else %}
+		<title>{{ site.name }}</title>
+	{% endif %}
+	<link rel="stylesheet" type="text/css" href="{{ "main.css" | relative_url }}">
+	<link rel="icon" href="{{ "strawicon.jpg" | relative_url }}">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">	
+	
+	<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+	<meta http-equiv="Pragma" content="no-cache">
+	<meta http-equiv="Expires" content="0">
+	{% seo %}
+</head>
+	
+<body>	
+	<div id="outersidebar" class="outersidebar">
+	<div class="sidebar">
+	<div class="rpanel" id="accountPanel" tabIndex="-1" onfocus="D('postlist').focus();">		
+		<div class="titlepanel">
+			<a href="{{ "" | absolute_url }}"><img src="{{ "strawicon.jpg" | relative_url }}" alt="{{ site.posts.last.url | relative_url }}" style="flex-shrink:0; max-height:50px; min-width:50px; padding-right:10px"></a>
+			<span style="font-weight:bold;"><a href="{{ "" | absolute_url }}">{{ site.name }}</a>
+				<div style="margin-top:10px; font-size:0.8em;">
+					<a href="{{ site.posts.last.url | relative_url }}">About</a>
+				</div>
+			</span>
+		</div>
+			
+		<div id="shadow" style="display:none; inset:0px; pointer-events:none; position:absolute; box-shadow: inset 0px 40px 15px -50px #333"></div>	
+		<ul class="ulsidebar" id="postlist" style="overflow:auto;" onscroll="if (this.scrollTop > 5) this.previousElementSibling.style.display = 'block';
+											else this.previousElementSibling.style.display = 'none';">
+			{% for post in site.posts reversed %}					
+				{% if page.title == post.title %}	
+					<li id="specialPost" style="background-color:#f4f7f7"><span class="date-format">{{ post.date | date: "%B %-d, %Y" }}</span><br>
+						{{ post.title }}</li>
+				{% else %}				
+					<a href="{{ post.url | relative_url }}"><li><span class="date-format">{{ post.date | date: "%B %-d, %Y" }}</span><br>
+						{{ post.title }}</li></a>				
+				{% endif %}
+			{% endfor %}
+			<li style="height:200px"></li>
+		</ul>
+	</div>
+	<div class="sidebartab"></div>
+	</div>
+	</div>
+
+	<div id="main" class="main">		
+		{% if page.title %}		
+			<h1>{{ page.title }}</h1>
+			<div class="date-format" style="padding-bottom:15px"><a id="repoLink" target="_blank">{{ page.date | date: "%B %-d, %Y" }}</a></div>
+		{% endif %}
+
+		<div class="contentHolder">
+			{{ content }}	
+		</div>
+		
+		<button onclick="loadComments(this)" style="margin-left: auto; margin-right:auto; display:block;">Load Comments</button>
+		<div id="comment"></div>
+		<div style="height:150px"></div>
+	</div>	
+	
+</body>	
+
+<script>
+// add base URL to relative links (for project pages)
+var relativelinks = document.getElementsByTagName("a");
+let baseURL = "/" + window.location.pathname.split('/')[1];
+if (baseURL.slice(0, 3) != "/20") {
+	for (let i = 0; i < relativelinks.length; i++) {
+		if (relativelinks[i].pathname.slice(0, 3) == "/20") {	
+			relativelinks[i].pathname = baseURL + relativelinks[i].pathname;
+		}
+	}
+}
+
+// add link to github repository
+var accountName = window.location.host.split('.')[0];
+D('repoLink').href = `https://github.com/${accountName}${baseURL}/blob/main/{{page.path}}`;
+
+// adjust display for mobile vs desktop
+var mobile = false;
+if(D('specialPost')) D('specialPost').scrollIntoView({behavior: "auto", block: "center", inline: "nearest"}); 
+if (screen.width <= 550 || screen.height <= 550) {
+	mobile = true;		
+	D('main').onclick = function() { D('outersidebar').scrollTo({top: 0, left: 1000, behavior: 'smooth'}); };
+}
+else {				
+	window.addEventListener("resize", resizeFunction);
+	D("accountPanel").onclick = resizeFunction;
+	resizeFunction();
+	function resizeFunction() { 
+		// 50 for the left padding in the content; 40 for the right padding
+		var w = D('accountPanel').offsetWidth + 50;
+		D("main").style.paddingLeft = `${w}px`;
+		D("main").style.width = `calc(100% - ${w}px - 40px)`;
+	}  
+}
+
+// add captions to images
+var images = document.getElementsByTagName("img");	
+for (let i = 0; i < images.length; i++) {
+	if (images[i].title) {		
+		let caption = document.createElement("div");
+		caption.innerHTML = images[i].title;
+		caption.classList.add('caption');
+		if (images[i].nextElementSibling) images[i].nextElementSibling.parentNode.insertBefore(caption, images[i].nextElementSibling);
+		else images[i].parentNode.appendChild(caption);
+	}
+}
+	
+// Youtube embedding
+var ytString = [];
+let holder = [];	
+var tag = make('script');
+tag.src = "https://www.youtube.com/iframe_api";
+var firstScriptTag = document.getElementsByTagName('script')[0];
+firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+	
+var ytRegex = /^.*(youtu\.be\/|vi?\/|u\/\w\/|embed\/|\?vi?=|\&vi?=)([^#\&\?]*).*/;	
+var list = document.getElementsByTagName("a");
+for (let i = 0; i < list.length; i++) {
+	var match = list[i].href.match(ytRegex);
+	if (match && match[2].length == 11) {
+		ytString[i] = match[2];
+		holder[i] = make("div");
+		if (list[i].nextElementSibling) list[i].nextElementSibling.parentNode.insertBefore(holder[i], list[i].nextElementSibling);
+		else list[i].parentNode.appendChild(holder[i]);
+		
+		// the embed button
+		let myPreBut = make("button");
+		myPreBut.textContent = "Youtube clip";
+		let placeHolder = make("div");		
+		placeHolder.style.textAlign = 'center';
+		placeHolder.style.margin = "16px";
+		placeHolder.appendChild(myPreBut);
+		holder[i].appendChild(placeHolder);
+
+		myPreBut.onclick = function() {
+			// remove the embed button
+			function remove(element) { element.parentNode.removeChild(element);}
+			remove(myPreBut.parentNode);
+			
+			// outer to inner Youtube divs (3 layers)
+			holder[i].classList.add('videoWrapWrap');
+			let wrapOne = make('div', 'mediaVideoWrapper');
+				wrapOne.innerHTML = `<svg class='placeholder-svg' height="100%" width="100%" viewBox="0 0 1600 900" style='stroke-width: 0px; background-color: black;'></svg>`;
+			let theVideo = make('div');
+				theVideo.id = `player${i}`;		
+			wrapOne.appendChild(theVideo);
+			holder[i].appendChild(wrapOne);
+
+			// Youtube video
+			let player = new YT.Player(`player${i}`, {
+				playerVars: { 'modestbranding': 1},
+				videoId: ytString[i],
+			});	
+		}
+	}
+}	
+	
+D('shadow').style.top = (D('shadow').previousElementSibling.offsetHeight + 60) + "px";
+		
+function D(string) { return document.getElementById(string); }	
+function DE(id) {
+	if (typeof id === 'string' || id instanceof String) return D(id);
+	else return id;	
+}
+function show(id) { DE(id).style.display = 'inline';}	
+function hide(id) { DE(id).style.display = 'none';}
+	
+function make(string, myClass) { 
+	let myObj = document.createElement(string);
+	if (myClass) myObj.classList.add(myClass);
+	return myObj;
+}
+	
+window.onload = function() {
+	D('outersidebar').scrollTo({left: D('outersidebar').scrollWidth,top:0, behavior:'smooth'});
+};
+	
+</script>
+</html>
