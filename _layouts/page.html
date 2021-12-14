@@ -68,6 +68,7 @@
 // add base URL to relative links (for project pages)
 var relativelinks = document.getElementsByTagName("a");
 let baseURL = "/" + window.location.pathname.split('/')[1];
+if (baseURL == "/") baseURL = "";
 if (baseURL.slice(0, 3) != "/20") {
 	for (let i = 0; i < relativelinks.length; i++) {
 		if (relativelinks[i].pathname.slice(0, 3) == "/20") {	
