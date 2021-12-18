@@ -87,8 +87,7 @@ if(D('specialPost')) D('specialPost').scrollIntoView({behavior: "auto", block: "
 if (screen.width <= 550 || screen.height <= 550) {
 	mobile = true;		
 	D('main').onclick = function() { D('outersidebar').scrollTo({top: 0, left: 1000, behavior: 'smooth'}); };
-}
-else {				
+} else {				
 	window.addEventListener("resize", resizeFunction);
 	D("accountPanel").onclick = resizeFunction;
 	resizeFunction();
