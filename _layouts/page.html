@@ -93,7 +93,6 @@ if (screen.width <= 550 || screen.height <= 550) {
 	resizeFunction();
 	function resizeFunction() { 
 		// 50 for the left padding in the content; 40 for the right padding
-		console.error("resizing");
 		var w = D('accountPanel').offsetWidth + 50;
 		D("main").style.paddingLeft = `${w}px`;
 		D("main").style.width = `calc(100% - ${w}px - 40px)`;
