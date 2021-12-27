@@ -6,6 +6,8 @@ title: "The Warashibe Trading Project"
 
 Let me tell the story of how I came to this point.
 
+
+
 ### Finding Nano 
 
 I recently got fed up with my equities broker for one reason or another. This possibly deserves its own future post; presently, I won't discuss this any further.
