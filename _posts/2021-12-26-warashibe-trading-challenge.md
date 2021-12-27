@@ -1,5 +1,5 @@
 ---
-title: "The Warashibe Trading Project"
+title: "The Warashibe Trading Challenge"
 ---
 
 > Current holdings: 74691 Nyano and 3.09 Banano. Value: $0.35
@@ -20,12 +20,12 @@ Due to recent frustrations with my reliance on flawed financial institutions, I 
 
 First of all, Nano is essentially the opposite of Bitcoin, which has now entirely pivoted from trying to be a currency toward being a questionable store of value. My belief is that using cryptocurrency as a store of value is a terrible idea. The current, heavily regulated, "cold" financial system is designed precisely to reliably and safely store value, unless you are involved with underground activity. For the typical individual, user error and criminal theft are far, far, far greater threats than centralized or government shenanigans, and the existing infrastructre does a reasonable job of addressing both. Cryptocurrency does not.
 
-Nano is the opposite (or at least, it should be if it isn't already). Nano is feeless, fast, and transparent. These properties make it perfect for the enormous (and in some sense, growing) segment of the "hot" economy involving small and micro payments, including retail-scale purchases and trading. I can envision this generating new economies that cannot even exist under the current economic system, involving self-publishing and royalty micropayments.
+Nano is the opposite (or at least, it should be if it isn't already). Nano is feeless, fast, and transparent. These properties make it perfect for the enormous (and in some sense, growing) segment of the "hot" economy involving small payments, including retail-scale purchases and trading. I can envision this generating new economies that cannot even exist under the current economic system, involving self-publishing and royalty micropayments.
 
-### Warashibe Trading Project
+### Warashibe Trading Challenge
 
-I got the idea for the Warashibe Trading Project (WTP) while playing with tiny amounts of Nano from Nano faucets. I thought of (and still think of) Nano as a sort of digital commodity, and was reminded of the [One Red Paperclip](https://en.wikipedia.org/wiki/One_red_paperclip) project. I saw on Wiki that this had historical roots in the [Warashibe Chōja](https://en.wikipedia.org/wiki/Straw_Millionaire) folk tale. Having a trading background, as discussed above, something clicked.
+I got the idea for the Warashibe Trading Challenge (WTC) while playing with tiny amounts of Nano from Nano faucets. I thought of (and still think of) Nano as a sort of digital commodity, and was reminded of the [One Red Paperclip](https://en.wikipedia.org/wiki/One_red_paperclip) project. I saw on Wiki that this had historical roots in the [Warashibe Chōja](https://en.wikipedia.org/wiki/Straw_Millionaire) folk tale. Having a trading background, something clicked.
 
-I've decided that the WTP will be an attempt to stir around miniscule amounts of cryptocurrency purely obtained from faucets, and absolutely not in exchange for fiat currency. This could generalize to other forms of online value; the two taboos will be fiat and offline value. 
+I've decided that the WTC will be an attempt to stir around miniscule amounts of cryptocurrency purely obtained from faucets, and absolutely not in exchange for fiat currency. This could generalize to other forms of online value; the two taboos will be fiat and offline value. 
 
-I have played with some options trading in the past, and have seen how some intelligent trading can cause such quantities to grow rapidly. Of course, the crypto space is not the same as the options space, and this attempt could be dead already. But I plan to play with some interesting ideas made possible by the Nano/feeless ecosystem, and hopefully we'll have some fun along the way toward likely failure.
+I have played with some options trading in the past, and have seen how some intelligent trading can cause small quantities to grow rapidly. Of course, the crypto space is not the same as the options space, and this attempt could be dead without me knowing it. But I plan to play with some interesting ideas made possible by the Nano/feeless ecosystem, and hopefully we'll have some fun along the way toward likely failure.
