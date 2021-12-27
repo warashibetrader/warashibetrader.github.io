@@ -6,13 +6,13 @@ title: "The Warashibe Trading Challenge"
 
 Let me tell the story of how I came to this point.
 
-
-
 ### Finding Nano 
 
 I recently got fed up with my equities broker for one reason or another. This possibly deserves its own future post; presently, I won't discuss this any further.
 
 Up to and during this time, I was not particularly impressed by the cryptocurrency space. My impression was that it was full of scams and fees. Take Bitcoin, for example: My understanding was (and still is) that a transaction on the Bitcoin network takes (flat) fees of between $10 and $100. However much equities trading is bogged down by regulation and incompetent brokers, it still appears absolutely frictionless in comparsion. In addition to the exorbitant fees, I was not impressed by Bitcoin's environmental footprint. My understanding was (and again, still is) that Bitcoin is fundamentally flawed, in that scarcity and security are both "generated" by tying them to the cost of energy.
+
+
 
 I did have in the back of my mind that, being mostly mathematically literate, I could look into the Bitcoin whitepaper at some point and optimize away these issues. The space of cryptographic protocols and algorithms is relatively unexplored, and it was hard for me to believe that the original Bitcoin protocol was the best. (Of course, there have been many cryptocurrency protocols since Bitcoin. But I also suspected that their protocols were sub-optimal due to compatibility-baggage, as well as greed.)
 
