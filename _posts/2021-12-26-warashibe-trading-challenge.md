@@ -24,7 +24,7 @@ Nano is the opposite (or at least, it should be if it isn't already). Nano is fe
 
 ### Warashibe Trading Challenge
 
-I got the idea for the Warashibe Trading Challenge (WTC) while playing with tiny amounts of Nano from Nano faucets. I thought of (and still think of) Nano as a sort of digital commodity, and was reminded of the [One Red Paperclip](https://en.wikipedia.org/wiki/One_red_paperclip) project. I saw on Wiki that this had historical roots in the [Warashibe Chōja](https://en.wikipedia.org/wiki/Straw_Millionaire) folk tale. Having a trading background, something clicked.
+I got the idea for the Warashibe Trading Challenge (WTC) while playing with tiny amounts of Nano from Nano faucets. I thought of (and still think of) Nano as a sort of digital commodity, and was reminded of the [One Red Paperclip](https://en.wikipedia.org/wiki/One_red_paperclip) project. I saw on Wiki that this had historical roots in the legend of the [Warashibe Chōja](https://en.wikipedia.org/wiki/Straw_Millionaire). Having a trading background, something clicked.
 
 I've decided that the WTC will be an attempt to stir around miniscule amounts of cryptocurrency purely obtained from faucets, and absolutely not in exchange for fiat currency. This could generalize to other forms of online value; the two taboos will be fiat and offline value. 
 
