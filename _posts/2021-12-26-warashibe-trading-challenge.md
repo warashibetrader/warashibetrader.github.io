@@ -4,7 +4,7 @@ title: "The Warashibe Trading Challenge"
 
 Here's the story of how I came to this point.
 
-### Warashibe Trading Challenge
+### The challenge
 
 I got the idea for a "Warashibe Trading Challenge" (WTC) while playing with tiny amounts of Nano from Nano faucets. Thinking Nano as a sort of digital commodity, I was reminded of the [One Red Paperclip](https://en.wikipedia.org/wiki/One_red_paperclip) project. I saw on Wiki that this had historical roots in the legend of the [Warashibe Chōja](https://en.wikipedia.org/wiki/Straw_Millionaire). Having a trading background, something clicked.
 
