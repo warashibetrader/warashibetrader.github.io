@@ -4,6 +4,7 @@
 	<link rel="stylesheet" type="text/css" href="wallet.css">
 	<link rel="icon" href="strawicontrans.png">	
 	<script src="nanocurrency.js"></script>
+	<script src="quotes.js"></script>
 
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">		
 	<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
@@ -72,44 +73,36 @@ if (typeof(Storage) !== "undefined") {
 	let quoteData;
 
 	if (localStorage.getItem("quote")) quoteData = JSON.parse(localStorage.getItem("quote"));
-	else {		
-		shortPromise = fetch("https://type.fit/api/quotes").then(function(response) {
-			return response.json(); 		    
-		}).then(function(data) {
-			function getRandomIntInclusive(min, max) {
-				const randomBuffer = new Uint32Array(1);
-				window.crypto.getRandomValues(randomBuffer);
-				let randomNumber = randomBuffer[0] / (0xffffffff + 1);
-				min = Math.ceil(min);
-				max = Math.floor(max);
-				return Math.floor(randomNumber * (max - min + 1)) + min;
-			}
+	else {			    
+		function getRandomIntInclusive(min, max) {
+			const randomBuffer = new Uint32Array(1);
+			window.crypto.getRandomValues(randomBuffer);
+			let randomNumber = randomBuffer[0] / (0xffffffff + 1);
+			min = Math.ceil(min);
+			max = Math.floor(max);
+			return Math.floor(randomNumber * (max - min + 1)) + min;
+		}
 
-			let index = getRandomIntInclusive(0, data.length - 1);
+		let index = getRandomIntInclusive(0, quoteDatabase.length - 1);
 
-			let author = data[index].author;
-			if (!author) author = "Anonymous";
-			author = author.replace(/ /g, '\xa0');
-			
-			quoteData = {quote:data[index].text, author:author};		
-			localStorage.setItem("quote", JSON.stringify(quoteData));
-			
-			D('quote').appendChild(document.createTextNode("New code has been loaded." + "\x0a\x0a"));
-		});		
+		let author = quoteDatabase[index].author;
+		if (!author) author = "Anonymous";
+		author = author.replace(/ /g, '\xa0');
+		
+		quoteData = {quote:quoteDatabase[index].text, author:author};		
+		localStorage.setItem("quote", JSON.stringify(quoteData));
+		
+		D('quote').appendChild(document.createTextNode("New code has been loaded." + "\x0a\x0a"));
 	}
 
-	shortPromise.then(function() {
-		let quoteSpan = make('span');
-		let authorSpan = make('div');		
-		quoteSpan.textContent = quoteData.quote;
-		authorSpan.textContent = ' -\xa0' + quoteData.author;
-		authorSpan.innerHTML += '\xa0(<a href="" target="_blank">?</a>)';
-		authorSpan.style.textAlign = "right";
-		D('quote').appendChild(quoteSpan);
-		D('quote').appendChild(authorSpan);
-		
-	});
-
+	let quoteSpan = make('span');
+	let authorSpan = make('div');		
+	quoteSpan.textContent = quoteData.quote;
+	authorSpan.textContent = ' -\xa0' + quoteData.author;
+	authorSpan.innerHTML += '\xa0(<a href="" target="_blank">?</a>)';
+	authorSpan.style.textAlign = "right";
+	D('quote').appendChild(quoteSpan);
+	D('quote').appendChild(authorSpan);
 }
 
 var changeNameFlag = false;
