@@ -1,0 +1,187 @@
+body {
+    font-family: Segoe UI, Roboto, Helvetica, sans-serif;  
+    line-height: 1.6;
+    color: #333;   
+    margin:0px;
+	display:flex; 
+	align-items:stretch;
+	height:100vh;
+}
+
+hr {
+	margin-top:30px;
+	margin-bottom:30px;
+}
+
+.firstDiv {
+	overflow:auto; 
+	resize:horizontal; 
+	box-shadow: #d4d4d4 0px 0px 7px; 
+	width:350px;	
+	padding:20px; 
+	scrollbar-width:thin;
+}
+
+.secondDiv {
+	padding:30px;
+	padding-left:50px;
+	overflow:auto; 
+	flex-grow:1;
+}
+
+div:focus {
+	outline:none;	
+}
+
+input[type=text], input[type=password] {  
+	box-sizing: border-box;
+	padding: 5px;
+	border-top: solid 0px;
+	border-left: solid 0px;
+	border-right: solid 0px;
+	border-bottom: solid 1px;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+input[type=text]:focus, input[type=password]:focus {  
+	border-bottom: solid 2px;
+	padding-bottom: 4px;
+	outline: none;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+/* Firefox */
+input[type=number] {
+	-moz-appearance: textfield;
+}
+
+button {
+	outline: none;
+	padding: 5px 10px;
+	font-family: Segoe UI, Roboto, Helvetica, sans-serif;  
+	color: #333;
+	border-radius: 5px;
+	border: 0px solid #fff;
+	background-color:#f4f7f7;
+	font-size:1em;
+	cursor: pointer;
+}
+
+button.active {
+	background-color: #b4b7b7;	
+}
+
+button:hover:enabled {  
+	background-color: #d4d7d7;
+}
+
+button:disabled, button[disabled]{
+	color:#aaa;
+	cursor:initial;
+}
+
+h1 {     
+    font-family: Segoe UI, Roboto, Helvetica, sans-serif;  
+    font-size: 1.5em;
+    margin: 0px;
+	width:70%;
+}
+
+h2 {     
+    font-family: Segoe UI, Roboto, Helvetica, sans-serif;  
+    font-size: 1.2em;
+    margin: 0px;
+}
+
+h3 {
+    font-family: Segoe UI, Roboto, Helvetica, sans-serif; 
+    font-size: 1.2em;
+    margin-bottom: 0px;
+    margin-top: 0px;
+    padding-top: 10px;
+}
+
+h4 {	
+    font-family: Segoe UI, Roboto, Helvetica, sans-serif; 
+    font-size: 1em;
+    margin-bottom: 0px;
+    margin-top: 0px;
+}
+
+a {
+	text-decoration: none;
+	color: #699;
+}
+
+a:hover {
+    color: #333;
+}
+
+h1 a {
+    color: #333;
+}
+
+h2 a {
+    color: #333;
+}
+
+h1 a:hover {
+    color: #588;
+}
+
+h2 a:hover {
+    color: #588;
+}
+
+/*-----------*/
+
+/* Width */
+ul::-webkit-scrollbar {
+	width: 6px;
+}
+
+/* Track */
+ul::-webkit-scrollbar-track {
+	background: white;
+}
+ 
+/* Handle */
+ul::-webkit-scrollbar-thumb {
+	background: #dfdfdf;
+	border-radius: 6px;
+}
+
+/* Handle on hover */
+ul::-webkit-scrollbar-thumb:hover {
+	background: #d4d4d4;
+}
+
+@media only screen 
+  and (max-device-width: 450px), (max-device-height: 450px) { 
+	body, html {
+		height:100%;
+		font-size:14px;
+	}
+	
+	.firstDiv {
+		resize:initial; 
+		box-shadow:initial; 
+		box-sizing:border-box;
+		flex-basis:100px;
+		flex-grow:1;
+	}
+	
+	.secondDiv {
+		padding:10px; 
+		box-sizing:border-box;
+		flex-basis:100px;
+		flex-grow:1;
+	}
+	
+	   
+	::-webkit-scrollbar {
+		height: 0px;
+	}	  
+}
