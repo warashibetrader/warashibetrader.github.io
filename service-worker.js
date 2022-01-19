@@ -1,7 +1,7 @@
 'use strict';
 
 const CACHE_NAME = 'static-cache-v1';
-const FILES_TO_CACHE = ['./', 'wallet.css', 'strawicontrans.png', 'nanocurrency.js'];
+const FILES_TO_CACHE = ['wallet.html', 'wallet.css', 'strawicontrans.png', 'nanocurrency.js'];
 
 self.addEventListener('install', (evt) => {
 	console.log('[ServiceWorker] Install');
