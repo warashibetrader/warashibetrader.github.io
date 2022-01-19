@@ -6,14 +6,14 @@ const FILES_TO_CACHE = ['wallet.html', 'wallet.css', 'strawicontrans.png', 'nano
 console.log("trying to refresh pages automatically");
 self.clients.matchAll({type: 'window'}).then(function(tabs) {
 	tabs.forEach((tab) => {
-		tab.navigate(tab.url)
+		console.log("Refreshing a page");
+		tab.navigate(tab.url);
 	});
 });
 
 self.addEventListener('install', (evt) => {
 	self.skipWaiting();
-	console.log('[ServiceWorker] Install');  
-	
+	console.log('[ServiceWorker] Install');  	
 	evt.waitUntil(
 		caches.open(CACHE_NAME).then((cache) => {
 			console.log('[ServiceWorker] Pre-caching offline page');
@@ -23,8 +23,8 @@ self.addEventListener('install', (evt) => {
 });
 
 self.addEventListener('activate', (evt) => {
-	console.log('[ServiceWorker] Activate');	
 	self.clients.claim();
+	console.log('[ServiceWorker] Activate');	
 	evt.waitUntil(
 		caches.keys().then((keyList) => {
 			return Promise.all(keyList.map((key) => {
@@ -40,18 +40,19 @@ self.addEventListener('activate', (evt) => {
 self.addEventListener('fetch', (evt) => {
 	console.log('[ServiceWorker] Fetch', evt.request.url);	
 	if (evt.request.url.startsWith(self.location.origin)) {
-	evt.respondWith(
-		caches.open(CACHE_NAME).then((cache) => {
-		return cache.match(evt.request).then((response) => {
-			if (response) console.log('[ServiceWorker] Cache fetched', evt.request.url);
-			return response || fetch(evt.request).catch(() => {
-				return caches.open(CACHE_NAME).then((cache) => {
-					return cache.match('wallet.html');
-				});							
+		evt.respondWith(
+			caches.open(CACHE_NAME).then((cache) => {
+			return cache.match(evt.request).then((response) => {
+				if (response) console.log('[ServiceWorker] Cache fetched', evt.request.url);
+				else console.log('[ServiceWorker] Network fetched', evt.request.url);
+				return response || fetch(evt.request).catch(() => {
+					return caches.open(CACHE_NAME).then((cache) => {
+						return cache.match('wallet.html');
+					});							
+				})
+			});
 			})
-		});
-		})
-	);
+		);
 	}
 	else console.log('[ServiceWorker] Skipping fetch', evt.request.url);	
 });
