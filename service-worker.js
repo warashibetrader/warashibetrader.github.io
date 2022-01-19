@@ -4,20 +4,27 @@ const CACHE_NAME = 'static-cache-v1';
 const FILES_TO_CACHE = ['wallet.html', 'wallet.css', 'strawicontrans.png', 'nanocurrency.js'];
 
 self.addEventListener('install', (evt) => {
-	console.log('[ServiceWorker] Install');
-  
+	console.log('[ServiceWorker] Install');  
+	self.skipWaiting();
+	
+	console.log("trying to refresh pages automatically");
+	self.clients.matchAll({type: 'window'}).then(function(tabs) {
+		tabs.forEach((tab) => {
+			tab.navigate(tab.url)
+		});
+	});
+	
 	evt.waitUntil(
 		caches.open(CACHE_NAME).then((cache) => {
 			console.log('[ServiceWorker] Pre-caching offline page');
 			return cache.addAll(FILES_TO_CACHE);
 		})
 	);
-	self.skipWaiting();
 });
 
 self.addEventListener('activate', (evt) => {
-	console.log('[ServiceWorker] Activate');
-	
+	console.log('[ServiceWorker] Activate');	
+	self.clients.claim();
 	evt.waitUntil(
 		caches.keys().then((keyList) => {
 			return Promise.all(keyList.map((key) => {
@@ -28,14 +35,6 @@ self.addEventListener('activate', (evt) => {
 			}));
 		})
 	);
-	//self.clients.claim();
-	console.log("trying to refresh pages automatically");
-	self.clients.matchAll({type: 'window'}).then(function(tabs) {
-		tabs.forEach((tab) => {
-			// ...and refresh each one of them
-			tab.navigate(tab.url)
-		});
-	});
 });
 
 self.addEventListener('fetch', (evt) => {
