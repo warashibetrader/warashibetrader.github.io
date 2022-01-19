@@ -1,7 +1,7 @@
 'use strict';
 
 const CACHE_NAME = 'static-cache-v1';
-const FILES_TO_CACHE = ['wallet.html', 'wallet.css', 'strawicontrans.png', 'nanocurrency.js'];
+const FILES_TO_CACHE = ['./', 'wallet.css', 'strawicontrans.png', 'nanocurrency.js'];
 
 console.log("trying to refresh pages automatically at start");
 self.clients.matchAll({type: 'window'}).then(function(tabs) {
