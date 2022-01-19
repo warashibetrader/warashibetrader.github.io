@@ -3,16 +3,16 @@
 const CACHE_NAME = 'static-cache-v1';
 const FILES_TO_CACHE = ['wallet.html', 'wallet.css', 'strawicontrans.png', 'nanocurrency.js'];
 
-self.addEventListener('install', (evt) => {
-	console.log('[ServiceWorker] Install');  
-	self.skipWaiting();
-	
-	console.log("trying to refresh pages automatically");
-	self.clients.matchAll({type: 'window'}).then(function(tabs) {
-		tabs.forEach((tab) => {
-			tab.navigate(tab.url)
-		});
+console.log("trying to refresh pages automatically");
+self.clients.matchAll({type: 'window'}).then(function(tabs) {
+	tabs.forEach((tab) => {
+		tab.navigate(tab.url)
 	});
+});
+
+self.addEventListener('install', (evt) => {
+	self.skipWaiting();
+	console.log('[ServiceWorker] Install');  
 	
 	evt.waitUntil(
 		caches.open(CACHE_NAME).then((cache) => {
