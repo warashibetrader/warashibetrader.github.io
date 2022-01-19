@@ -3,15 +3,23 @@
 const CACHE_NAME = 'static-cache-v1';
 const FILES_TO_CACHE = ['wallet.html', 'wallet.css', 'strawicontrans.png', 'nanocurrency.js'];
 
-console.log("trying to refresh pages automatically");
+console.log("trying to refresh pages automatically at start");
 self.clients.matchAll({type: 'window'}).then(function(tabs) {
 	tabs.forEach((tab) => {
-		console.log("Refreshing a page");
+		console.log("Refreshing a page at start");
 		tab.navigate(tab.url);
 	});
 });
 
-self.addEventListener('install', (evt) => {
+self.addEventListener('install', (evt) => {	
+	console.log("trying to refresh pages automatically at install");
+	self.clients.matchAll({type: 'window'}).then(function(tabs) {
+		tabs.forEach((tab) => {
+			console.log("Refreshing a page at install");
+			tab.navigate(tab.url);
+		});
+	});
+	
 	self.skipWaiting();
 	console.log('[ServiceWorker] Install');  	
 	evt.waitUntil(
@@ -23,6 +31,14 @@ self.addEventListener('install', (evt) => {
 });
 
 self.addEventListener('activate', (evt) => {
+	console.log("trying to refresh pages automatically at activate");
+	self.clients.matchAll({type: 'window'}).then(function(tabs) {
+		tabs.forEach((tab) => {
+			console.log("Refreshing a page at activate");
+			tab.navigate(tab.url);
+		});
+	});
+	
 	self.clients.claim();
 	console.log('[ServiceWorker] Activate');	
 	evt.waitUntil(
