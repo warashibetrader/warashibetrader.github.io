@@ -3,13 +3,13 @@
 const CACHE_NAME = 'static-cache-v1';
 const FILES_TO_CACHE = ['wallet', 'wallet.html', 'walletsrc/wallet.css', 'strawicontrans.png', 'walletsrc/nanocurrency.js', 'walletsrc/quotes.js', 'walletsrc/qrcode.js'];
 
-console.log("trying to refresh pages automatically at start");
-self.clients.matchAll({type: 'window'}).then(function(tabs) {
-	tabs.forEach((tab) => {
-		console.log("Refreshing a page at start");
-		tab.navigate(tab.url);
-	});
-});
+//console.log("trying to refresh pages automatically at start");
+//self.clients.matchAll({type: 'window'}).then(function(tabs) {
+//	tabs.forEach((tab) => {
+//		console.log("Refreshing a page at start");
+//		tab.navigate(tab.url);
+//	});
+//});
 
 self.addEventListener('install', (evt) => {	
 	console.log("trying to refresh pages automatically at install");
@@ -70,6 +70,6 @@ self.addEventListener('fetch', (evt) => {
 			})
 		);
 	}
-	else console.log('[ServiceWorker] Skipping fetch', evt.request.url);	
+	// else console.log('[ServiceWorker] Skipping fetch', evt.request.url);	
 });
 
