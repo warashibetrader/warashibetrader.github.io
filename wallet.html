@@ -5,6 +5,7 @@
 	<link rel="icon" href="strawicontrans.png">	
 	<script src="nanocurrency.js"></script>
 	<script src="quotes.js"></script>
+	<script src="qrcode.js"></script>
 
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">		
 	<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
@@ -17,7 +18,7 @@
 <body>
 	<div class="containerdiv">
 	<div id="firstDiv" class="firstDiv">
-		<div id="quote" style="margin-top:30px; color:#aaa; white-space:pre-wrap; font-style:italic; font-size:0.9em" ></div>
+		<div id="quote" style="margin-top:30px; white-space:pre-wrap; font-style:italic; font-size:0.9em" ></div>
 		<strong id="msg" style="padding:5px; z-index: 4; box-shadow: #ccc 2px 2px 2px; background-color: #fff;
 								  position: fixed; left: 0px; top: 0px; border-radius: 5px;
 								  pointer-events: none; opacity: 0.9;">Welcome.</strong>
@@ -112,6 +113,7 @@ buildSecurityQuote();
 var changeNameFlag = false;
 var nameCache = {};
 var sidebarElt = {};
+var qrCode = {};
 var transactionElt = {};
 generateHTML('XNO');
 generateHTML('BAN');
@@ -126,6 +128,8 @@ accountData['BAN'] = {representative:'ban_1ka1ium4pfue3uxtntqsrib8mumxgazsjf58gi
 						
 accountData['XNO'].queue = new Promise(function(resolve, reject) { resolve(true); });
 accountData['BAN'].queue = new Promise(function(resolve, reject) { resolve(true); });
+
+
 
 //////////////////////////////////////////////////////// low level helper functions
 
@@ -527,7 +531,7 @@ async function importWallet(symbol) {
 		D(symbol + "-gray").style.filter = "opacity(1)";
 		D(symbol + "-gray2").style.filter = "opacity(1)";
 		refreshBalance(symbol);
-			
+		addressQR(symbol);
 	}
 }
 
@@ -557,6 +561,8 @@ function clearWallet(symbol) {
 	
 	D(symbol + "-new-rep").value = "";	
 	D(symbol + "-dest").value = "";	
+	D(symbol + '-qr-input').value = "";
+	qrCode[symbol].makeCode("");
 	
 	D(`${symbol}-withdrawal-amount`).value = "0.00";
 	D(symbol + "-new-rep-display").textContent = "";
@@ -738,6 +744,12 @@ function post(url, params) {
     });
 }
 
+function addressQR(symbol) {
+	if (accountData[symbol].address) {
+		D(symbol + '-qr-input').value = accountData[symbol].address;
+		qrCode[symbol].makeCode(accountData[symbol].address);
+	}
+}
 
 function D(string) { return document.getElementById(string); }	
 	
@@ -747,6 +759,8 @@ function selectPrimary(symbol) {
 	D('secondDiv').removeChild(D('secondDiv').lastChild);
 	D('secondDiv').appendChild(transactionElt[symbol]);
 	D('primary').value = symbol;
+	
+	if (!qrCode[symbol]) qrCode[symbol] = new QRCode(symbol + "-qrCodeImageBlock");
 }
 	
 function generateHTML(symbol) {
@@ -818,7 +832,17 @@ function generateHTML(symbol) {
 		<div style="text-align:center;">
 		<button style="margin-top:15px" onclick="setRep('${symbol}')">Set Representative</button>	
 		</div>
-	
+		
+		
+		
+		<hr>
+		<strong>QR Codify (for transfer to another device):</strong>
+		<div style="margin-top:10px; margin-bottom:10px">
+			<input style="margin-bottom:10px" id="${symbol}-qr-input" type="text" size="30" max_length="64" onclick="this.select()" oninput="if (this.value) qrCode['${symbol}'].makeCode(this.value); else qrCode['${symbol}'].makeCode('')">
+			<button style="position:absolute; right:0px; font-size:0.8em" onclick="addressQR('${symbol}')">My Address</button>
+		</div>
+		
+		<div style="display:flex; justify-content:center" id="${symbol}-qrCodeImageBlock"></div>
 	</div>
 	<br><br>`;
 }
