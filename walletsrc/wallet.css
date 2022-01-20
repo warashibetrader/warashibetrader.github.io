@@ -19,12 +19,19 @@ hr {
 	width:100%;
 }
 
+.objectWrapper {
+	background-color:white;
+	border-radius:10px;
+	padding:15px 10px;
+	margin:10px;	
+}
+
 .firstDiv {
+	background-color:steelblue;
 	overflow:auto; 
 	resize:horizontal; 
 	box-shadow: #d4d4d4 0px 0px 7px; 
-	width:350px;	
-	padding:20px; 
+	width:400px;	
 	scrollbar-width:thin;
 }
 
