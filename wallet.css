@@ -6,17 +6,12 @@ body {
 	height:100vh;
 	width:100%;
 	overflow:auto;
+	display:flex;
 }
 
 hr {
 	margin-top:30px;
 	margin-bottom:30px;
-}
-
-.containerdiv {	
-	display:flex;
-	height:100%;
-	width:100%;
 }
 
 .firstDiv {
@@ -166,11 +161,10 @@ ul::-webkit-scrollbar-thumb:hover {
 
 @media only screen 
   and (max-device-width: 450px), (max-device-height: 450px) { 
-	body {
-		font-size:14px;
+	html {
+		overflow:auto;
 	}
-	
-	.containerdiv {	
+	body {
 		width:200%;
 	}
 	
