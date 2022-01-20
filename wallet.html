@@ -18,6 +18,7 @@
 <body>
 	<div class="containerdiv">
 	<div id="firstDiv" class="firstDiv">
+	<div class="objectWrapper">
 		<div id="quote" style="margin-top:30px; white-space:pre-wrap; font-style:italic; font-size:0.9em" ></div>
 		<strong id="msg" style="padding:5px; z-index: 4; box-shadow: #ccc 2px 2px 2px; background-color: #fff;
 								  position: fixed; left: 0px; top: 0px; border-radius: 5px;
@@ -29,9 +30,9 @@
 			<option value="XNO">Nano (XNO)</option>
 			<option value="BAN">Banano (BAN)</option>
 		</select>
-		<button style="position:absolute; right:0px; font-size:0.8em" onclick="mainClearWallet()">Clear Wallet</button>
+		<button style="position:absolute; right:15px; font-size:0.8em" onclick="mainClearWallet()">Clear Wallet</button>
 		</div>
-		<hr>
+	</div>
 	</div>
 	<div id="secondDiv" class="secondDiv">
 	</div>
@@ -570,8 +571,8 @@ function clearWallet(symbol) {
 	
 	if (D(symbol + "-editpanel").style.display != "none") D(symbol + "-editbutton").click();
 	
-	D(symbol + "-gray").style.filter = "opacity(0.3)";
-	D(symbol + "-gray2").style.filter = "opacity(0.3)";
+	D(symbol + "-gray").style.filter = "opacity(0.5)";
+	D(symbol + "-gray2").style.filter = "opacity(0.5)";
 }
 
 async function refreshBalance(symbol) {
@@ -767,7 +768,7 @@ function selectPrimary(symbol) {
 function generateHTML(symbol) {
 	transactionElt[symbol] = make('div');
 	transactionElt[symbol].innerHTML = `	
-	<div id="${symbol}-gray2" style="filter:opacity(0.3)">
+	<div id="${symbol}-gray2" style="filter:opacity(0.5)">
 		<div style="max-width:620px; text-align:center"><strong style="display:inline-block; margin-top:30px; font-size:1.1em">Transactions</strong></div>
 		<ul id="${symbol}-transactions" style="padding-left:0px; max-width:620px; list-style: none;"></ul>
 		<div style="max-width:620px; margin:20px; text-align:center"><button style="display:none" id="${symbol}-loadMore">Load More</button></div>
@@ -775,23 +776,24 @@ function generateHTML(symbol) {
 		
 	sidebarElt[symbol] = make('div');
 	sidebarElt[symbol].innerHTML = `
-	<strong>${symbol} wallet seed (private, save securely):</strong>
-	<br><input id="import-${symbol}-seed" style="max-width:calc(100% - 160px)" type="password" size="20" max="64" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')"> &nbsp;	
-	<button style="margin-top:10px; margin-bottom:10px; font-size:0.8em" onclick="toggleVisibility(this, '${symbol}')">Show</button>
-	<button style="margin-top:10px; margin-bottom:10px; font-size:0.8em" onclick="generateWallet('${symbol}')">Generate New</button>	
-	<br><strong>Account index (any non-negative integer): </strong>
-	<br><input id="import-${symbol}-number" type="text" size="20" max="64" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')" value="0">		
-	<br>
-	<div style="text-align:center;">
-	<button style="margin-top:15px;" onclick="importWallet('${symbol}')">Load Account</button>
+	<div class="objectWrapper">
+		<strong>${symbol} wallet seed (private, save securely):</strong>
+		<br><input id="import-${symbol}-seed" style="max-width:calc(100% - 160px)" type="password" size="20" max="64" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')"> &nbsp;	
+		<button style="margin-top:10px; margin-bottom:10px; font-size:0.8em" onclick="toggleVisibility(this, '${symbol}')">Show</button>
+		<button style="margin-top:10px; margin-bottom:10px; font-size:0.8em" onclick="generateWallet('${symbol}')">Generate New</button>	
+		<br><strong>Account index (any non-negative integer): </strong>
+		<br><input id="import-${symbol}-number" type="text" size="20" max="64" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')" value="0">		
+		<br>
+		<div style="text-align:center;">
+		<button style="margin-top:15px;" onclick="importWallet('${symbol}')">Load Account</button>
+		</div>
 	</div>
 
-	<hr>
-	<div id="${symbol}-gray" style="filter:opacity(0.3)">
-	
+	<div id="${symbol}-gray" style="filter:opacity(0.5)">
+	<div class="objectWrapper">
 		<div>
 		<strong style="font-size:1.1em"><span id="${symbol}-display">My Account (Unknown)</span></strong>
-		<button id="${symbol}-editbutton" style="position:absolute; right:0px; font-size:0.8em" onclick="toggleEdit('${symbol}')">Edit</button>
+		<button id="${symbol}-editbutton" style="position:absolute; right:15px; font-size:0.8em" onclick="toggleEdit('${symbol}')">Edit</button>
 		</div>
 		
 		<div id="${symbol}-editpanel" style="display:none; margin-left:20px; margin-top:10px; margin-bottom:20px">
@@ -802,18 +804,17 @@ function generateHTML(symbol) {
 		
 		<div style="margin-top:10px">
 			<strong>Balance:</strong> <span id="${symbol}-balance">0.00</span> ${symbol}
-			<button style="position:absolute; right:0px; font-size:0.8em" onclick="refreshBalance('${symbol}')">Refresh</button>
+			<button style="position:absolute; right:15px; font-size:0.8em" onclick="refreshBalance('${symbol}')">Refresh</button>
 		</div>
 		<div style="margin-top:10px">
 		<strong>Arriving balance:</strong> <span id="${symbol}-balance-pending">0.00</span> ${symbol}
-		<button style="position:absolute; right:0px; font-size:0.8em" onclick="cyclePending('${symbol}')">Receive</button>
+		<button style="position:absolute; right:15px; font-size:0.8em" onclick="cyclePending('${symbol}')">Receive</button>
 		</div>
-		<br>
-		<strong>My address (public, share freely):</strong>
-		<br><div style="overflow:hidden; text-overflow:ellipsis; cursor:pointer; font-size:0.8em" id="${symbol}-address" onclick="clickCopy(this, this.textContent)">&nbsp;</div>
+		<br><strong>My address (public, share freely):</strong>
+		<div style="overflow:hidden; text-overflow:ellipsis; cursor:pointer; font-size:0.8em" id="${symbol}-address" onclick="clickCopy(this, this.textContent)">&nbsp;</div>
+	</div>
 
-
-		<hr>
+	<div class="objectWrapper">
 		<strong>Destination address:</strong>
 		<br><input style="margin-bottom:10px" id="${symbol}-dest" type="text" size="30" max_length="64" onclick="this.select()" oninput="fetchDisplayName('${symbol}', '-dest-display', this.value)">
 		<br><strong>Destination: </strong><span id="${symbol}-dest-display"></span>
@@ -822,30 +823,28 @@ function generateHTML(symbol) {
 		<div style="text-align:center;">
 		<button style="margin-top:15px" onclick="withdraw('${symbol}')">Send ${symbol}</button>
 		</div>
+	</div>
 		
-		
-		<hr>
+	<div class="objectWrapper">
 		<strong>Representative: </strong><span id="${symbol}-rep-display"></span>
-		<br><div style="margin-bottom:10px; overflow:hidden; text-overflow:ellipsis; cursor:pointer; font-size:0.8em" id="${symbol}-rep" onclick="clickCopy(this, this.textContent)">&nbsp;</div>	
+		<div style="margin-bottom:10px; overflow:hidden; text-overflow:ellipsis; cursor:pointer; font-size:0.8em" id="${symbol}-rep" onclick="clickCopy(this, this.textContent)">&nbsp;</div>	
 		<strong>New representative address:</strong>
 		<br><input style="margin-bottom:10px" id="${symbol}-new-rep" type="text" size="30" max_length="64" onclick="this.select()" oninput="fetchDisplayName('${symbol}', '-new-rep-display', this.value)">
 		<br><strong>New representative: </strong><span id="${symbol}-new-rep-display"></span>	
 		<div style="text-align:center;">
 		<button style="margin-top:15px" onclick="setRep('${symbol}')">Set Representative</button>	
 		</div>
+	</div>
 		
-		
-		
-		<hr>
+	<div class="objectWrapper" style="margin-bottom:50px;">
 		<strong>QR codify (for device-device transfer):</strong>
 		<div style="margin-top:10px; margin-bottom:10px">
 			<input style="margin-bottom:10px; max-width: calc(100% - 100px)" id="${symbol}-qr-input" type="text" size="30" max_length="64" onclick="this.select()" oninput="if (this.value) qrCode['${symbol}'].makeCode(this.value); else qrCode['${symbol}'].makeCode('')">
-			<button style="position:absolute; right:0px; font-size:0.8em" onclick="addressQR('${symbol}')">My Address</button>
-		</div>
-		
+			<button style="position:absolute; right:15px; font-size:0.8em" onclick="addressQR('${symbol}')">My Address</button>
+		</div>		
 		<div style="display:flex; justify-content:center" id="${symbol}-qrCodeImageBlock"></div>
 	</div>
-	<br><br>`;
+	</div>`;
 }
 
 
