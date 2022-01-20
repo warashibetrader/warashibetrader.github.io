@@ -92,10 +92,6 @@ var quoteDatabase = [
     "author": "Napoleon Hill"
   },
   {
-    "text": "Everything in life is luck.",
-    "author": "Donald Trump"
-  },
-  {
     "text": "Doing nothing is better than being busy doing nothing.",
     "author": "Lao Tzu"
   },
@@ -1900,10 +1896,6 @@ var quoteDatabase = [
     "author": "Ralph Emerson"
   },
   {
-    "text": "Money was never a big motivation for me, except as a way to keep score. The real excitement is playing the game.",
-    "author": "Donald Trump"
-  },
-  {
     "text": "Friendship with oneself is all important because without it one cannot be friends with anybody else in the world.",
     "author": "Eleanor Roosevelt"
   },
@@ -3134,10 +3126,6 @@ var quoteDatabase = [
   {
     "text": "Do not expect the world to look bright, if you habitually wear gray-brown glasses.",
     "author": "Tomas Eliot"
-  },
-  {
-    "text": "As long as your going to be thinking anyway, think big.",
-    "author": "Donald Trump"
   },
   {
     "text": "Without some goals and some efforts to reach it, no man can live.",
@@ -4424,10 +4412,6 @@ var quoteDatabase = [
     "author": "Virgil"
   },
   {
-    "text": "You have to think anyway, so why not think big?",
-    "author": "Donald Trump"
-  },
-  {
     "text": "On every thorn, delightful wisdom grows, In every rill a sweet instruction flows.",
     "author": "Edward Young"
   },
@@ -4762,10 +4746,6 @@ var quoteDatabase = [
   {
     "text": "An optimist is a person who sees a green light everywhere, while the pessimist sees only the red spotlight... The truly wise person is colour-blind.",
     "author": "Albert Schweitzer"
-  },
-  {
-    "text": "What separates the winners from the losers is how a person reacts to each new twist of fate.",
-    "author": "Donald Trump"
   },
   {
     "text": "Each man has his own vocation; his talent is his call. There is one direction in which all space is open to him.",
@@ -5922,10 +5902,6 @@ var quoteDatabase = [
   {
     "text": "Almost everything comes from nothing.",
     "author": "Henri Amiel"
-  },
-  {
-    "text": "Sometimes by losing a battle you find a new way to win the war.",
-    "author": "Donald Trump"
   },
   {
     "text": "Listen to what you know instead of what you fear.",
