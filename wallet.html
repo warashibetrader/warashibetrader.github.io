@@ -837,7 +837,7 @@ function generateHTML(symbol) {
 		
 		
 		<hr>
-		<strong>QR codify (for transfer to another device):</strong>
+		<strong>QR codify (for device-device transfer):</strong>
 		<div style="margin-top:10px; margin-bottom:10px">
 			<input style="margin-bottom:10px; max-width: calc(100% - 100px)" id="${symbol}-qr-input" type="text" size="30" max_length="64" onclick="this.select()" oninput="if (this.value) qrCode['${symbol}'].makeCode(this.value); else qrCode['${symbol}'].makeCode('')">
 			<button style="position:absolute; right:0px; font-size:0.8em" onclick="addressQR('${symbol}')">My Address</button>
