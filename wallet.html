@@ -111,6 +111,7 @@ if (typeof(Storage) !== "undefined") {
 
 buildSecurityQuote();
 
+var flashColor = "#def";
 var changeNameFlag = false;
 var nameCache = {};
 var sidebarElt = {};
@@ -634,7 +635,7 @@ function showMsg(str, bold) {
 
 function flash(elt, str) {
 	if (str) elt.textContent = str;
-	elt.style.backgroundColor = "#dff";	
+	elt.style.backgroundColor = flashColor;	
 	setTimeout(function() {	elt.style.backgroundColor = "white";}, 500);
 }
 
@@ -763,6 +764,14 @@ function selectPrimary(symbol) {
 	D('primary').value = symbol;
 	
 	if (!qrCode[symbol]) qrCode[symbol] = new QRCode(symbol + "-qrCodeImageBlock");
+	if (symbol == "XNO") {
+		flashColor = "#def";
+		D('firstDiv').style.backgroundColor = "steelblue";
+	}
+	if (symbol == "BAN") {
+		flashColor = "#ffc";
+		D('firstDiv').style.backgroundColor = "orange";	
+	}
 }
 	
 function generateHTML(symbol) {
