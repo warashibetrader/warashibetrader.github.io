@@ -504,7 +504,7 @@ function generateWallet(symbol) {
 	D(`import-${symbol}-seed`).value = generateSeed[symbol](); 	
 	navigator.clipboard.writeText(D(`import-${symbol}-seed`).value);	
 		showMsg("New seed generated. Copied to clipboard.");
-	D(`import-${symbol}-seed`).focus();
+	flash(D(`import-${symbol}-seed`));
 }
 
 async function importWallet(symbol) {
@@ -747,6 +747,7 @@ function post(url, params) {
 function addressQR(symbol) {
 	if (accountData[symbol].address) {
 		D(symbol + '-qr-input').value = accountData[symbol].address;
+		flash(D(symbol + '-qr-input'));
 		qrCode[symbol].makeCode(accountData[symbol].address);
 	}
 }
@@ -836,9 +837,9 @@ function generateHTML(symbol) {
 		
 		
 		<hr>
-		<strong>QR Codify (for transfer to another device):</strong>
+		<strong>QR codify (for transfer to another device):</strong>
 		<div style="margin-top:10px; margin-bottom:10px">
-			<input style="margin-bottom:10px" id="${symbol}-qr-input" type="text" size="30" max_length="64" onclick="this.select()" oninput="if (this.value) qrCode['${symbol}'].makeCode(this.value); else qrCode['${symbol}'].makeCode('')">
+			<input style="margin-bottom:10px; max-width: calc(100% - 100px)" id="${symbol}-qr-input" type="text" size="30" max_length="64" onclick="this.select()" oninput="if (this.value) qrCode['${symbol}'].makeCode(this.value); else qrCode['${symbol}'].makeCode('')">
 			<button style="position:absolute; right:0px; font-size:0.8em" onclick="addressQR('${symbol}')">My Address</button>
 		</div>
 		
