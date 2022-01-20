@@ -171,6 +171,7 @@ ul::-webkit-scrollbar-thumb:hover {
 	}
 	body {
 		font-size:14px;
+		scroll-snap-type: x mandatory;
 	}
 	
 	.containerdiv {	
@@ -183,6 +184,7 @@ ul::-webkit-scrollbar-thumb:hover {
 		box-sizing:border-box;
 		flex-basis:100px;
 		flex-grow:1;
+		scroll-snap-align:start;
 	}
 	
 	.secondDiv {
@@ -190,6 +192,7 @@ ul::-webkit-scrollbar-thumb:hover {
 		box-sizing:border-box;
 		flex-basis:100px;
 		flex-grow:1;
+		scroll-snap-align:end;
 	}
 	
 	   
