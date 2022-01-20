@@ -781,7 +781,7 @@ function generateHTML(symbol) {
 		
 		<div id="${symbol}-editpanel" style="display:none; margin-left:20px; margin-top:10px; margin-bottom:20px">
 		<strong>Public display name:</strong>
-		<br><input id="${symbol}-set-display" type="text" size="30" max_length="64">&nbsp;&nbsp;
+		<br><input id="${symbol}-set-display" style="max-width:calc(100% - 70px)" type="text" size="30" max_length="64">&nbsp;&nbsp;
 		<button style="font-size:0.8em" onclick="setName('${symbol}')">Set</button>
 		</div>
 		
