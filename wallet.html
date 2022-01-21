@@ -605,12 +605,12 @@ function refreshBalance(symbol) {
 
 async function cyclePending(symbol) {
 	if (accountData[symbol].address) {
-		showMsg(`Collecting incoming ${symbol}...`);
+		showMsg(`Collecting arriving ${symbol}...`);
 		const pending = await getPending[symbol]();
 		for (const block in pending) {
 			await receive[symbol](block);
 		}
-		showMsg("Incoming " + symbol + " collected.");		
+		showMsg("Arriving " + symbol + " collected.");		
 	} 
 }
 
@@ -844,7 +844,7 @@ function generateHTML(symbol) {
 			<button style="position:absolute; right:0px; font-size:0.8em" onclick="refreshBalance('${symbol}')">Refresh</button>
 		</div>
 		<div style="position:relative; margin-top:10px">
-		<strong>Incoming balance:</strong> <span id="${symbol}-balance-pending">0.00</span> ${symbol}
+		<strong>Arriving balance:</strong> <span id="${symbol}-balance-pending">0.00</span> ${symbol}
 		<button style="position:absolute; right:0px; font-size:0.8em" onclick="cyclePending('${symbol}')">Collect</button>
 		</div>
 		<br><strong>My address (public, share freely):</strong>
