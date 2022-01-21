@@ -2392,10 +2392,6 @@ var quoteDatabase = [
     "author": "Pablo Picasso"
   },
   {
-    "text": "If you're walking down the right path and you're willing to keep walking, eventually you'll make progress.",
-    "author": "Barack Obama"
-  },
-  {
     "text": "The world is round and the place which may seem like the end may also be the beginning.",
     "author": "Ivy Baker Priest"
   },
@@ -5356,10 +5352,6 @@ var quoteDatabase = [
     "author": "Richard Bach"
   },
   {
-    "text": "Focusing your life solely on making a buck shows a poverty of ambition. It asks too little of yourself. And it will leave you unfulfilled.",
-    "author": "Barack Obama"
-  },
-  {
     "text": "Compassion and happiness are not a sign of weakness but a sign of strength.",
     "author": "Dalai Lama"
   },
@@ -5490,10 +5482,6 @@ var quoteDatabase = [
   {
     "text": "Anyone who doesn't take truth seriously in small matters cannot be trusted in large ones either.",
     "author": "Albert Einstein"
-  },
-  {
-    "text": "Change will not come if we wait for some other person or some other time. We are the ones weve been waiting for. We are the change that we seek.",
-    "author": "Barack Obama"
   },
   {
     "text": "Those who cannot learn from history are doomed to repeat it.",
