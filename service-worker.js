@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_NAME = 'static-cache-v4';
+const CACHE_NAME = 'static-cache-v1';
 const FILES_TO_CACHE = ['wallet', 'wallet.html', 'walletsrc/wallet.css', 'strawicontrans.png', 'walletsrc/nanocurrency.js', 'walletsrc/quotes.js', 'walletsrc/qrcode.js'];
 
 //console.log("trying to refresh pages automatically at start");
