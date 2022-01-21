@@ -620,8 +620,8 @@ async function withdraw(symbol) {
 			rawFromUnit[symbol](D(`${symbol}-withdrawal-amount`).value) <= rawFromUnit[symbol](D(`${symbol}-balance`).textContent)) {
 			showMsg(symbol + " transfer initiated...");
 			await sendTo[symbol](D(`${symbol}-dest`).value, D(`${symbol}-withdrawal-amount`).value);
+			showMsg(D(`${symbol}-withdrawal-amount`).value + " " + symbol + " transferred.");	
 			D(`${symbol}-withdrawal-amount`).value = "0.00";
-			showMsg("Transfer completed.");	
 		} else showMsg("Insufficient funds.");
 	} else showMsg("Invalid address.");
 }
