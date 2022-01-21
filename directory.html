@@ -128,7 +128,12 @@ async function fetchDestAddress(symbol, elt) {
 			flash(D(`${symbol}-rep`), accountInfo.representative);	
 			ws.emit("getNameCue", {div:symbol + "-rep-display", address: accountInfo.representative, currency: symbol});
 		}
-	} else D(symbol + "-dest-display").textContent = "";
+	} else {
+		D(symbol + "-dest-display").textContent = "";
+		flash(D(`${symbol}-rep`), "\xa0");	
+		D(`${symbol}-rep-display`).textContent = "";
+		flash(D(`${symbol}-challenge`), "\xa0");		
+	}
 }
 
 //////////////////////////////////////////////////////// General helper functions
@@ -214,7 +219,7 @@ function generateHTML(symbol) {
 		
 		<p>2. Enter the desired display name below and click "Set."</p>
 		
-		<p>3. Don't forget to restore your original representative afterward.</p>
+		<p>3. Restore your original representative above.</p>
 		
 		<p>You can also update your display name directly within <a href="https://warashibetrader.github.io/wallet">this wallet</a>, which integrates with this display name directory.</p>
 		
