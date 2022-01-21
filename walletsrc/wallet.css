@@ -51,7 +51,6 @@ input[type=text], input[type=password] {
 	border-top: solid 0px;
 	border-left: solid 0px;
 	border-right: solid 0px;
-	border-bottom: solid 1px;
 	text-overflow: ellipsis;
 	overflow: hidden;
 }
