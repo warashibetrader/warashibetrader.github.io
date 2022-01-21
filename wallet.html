@@ -152,7 +152,10 @@ checkSeed['BAN'] = function(seed) { return typeof seed === "string" && /^[0-9a-f
 checkSeed['XNO'] = function(seed) {	return typeof seed === "string" && /^[0-9a-fA-F]{64}$/.test(seed);};
 
 let checkAddress = {};
-checkAddress['BAN'] = function(address) { return NanoCurrency.checkAddress(address.replace('ban_', 'nano_'));};
+checkAddress['BAN'] = function(address) { 
+	let nanoAddr = address.replace('ban_', 'nano_');
+	return (nanoAddr != address) && NanoCurrency.checkAddress(nanoAddr);
+};
 checkAddress['XNO'] = function(address) { return NanoCurrency.checkAddress(address);};
 
 let unpackSeed = {};
@@ -862,7 +865,7 @@ function generateHTML(symbol) {
 		<strong>Representative: </strong><span id="${symbol}-rep-display"></span>
 		<div style="margin-bottom:10px; overflow:hidden; text-overflow:ellipsis; cursor:pointer; font-size:0.8em" id="${symbol}-rep" onclick="clickCopy(this, this.textContent)">&nbsp;</div>	
 		<strong>New representative address:</strong>
-		<br><input style="margin-bottom:10px" id="${symbol}-new-rep" type="text" size="30" max_length="64" onclick="this.select()" oninput="fetchDisplayName('${symbol}', '-new-rep-display', this.value)">
+		<br><input style="margin-bottom:10px" id="${symbol}-new-rep" type="text" size="30" max_length="64" onclick="this.select()" oninput="fetchDisplayName('${symbol}', '-new-rep-display', this.value)" onkeyup="if (event.keyCode == 13) setRep('${symbol}')">
 		<br><strong>New representative: </strong><span id="${symbol}-new-rep-display"></span>	
 		<div style="text-align:center;">
 		<button style="margin-top:15px" onclick="setRep('${symbol}')">Set Representative</button>	
