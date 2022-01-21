@@ -18,8 +18,8 @@
 <body>
 	<div class="containerdiv">
 	<div id="firstDiv" class="firstDiv">
-	<div class="objectWrapper">
-		<div id="quote" style="margin-top:30px; white-space:pre-wrap; font-style:italic; font-size:0.9em" ></div>
+	<div class="objectWrapper" style="margin-top:30px">
+		<div id="quote" style="white-space:pre-wrap; font-style:italic; font-size:0.9em" ></div>
 		<strong id="msg" style="padding:5px; z-index: 4; box-shadow: #ccc 2px 2px 2px; background-color: #fff;
 								  position: fixed; left: 0px; top: 0px; border-radius: 5px;
 								  pointer-events: none; opacity: 0.9;">Welcome.</strong>
@@ -30,7 +30,7 @@
 			<option value="XNO">Nano (XNO)</option>
 			<option value="BAN">Banano (BAN)</option>
 		</select>
-		<button style="position:absolute; right:15px; font-size:0.8em" onclick="mainClearWallet()">Clear Wallet</button>
+		<button style="position:absolute; right:0px; font-size:0.8em" onclick="mainClearWallet()">Clear Wallet</button>
 		</div>
 	</div>
 	</div>
@@ -211,49 +211,50 @@ getTransactions['BAN'] = function(start) {nanoDisplayTransactions('BAN', start);
 getTransactions['XNO'] = function(start) {nanoDisplayTransactions('XNO', start);};
 
 async function nanoDisplayTransactions(symbol, start) {
-	let history = await post(accountData[symbol].server, { action: 'account_history', head:start, account: accountData[symbol].address, count:10 });
-	if (history.history) {
-		if (history.previous) {
-			if (!D(symbol + '-' + history.history[history.history.length - 1].height)) {
-				D(symbol + '-loadMore').style.display = "";
-				D(symbol + '-loadMore').onclick = function() {getTransactions[symbol](history.previous);};
-			}
-		} else D(symbol + '-loadMore').style.display = "none";
-		for (let i = 0; i < history.history.length; i++) {
-			if (!D(symbol + '-' + history.history[i].height)) {
-				let li = make('li');
-				let sign = "+";
-				let color = "#097";				
-				if (history.history[i].type == "send") {
-					sign = "-";
-					color = "#C00";
+	post(accountData[symbol].server, { action: 'account_history', head:start, account: accountData[symbol].address, count:10 }).then(function(history) {
+		if (history && history.history) {
+			if (history.previous) {
+				if (!D(symbol + '-' + history.history[history.history.length - 1].height)) {
+					D(symbol + '-loadMore').style.display = "";
+					D(symbol + '-loadMore').onclick = function() {getTransactions[symbol](history.previous);};
 				}
-				
-				let displayNameSpan = make('span');
-				displayNameSpan.id = `${symbol}-${history.history[i].height}-display`;
-				displayNameSpan.textContent = "Unknown";
-				
-				li.innerHTML = "<div style='display:flex; justify-content:space-between'><strong></strong>"
-				+ "<strong style='text-align:right; color:" + color + "'></strong></div>"
-				+ "<div style='display:flex; justify-content:space-between'><span style='cursor:pointer; font-size:0.8em; width:calc(100% - 180px); overflow:hidden; text-overflow:ellipsis; margin-top:4px' onclick='clickCopy(this, this.textContent)'></span>"
-				+ "<span style='text-align:right;'></span></div>";
-				
-				li.firstChild.firstChild.textContent = history.history[i].height + ": ";
-				li.firstChild.firstChild.appendChild(displayNameSpan);
-				li.firstChild.firstChild.nextSibling.textContent = sign + unitFromRaw[symbol](history.history[i].amount) + " " + symbol;
-				
-				li.firstChild.nextSibling.firstChild.textContent = history.history[i].account;
-				li.firstChild.nextSibling.firstChild.id = symbol + '-' + history.history[i].height;
-				li.firstChild.nextSibling.firstChild.nextSibling.textContent = convertTimestamp(history.history[i].local_timestamp);
-				
-				li.style.marginBottom = "10px";
-				li.title = history.history[i].height;			
-				addOrdered(li, D(symbol + '-transactions'));
-				fetchDisplayName(symbol, "-" + history.history[i].height + "-display", history.history[i].account);
-				flash(li);
+			} else D(symbol + '-loadMore').style.display = "none";
+			for (let i = 0; i < history.history.length; i++) {
+				if (!D(symbol + '-' + history.history[i].height)) {
+					let li = make('li');
+					let sign = "+";
+					let color = "#097";				
+					if (history.history[i].type == "send") {
+						sign = "-";
+						color = "#C00";
+					}
+					
+					let displayNameSpan = make('span');
+					displayNameSpan.id = `${symbol}-${history.history[i].height}-display`;
+					displayNameSpan.textContent = "Unknown";
+					
+					li.innerHTML = "<div style='display:flex; justify-content:space-between'><strong></strong>"
+					+ "<strong style='text-align:right; color:" + color + "'></strong></div>"
+					+ "<div style='display:flex; justify-content:space-between'><span style='cursor:pointer; font-size:0.8em; width:calc(100% - 180px); overflow:hidden; text-overflow:ellipsis; margin-top:4px' onclick='clickCopy(this, this.textContent)'></span>"
+					+ "<span style='text-align:right;'></span></div>";
+					
+					li.firstChild.firstChild.textContent = history.history[i].height + ": ";
+					li.firstChild.firstChild.appendChild(displayNameSpan);
+					li.firstChild.firstChild.nextSibling.textContent = sign + unitFromRaw[symbol](history.history[i].amount) + " " + symbol;
+					
+					li.firstChild.nextSibling.firstChild.textContent = history.history[i].account;
+					li.firstChild.nextSibling.firstChild.id = symbol + '-' + history.history[i].height;
+					li.firstChild.nextSibling.firstChild.nextSibling.textContent = convertTimestamp(history.history[i].local_timestamp);
+					
+					li.style.marginBottom = "10px";
+					li.title = history.history[i].height;			
+					addOrdered(li, D(symbol + '-transactions'));
+					fetchDisplayName(symbol, "-" + history.history[i].height + "-display", history.history[i].account);
+					flash(li);
+				}
 			}
 		}
-	}
+	});
 }
 
 //////////////////////////////////////////////////////// transaction helper functions
@@ -267,12 +268,12 @@ receive['BAN'] = function(hash) { return enqueue('BAN', function() {return nanoR
 receive['XNO'] = function(hash) { return enqueue('XNO', function() {return nanoReceive('XNO', hash);}); };
 
 let sendTo = {};
-sendTo['BAN'] = async function(destination, amt) { return enqueue('BAN', function() {return nanoSend('BAN', destination, amt);}); };
-sendTo['XNO'] = async function(destination, amt) { return enqueue('XNO', function() {return nanoSend('XNO', destination, amt);}); };
+sendTo['BAN'] = function(destination, amt) { return enqueue('BAN', function() {return nanoSend('BAN', destination, amt);}); };
+sendTo['XNO'] = function(destination, amt) { return enqueue('XNO', function() {return nanoSend('XNO', destination, amt);}); };
 
 let changeRep = {};
-changeRep['BAN'] = async function(newrep) { return enqueue('BAN', function() {return nanoChange('BAN', newrep);}); };
-changeRep['XNO'] = async function(newrep) { return enqueue('XNO', function() {return nanoChange('XNO', newrep);}); };
+changeRep['BAN'] = function(newrep) { return enqueue('BAN', function() {return nanoChange('BAN', newrep);}); };
+changeRep['XNO'] = function(newrep) { return enqueue('XNO', function() {return nanoChange('XNO', newrep);}); };
 
 
 async function nanoReceive(symbol, hash) {
@@ -435,7 +436,12 @@ function setupWebsocket() {
 
 	ws.customEvents = {};
 	ws.on = function(cueName, eventAction) { ws.customEvents[cueName] = eventAction; };
-	ws.emit = function(cueName, payload) { ws.send(JSON.stringify({cueName:cueName, payload:payload})); };
+	ws.emit = function(cueName, payload) { 
+		if (ws.readyState == 1) {
+			ws.send(JSON.stringify({cueName:cueName, payload:payload})); 
+			return true;
+		} else return false;
+	};
 	ws.onmessage = function(event) {
 		let data;
 		try { 
@@ -465,11 +471,11 @@ function setupWebsocket() {
 		nameCache[data.address] = data.display;
 	});
 	
-	ws.on('setNameFailedCue', async function(data) {	
+	ws.on('setNameFailedCue', function(data) {	
 		showMsg("Initialize account by receiving funds.");
 	});	
 	
-	ws.on('getNameReplyCue', async function(data) {
+	ws.on('getNameReplyCue', function(data) {
 		nameCache[data.address] = data.display;
 		displayName(data.currency, data.div, data.address, data.display);
 	});
@@ -478,9 +484,13 @@ function setupWebsocket() {
 //////////////////////////////////////////////////////// Interface with helper functions, and websocket
 
 function setName(symbol) {
-	showMsg("Setting display name...");
-	changeNameFlag = true;
-	ws.emit("setNameCue", {display:D(symbol + "-set-display").value, address: accountData[symbol].address, currency: symbol});
+	if (D(symbol + "-set-display").value.length > 64) showMsg("64 characters or fewer.");
+	else {
+		if (ws.emit("setNameCue", {display:D(symbol + "-set-display").value, address: accountData[symbol].address, currency: symbol})) {
+			showMsg("Setting display name...");
+			changeNameFlag = true;
+		} else showMsg("Unable to connect to directory.");
+	}
 }
 
 function fetchDisplayName(symbol, divString, address) {
@@ -520,20 +530,22 @@ async function importWallet(symbol) {
 		clearWallet(symbol);
 		
 		unpackSeed[symbol]();
-		flash(D(`${symbol}-address`), accountData[symbol].address);	
-		fetchDisplayName(symbol, "-display", accountData[symbol].address);
+		flash(D(`${symbol}-address`), accountData[symbol].address);			
+		addressQR(symbol);		
 		
-		let accountInfo = await post(accountData[symbol].server, {action: 'account_info', representative: true, account: accountData[symbol].address});
-		if (accountInfo.representative) {
-			flash(D(`${symbol}-rep`), accountInfo.representative);	
-			fetchDisplayName(symbol, "-rep-display", accountInfo.representative);
-			flash(D(`${symbol}-balance`), unitFromRaw[symbol](accountInfo.balance));
-		}
-		showMsg(`${symbol} account loaded.`);
-		D(symbol + "-gray").style.filter = "opacity(1)";
-		D(symbol + "-gray2").style.filter = "opacity(1)";
+		fetchDisplayName(symbol, "-display", accountData[symbol].address);
 		refreshBalance(symbol);
-		addressQR(symbol);
+		
+		post(accountData[symbol].server, {action: 'account_info', representative: true, account: accountData[symbol].address}).then(function(accountInfo) {
+			if (accountInfo && accountInfo.representative) {
+				flash(D(`${symbol}-rep`), accountInfo.representative);	
+				fetchDisplayName(symbol, "-rep-display", accountInfo.representative);
+				flash(D(`${symbol}-balance`), unitFromRaw[symbol](accountInfo.balance));
+				showMsg(`${symbol} account loaded.`);
+			}
+			D(symbol + "-gray").style.filter = "opacity(1)";
+			D(symbol + "-gray2").style.filter = "opacity(1)";
+		});
 	}
 }
 
@@ -576,11 +588,13 @@ function clearWallet(symbol) {
 	D(symbol + "-gray2").style.filter = "opacity(0.5)";
 }
 
-async function refreshBalance(symbol) {
+function refreshBalance(symbol) {
 	if (accountData[symbol].address) {
 		getAccountBalance[symbol]().then(function(balance) {
-			flash(D(`${symbol}-balance`), unitFromRaw[symbol](balance.balance));
-			flash(D(`${symbol}-balance-pending`), unitFromRaw[symbol](balance.pending));
+			if (balance) {
+				flash(D(`${symbol}-balance`), unitFromRaw[symbol](balance.balance));
+				flash(D(`${symbol}-balance-pending`), unitFromRaw[symbol](balance.pending));
+			}
 		});
 		getTransactions[symbol]();	
 	}
@@ -610,7 +624,7 @@ async function withdraw(symbol) {
 }
 
 async function setRep(symbol) {
-	if (!checkAddress[symbol](D(`${symbol}-rep`).textContent)) showMsg("No representative.");
+	if (!checkAddress[symbol](D(`${symbol}-rep`).textContent)) showMsg("No representative to change.");
 	else if (!checkAddress[symbol](D(`${symbol}-new-rep`).value)) showMsg("Invalid address.");
 	else {
 		await changeRep[symbol](D(`${symbol}-new-rep`).value);
@@ -724,21 +738,20 @@ function post(url, params) {
         let xhttp = new XMLHttpRequest();
         xhttp.timeout = 10*1000; // 10 seconds
         xhttp.onreadystatechange = function() {
-            if (this.readyState == 4 && this.status == 200) {
-                try {
-                    resolve(JSON.parse(this.responseText));
-                    return;
-                } catch(e) {
-                    console.error('Failed to parse response from node');
-                    console.error(this.responseText);
-                    reject(e);
-                    return;
-                }
-            } else if (this.readyState == 4 && this.status != 200) {
-                console.error('Failed to connect to '+ url);
-                reject();
-                return;
-            }
+			if (this.readyState == 4) {
+				if (this.status == 200) {
+					try { resolve(JSON.parse(this.responseText)); } 
+					catch(e) {
+						console.error('Failed to parse response from node');
+						console.error(this.responseText);
+						resolve();
+					}
+				} else {
+					console.error('Failed to connect to '+ url);
+					showMsg('Unable to connect to network.');
+					resolve();
+				}
+			}
         };
         xhttp.open("POST", url, true);
         xhttp.setRequestHeader("Content-Type", "application/json");
@@ -753,6 +766,18 @@ function addressQR(symbol) {
 		qrCode[symbol].makeCode(accountData[symbol].address);
 	}
 }
+
+
+function donate(symbol) {
+	D(symbol + "-dest").scrollIntoView({block:"center", behavior:"smooth"});
+	setTimeout(function() {
+	if (symbol == "BAN") D(symbol + "-dest").value = 'ban_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7';
+	if (symbol == "XNO") D(symbol + "-dest").value = 'nano_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7';
+	flash(D(symbol + "-dest"));
+	fetchDisplayName(symbol, '-dest-display', D(symbol + "-dest").value);
+	}, 700);
+}
+
 
 function D(string) { return document.getElementById(string); }	
 	
@@ -790,19 +815,18 @@ function generateHTML(symbol) {
 		<br><input id="import-${symbol}-seed" style="max-width:calc(100% - 160px)" type="password" size="20" max="64" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')"> &nbsp;	
 		<button style="margin-top:10px; margin-bottom:10px; font-size:0.8em" onclick="toggleVisibility(this, '${symbol}')">Show</button>
 		<button style="margin-top:10px; margin-bottom:10px; font-size:0.8em" onclick="generateWallet('${symbol}')">Generate New</button>	
-		<br><strong>Account index (any non-negative integer): </strong>
+		<br><strong>Account index (any integer 0 or higher): </strong>
 		<br><input id="import-${symbol}-number" type="text" size="20" max="64" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')" value="0">		
 		<br>
 		<div style="text-align:center;">
 		<button style="margin-top:15px;" onclick="importWallet('${symbol}')">Load Account</button>
 		</div>
 	</div>
-
-	<div id="${symbol}-gray" style="filter:opacity(0.5)">
+	<div id="${symbol}-gray" style="margin-top:20px;filter:opacity(0.5)">
 	<div class="objectWrapper">
-		<div>
+		<div style="position:relative">
 		<strong style="font-size:1.1em"><span id="${symbol}-display">My Account (Unknown)</span></strong>
-		<button id="${symbol}-editbutton" style="position:absolute; right:15px; font-size:0.8em" onclick="toggleEdit('${symbol}')">Edit</button>
+		<button id="${symbol}-editbutton" style="position:absolute; right:0px; font-size:0.8em" onclick="toggleEdit('${symbol}')">Edit</button>
 		</div>
 		
 		<div id="${symbol}-editpanel" style="display:none; margin-left:20px; margin-top:10px; margin-bottom:20px">
@@ -811,13 +835,13 @@ function generateHTML(symbol) {
 		<button style="font-size:0.8em" onclick="setName('${symbol}')">Set</button>
 		</div>
 		
-		<div style="margin-top:10px">
+		<div style="position:relative; margin-top:10px">
 			<strong>Balance:</strong> <span id="${symbol}-balance">0.00</span> ${symbol}
-			<button style="position:absolute; right:15px; font-size:0.8em" onclick="refreshBalance('${symbol}')">Refresh</button>
+			<button style="position:absolute; right:0px; font-size:0.8em" onclick="refreshBalance('${symbol}')">Refresh</button>
 		</div>
-		<div style="margin-top:10px">
+		<div style="position:relative; margin-top:10px">
 		<strong>Arriving balance:</strong> <span id="${symbol}-balance-pending">0.00</span> ${symbol}
-		<button style="position:absolute; right:15px; font-size:0.8em" onclick="cyclePending('${symbol}')">Receive</button>
+		<button style="position:absolute; right:0px; font-size:0.8em" onclick="cyclePending('${symbol}')">Receive</button>
 		</div>
 		<br><strong>My address (public, share freely):</strong>
 		<div style="overflow:hidden; text-overflow:ellipsis; cursor:pointer; font-size:0.8em" id="${symbol}-address" onclick="clickCopy(this, this.textContent)">&nbsp;</div>
@@ -834,7 +858,7 @@ function generateHTML(symbol) {
 		</div>
 	</div>
 		
-	<div class="objectWrapper">
+	<div class="objectWrapper" style='margin-top:20px'>
 		<strong>Representative: </strong><span id="${symbol}-rep-display"></span>
 		<div style="margin-bottom:10px; overflow:hidden; text-overflow:ellipsis; cursor:pointer; font-size:0.8em" id="${symbol}-rep" onclick="clickCopy(this, this.textContent)">&nbsp;</div>	
 		<strong>New representative address:</strong>
@@ -845,13 +869,18 @@ function generateHTML(symbol) {
 		</div>
 	</div>
 		
-	<div class="objectWrapper" style="margin-bottom:50px;">
-		<strong>QR codify (for device-device transfer):</strong>
-		<div style="margin-top:10px; margin-bottom:10px">
+	<div class="objectWrapper" style="margin-bottom50px;">
+		<strong>QR codify (for device-device copying):</strong>
+		<div style="position:relative; margin-top:10px; margin-bottom:10px">
 			<input style="margin-bottom:10px; max-width: calc(100% - 100px)" id="${symbol}-qr-input" type="text" size="30" max_length="64" onclick="this.select()" oninput="if (this.value) qrCode['${symbol}'].makeCode(this.value); else qrCode['${symbol}'].makeCode('')">
-			<button style="position:absolute; right:15px; font-size:0.8em" onclick="addressQR('${symbol}')">My Address</button>
+			<button style="position:absolute; right:0px; font-size:0.8em" onclick="addressQR('${symbol}')">My Address</button>
 		</div>		
 		<div style="display:flex; justify-content:center" id="${symbol}-qrCodeImageBlock"></div>
+	</div>
+	
+		
+	<div style="text-align:center; margin-bottom:30px;">
+	<button style="margin-top:15px; font-size:0.8em" onclick="donate('${symbol}')">Donate!</button>	
 	</div>
 	</div>`;
 }
