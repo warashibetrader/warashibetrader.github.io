@@ -450,9 +450,9 @@ function setupWebsocket() {
 		try { 
 			data = JSON.parse(event.data); 
 			if (data && data.cueName && ws.customEvents[data.cueName]) ws.customEvents[data.cueName](data.payload);
-			else showMsg("Raw server message: " + event.data);
+			else showMsg("Server: " + event.data);
 		}
-		catch { showMsg("Raw server message: " + event.data); }	
+		catch { showMsg("Server: " + event.data); }	
 	};
 
 	// Custom commands	
@@ -570,10 +570,10 @@ function clearWallet(symbol) {
 	accountData[symbol].address = "";
 	
 	flash(D(`${symbol}-display`), "My Account (Unknown)");	
-	flash(D(`${symbol}-address`), "\xa0");	
+	flash(D(`${symbol}-address`), "");	
 	flash(D(`${symbol}-balance`), unitFromRaw[symbol](0));
 	flash(D(`${symbol}-balance-pending`), unitFromRaw[symbol](0));
-	flash(D(`${symbol}-rep`), "\xa0");	
+	flash(D(`${symbol}-rep`), "");	
 	D(`${symbol}-rep-display`).textContent = "";
 	
 	D(symbol + "-new-rep").value = "";	
@@ -834,16 +834,16 @@ function generateHTML(symbol) {
 		</div>
 		
 		<div id="${symbol}-editpanel" style="display:none; margin-left:20px; margin-top:10px; margin-bottom:20px">
-		<strong>Public display name:</strong>
-		<br><input id="${symbol}-set-display" style="max-width:calc(100% - 70px)" type="text" size="30" max_length="64">&nbsp;&nbsp;
-		<button style="font-size:0.8em" onclick="setName('${symbol}')">Set</button>
+			<strong>Public display name:</strong>
+			<br><input id="${symbol}-set-display" style="max-width:calc(100% - 70px)" type="text" size="30" max_length="64">&nbsp;&nbsp;
+			<button style="font-size:0.8em" onclick="setName('${symbol}')">Set</button>
 		</div>
 		
-		<div style="position:relative; margin-top:10px">
+		<div style="position:relative; margin-top:15px">
 			<strong>Balance:</strong> <span id="${symbol}-balance">0.00</span> ${symbol}
 			<button style="position:absolute; right:0px; font-size:0.8em" onclick="refreshBalance('${symbol}')">Refresh</button>
 		</div>
-		<div style="position:relative; margin-top:10px">
+		<div style="position:relative; margin-top:15px">
 		<strong>Arriving balance:</strong> <span id="${symbol}-balance-pending">0.00</span> ${symbol}
 		<button style="position:absolute; right:0px; font-size:0.8em" onclick="cyclePending('${symbol}')">Collect</button>
 		</div>
@@ -863,7 +863,7 @@ function generateHTML(symbol) {
 	</div>
 		
 	<div class="objectWrapper" style='margin-top:20px'>
-		<strong>Representative: </strong><span id="${symbol}-rep-display"></span>
+		<strong>Current representative: </strong><span id="${symbol}-rep-display"></span>
 		<div style="margin-bottom:10px; overflow:hidden; text-overflow:ellipsis; cursor:pointer; font-size:0.8em" id="${symbol}-rep" onclick="clickCopy(this, this.textContent)">&nbsp;</div>	
 		<strong>New representative address:</strong>
 		<br><input style="margin-bottom:10px" id="${symbol}-new-rep" type="text" size="30" max_length="64" onclick="this.select()" oninput="fetchDisplayName('${symbol}', '-new-rep-display', this.value)" onkeyup="if (event.keyCode == 13) setRep('${symbol}')">
