@@ -111,14 +111,12 @@ function setupWebsocket() {
 
 //////////////////////////////////////////////////////// Interface with helper functions, and websocket
 
-
 function setName(symbol) {
 	if (D(symbol + "-set-display").value.length > 64) showMsg("64 characters or fewer.");
-	else {
-		if (ws.emit("setNameCue", {display:D(symbol + "-set-display").value, address: accountData[symbol].address, currency: symbol})) showMsg("Setting display name...");
-		else showMsg("Unable to connect to directory.");
-	}
+	else if (ws.emit("setNameReplyCue", {display:D(symbol + "-set-display").value, address: accountData[symbol].address, currency: symbol})) 
+		showMsg("Setting display name...");
 }
+
 
 async function fetchDestAddress(symbol, elt) {
 	if (checkAddress[symbol](elt.value)) {
