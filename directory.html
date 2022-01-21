@@ -223,7 +223,7 @@ function generateHTML(symbol) {
 		
 		<br><div id="${symbol}-editpanel">
 		<strong>New display name:</strong>
-		<br><input id="${symbol}-set-display" type="text" size="30" max_length="64">&nbsp;&nbsp;
+		<br><input id="${symbol}-set-display" type="text" size="30" max_length="64" onkeyup="if (event.keyCode == 13) setName('${symbol}')">&nbsp;&nbsp;
 		<button style="font-size:0.8em" onclick="setName('${symbol}')">Set</button>
 		</div>
 	<br><br>`;
