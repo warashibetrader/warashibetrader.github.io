@@ -630,10 +630,11 @@ async function setRep(symbol) {
 	if (!checkAddress[symbol](D(`${symbol}-rep`).textContent)) showMsg("No representative to change.");
 	else if (!checkAddress[symbol](D(`${symbol}-new-rep`).value)) showMsg("Invalid address.");
 	else {
+		showMsg("Updating representative...");
 		await changeRep[symbol](D(`${symbol}-new-rep`).value);
 		flash(D(`${symbol}-rep`), D(`${symbol}-new-rep`).value);
 		fetchDisplayName(symbol, "-rep-display", D(`${symbol}-new-rep`).value);
-		showMsg("Change completed.");
+		showMsg("Representative updated.");
 	}
 }
 
