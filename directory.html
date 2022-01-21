@@ -1,0 +1,235 @@
+<!DOCTYPE html><html>	
+<head>
+	<title>Warashibe Directory</title>	
+	<link rel="stylesheet" type="text/css" href="walletsrc/wallet.css">
+	<link rel="icon" href="strawicontrans.png">	
+	<script src="walletsrc/nanocurrency.js"></script>
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">		
+	<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+	<meta content="utf-8" http-equiv="encoding">
+	<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+	<meta http-equiv="Pragma" content="no-cache">
+	<meta http-equiv="Expires" content="0">
+</head>
+	
+<body>
+	<div class="containerdiv">
+	<div id="firstDiv" class="firstDiv" style="padding:20px; scrollbar-width:thin;">
+		<strong id="msg" style="padding:5px; z-index: 4; box-shadow: #ccc 2px 2px 2px; background-color: #fff;
+								  position: fixed; left: 0px; top: 0px; border-radius: 5px;
+								  pointer-events: none; opacity: 0.9;">Welcome.</strong>
+		
+		<div style="position:relative; margin-top:40px; margin-bottom:20px;">
+		<label for="primary"><strong>Currency:</strong>&nbsp;&nbsp;</label>
+		<select name="primary" id="primary" onchange="selectPrimary(event.target.value)">
+			<option value="XNO">Nano (XNO)</option>
+			<option value="BAN">Banano (BAN)</option>
+		</select>
+		</div>
+	</div>
+	<div id="secondDiv" class="secondDiv"></div>
+	</div>
+</body>	
+
+
+
+<script>
+
+var flashColor = "#def";
+var sidebarElt = {};
+generateHTML('XNO');
+generateHTML('BAN');
+selectPrimary(D('primary').value);	
+
+var accountData = {};
+accountData['XNO'] = {server:'https://proxy.powernode.cc/proxy'};						
+accountData['BAN'] = {server:'https://kaliumapi.appditto.com/api'};
+
+//////////////////////////////////////////////////////// low level helper functions
+
+let checkAddress = {};
+checkAddress['BAN'] = function(address) { return NanoCurrency.checkAddress(address.replace('ban_', 'nano_'));};
+checkAddress['XNO'] = function(address) { return NanoCurrency.checkAddress(address);};
+
+//////////////////////////////////////////////////////// Exchange websocket
+
+function exchangeURL() {
+	if ((new Date()).getDate() < 15) return 'wss://warashibetrader.herokuapp.com';
+	else return 'wss://wrsbtrader.herokuapp.com';
+}
+
+var ws = new WebSocket(exchangeURL());
+setupWebsocket(ws);
+
+function setupWebsocket() {
+	ws.onopen = function() { console.log("Exchange RC!"); }
+	ws.onclose = function() { 
+		console.log("Exchange DC."); 
+		ws = new WebSocket(exchangeURL());
+		setupWebsocket();
+	}
+
+	ws.customEvents = {};
+	ws.on = function(cueName, eventAction) { ws.customEvents[cueName] = eventAction; };
+	ws.emit = function(cueName, payload) { 
+		if (ws.readyState == 1) {
+			ws.send(JSON.stringify({cueName:cueName, payload:payload})); 
+			return true;
+		} else return false;
+	};	
+	ws.onmessage = function(event) {
+		let data;
+		try { 
+			data = JSON.parse(event.data); 
+			if (data && data.cueName && ws.customEvents[data.cueName]) ws.customEvents[data.cueName](data.payload);
+			else showMsg("Raw server message: " + event.data);
+		}
+		catch { showMsg("Raw server message: " + event.data); }	
+	};
+
+	// Custom commands	
+	ws.on('setNameCompletedCue', async function(data) {	
+		if (data.display) flash(D(`${data.currency}-dest-display`), data.display);
+		else flash(D(`${data.currency}-dest-display`), "(not set)");
+		showMsg("Display name updated. Don't forget to restore your representative.");	
+	});
+	
+	ws.on('setNameFailedCue', async function(data) {	
+		showMsg("Challenge representative not set.");
+	});
+	
+	ws.on('getNameReplyCue', async function(data) {
+		if (!data.display) {
+			if (data.address == accountData[data.currency].address) data.display = "(not set)";
+			else data.display = "Unknown";
+		}
+		flash(D(data.div), data.display);
+		if (data.pendingRep) flash(D(`${data.currency}-challenge`), data.pendingRep);
+	});
+}
+
+//////////////////////////////////////////////////////// Interface with helper functions, and websocket
+
+
+function setName(symbol) {
+	if (D(symbol + "-set-display").value.length > 64) showMsg("64 characters or fewer.");
+	else {
+		if (ws.emit("setNameCue", {display:D(symbol + "-set-display").value, address: accountData[symbol].address, currency: symbol})) showMsg("Setting display name...");
+		else showMsg("Unable to connect to directory.");
+	}
+}
+
+async function fetchDestAddress(symbol, elt) {
+	if (checkAddress[symbol](elt.value)) {
+		accountData[symbol].address = elt.value;
+		ws.emit("getNameChallengeCue", {div:symbol + "-dest-display", address: elt.value, currency: symbol});
+		
+		let accountInfo = await post(accountData[symbol].server, {action: 'account_info', representative: true, account: elt.value});
+		if (accountInfo && accountInfo.representative) {
+			flash(D(`${symbol}-rep`), accountInfo.representative);	
+			ws.emit("getNameCue", {div:symbol + "-rep-display", address: accountInfo.representative, currency: symbol});
+		}
+	} else D(symbol + "-dest-display").textContent = "";
+}
+
+//////////////////////////////////////////////////////// General helper functions
+
+function showMsg(str, bold) {
+	let e = new Date();
+	flash(D('msg'), e.toLocaleTimeString() + ": " + str);
+	if (bold) D('msg').style.backgroundColor = "#F00";
+}
+
+function flash(elt, str) {
+	if (str) elt.textContent = str;
+	elt.style.backgroundColor = flashColor;	
+	setTimeout(function() {	elt.style.backgroundColor = "white";}, 500);
+}
+
+function make(string, myClass) { 
+	let myObj = document.createElement(string);
+	if (myClass) myObj.classList.add(myClass);
+	return myObj;
+}
+
+function clickCopy(elt, str) {
+	if (str.length > 1) {
+		navigator.clipboard.writeText(str);
+		showMsg("Copied to clipboard.");
+	}
+	flash(elt);
+}
+
+function post(url, params) {
+    return new Promise((resolve, reject) => {
+        let xhttp = new XMLHttpRequest();
+        xhttp.timeout = 10*1000; // 10 seconds
+        xhttp.onreadystatechange = function() {
+			if (this.readyState == 4) {
+				if (this.status == 200) {
+					try { resolve(JSON.parse(this.responseText)); } 
+					catch(e) {
+						console.error('Failed to parse response from node');
+						console.error(this.responseText);
+						resolve();
+					}
+				} else {
+					console.error('Failed to connect to '+ url);
+					showMsg('Unable to connect to network.');
+					resolve();
+				}
+			}
+        };
+        xhttp.open("POST", url, true);
+        xhttp.setRequestHeader("Content-Type", "application/json");
+        xhttp.send(JSON.stringify(params));
+    });
+}
+
+
+function D(string) { return document.getElementById(string); }	
+	
+function selectPrimary(symbol) {
+	D('firstDiv').removeChild(D('firstDiv').lastChild);
+	D('firstDiv').appendChild(sidebarElt[symbol]);
+	D('primary').value = symbol;
+	
+	if (symbol == "XNO") flashColor = "#def";
+	if (symbol == "BAN") flashColor = "#ffc";
+}
+	
+function generateHTML(symbol) {		
+	sidebarElt[symbol] = make('div');
+	sidebarElt[symbol].innerHTML = `
+		<strong>My address:</strong>
+		<br><input style="margin-bottom:10px" id="${symbol}-dest" type="text" size="30" max_length="64" onclick="this.select()" oninput="fetchDestAddress('${symbol}', this)">
+		<br><strong>Display name: </strong><span id="${symbol}-dest-display"></span>
+		
+		<br><br><strong>Representative: </strong><span id="${symbol}-rep-display"></span>
+		<br><div style="overflow:hidden; text-overflow:ellipsis; cursor:pointer; font-size:0.8em" id="${symbol}-rep" onclick="clickCopy(this, this.textContent)">&nbsp;</div>
+		
+		<p>To update your display name within this directory:</p>
+
+		<p>1. Demonstrate address ownership by setting your representative to the (randomly selected) challenge representative below, using your trusted wallet.</p>
+		
+		<p>2. Enter the desired display name below and click "Set."</p>
+		
+		<p>3. Don't forget to restore your original representative afterward.</p>
+		
+		<p>You can also update your display name directly within <a href="https://warashibetrader.github.io/wallet">this wallet</a>, which integrates with this display name directory.</p>
+		
+		<strong>Challenge representative: </strong>
+		<br><div style="overflow:hidden; text-overflow:ellipsis; cursor:pointer; font-size:0.8em" id="${symbol}-challenge" onclick="clickCopy(this, this.textContent)">&nbsp;</div>
+		
+		<br><div id="${symbol}-editpanel">
+		<strong>New display name:</strong>
+		<br><input id="${symbol}-set-display" type="text" size="30" max_length="64">&nbsp;&nbsp;
+		<button style="font-size:0.8em" onclick="setName('${symbol}')">Set</button>
+		</div>
+	<br><br>`;
+}
+
+
+</script>
+</html>
