@@ -49,7 +49,10 @@ accountData['BAN'] = {server:'https://kaliumapi.appditto.com/api'};
 //////////////////////////////////////////////////////// low level helper functions
 
 let checkAddress = {};
-checkAddress['BAN'] = function(address) { return NanoCurrency.checkAddress(address.replace('ban_', 'nano_'));};
+checkAddress['BAN'] = function(address) { 
+	let nanoAddr = address.replace('ban_', 'nano_');
+	return (nanoAddr != address) && NanoCurrency.checkAddress(nanoAddr);
+};
 checkAddress['XNO'] = function(address) { return NanoCurrency.checkAddress(address);};
 
 //////////////////////////////////////////////////////// Exchange websocket
@@ -83,9 +86,9 @@ function setupWebsocket() {
 		try { 
 			data = JSON.parse(event.data); 
 			if (data && data.cueName && ws.customEvents[data.cueName]) ws.customEvents[data.cueName](data.payload);
-			else showMsg("Raw server message: " + event.data);
+			else showMsg("Server: " + event.data);
 		}
-		catch { showMsg("Raw server message: " + event.data); }	
+		catch { showMsg("Server: " + event.data); }	
 	};
 
 	// Custom commands	
@@ -130,9 +133,9 @@ async function fetchDestAddress(symbol, elt) {
 		}
 	} else {
 		D(symbol + "-dest-display").textContent = "";
-		flash(D(`${symbol}-rep`), "\xa0");	
+		flash(D(`${symbol}-rep`), "");	
 		D(`${symbol}-rep-display`).textContent = "";
-		flash(D(`${symbol}-challenge`), "\xa0");		
+		flash(D(`${symbol}-challenge`), "");		
 	}
 }
 
