@@ -541,8 +541,8 @@ async function importWallet(symbol) {
 				flash(D(`${symbol}-rep`), accountInfo.representative);	
 				fetchDisplayName(symbol, "-rep-display", accountInfo.representative);
 				flash(D(`${symbol}-balance`), unitFromRaw[symbol](accountInfo.balance));
-				showMsg(`${symbol} account loaded.`);
 			}
+			if (accountInfo) showMsg(`${symbol} account loaded.`);
 			D(symbol + "-gray").style.filter = "opacity(1)";
 			D(symbol + "-gray2").style.filter = "opacity(1)";
 		});
