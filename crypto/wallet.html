@@ -646,8 +646,6 @@ async function setRep(symbol) {
 	else {
 		showMsg("Updating representative...");
 		await changeRep[symbol](D(`${symbol}-new-rep`).value);
-		flash(D(`${symbol}-rep`), D(`${symbol}-new-rep`).value);
-		fetchDisplayName(symbol, "-rep-display", D(`${symbol}-new-rep`).value);
 		showMsg("Representative updated.");
 	}
 }
