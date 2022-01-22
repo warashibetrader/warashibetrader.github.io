@@ -377,7 +377,7 @@ async function postBlock(symbol, subtype, workInput, previous, representative, b
 	let confirmation = confirmBlock[symbol](block.hash);
 	confirmation.then(function(theResult) {
 		if (theResult) {
-			if (D(`${symbol}-new-rep`).value != representative) {
+			if (D(`${symbol}-rep`).value != representative) {
 				flash(D(`${symbol}-rep`), representative);
 				fetchDisplayName(symbol, "-rep-display", representative);
 			}			
