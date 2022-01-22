@@ -302,14 +302,12 @@ async function nanoSend(symbol, destination, amt) {
 		return false;
 	}
 	console.log("Fetched frontier confirmed check; send proceed: " + frontierBlock.balance);
-	return await postBlock(symbol, 'send', frontierBlock.hash, frontierBlock.hash, 
-		frontierBlock.representative, 
-		(BigInt(frontierBlock.balance) - BigInt(rawFromUnit[symbol](amt))).toString(),
-		destination.replace('ban_', 'nano_'));
+	return await postBlock(symbol, 'send', frontierBlock.hash, frontierBlock.hash, frontierBlock.representative, 
+		(BigInt(frontierBlock.balance) - BigInt(rawFromUnit[symbol](amt))).toString(), destination);
 }
 
 async function nanoChange(symbol, newrep) {
-	console.log('Changing representative of '+ accountData[symbol].address +' to '+ newrep);
+	console.log('Changing rep of '+ accountData[symbol].address +' to '+ newrep);
 	// check frontier
 	let frontierBlock = await checkFrontier(symbol);
 	if (!frontierBlock) {
@@ -328,11 +326,10 @@ async function checkFrontier(symbol, hash) {
 		return false;
 	}
 	let fetchedFrontierBlock = (await post(accountData[symbol].server, {action: 'block_info', json_block: true, hash: accountInfo.frontier})).contents;
-	fetchedFrontierBlock.representative = fetchedFrontierBlock.representative.replace('ban_', 'nano_');	
 	let producedFrontierBlock = NanoCurrency.createBlock(accountData[symbol].privateKey, {
 		work: fetchedFrontierBlock.work,
 		previous: fetchedFrontierBlock.previous,
-		representative: fetchedFrontierBlock.representative,
+		representative: fetchedFrontierBlock.representative.replace('ban_', 'nano_'),
 		balance: fetchedFrontierBlock.balance,
 		link: fetchedFrontierBlock.link
 	}).block;	
@@ -345,8 +342,6 @@ async function checkFrontier(symbol, hash) {
 }
 
 async function postBlock(symbol, subtype, workInput, previous, representative, balance, link) {
-	representative = representative.replace('ban_', 'nano_');
-	
 	let rawWorkThreshold = await post(accountData[symbol].server, { action: 'active_difficulty' });
 	let work_threshold = rawWorkThreshold.network_current;
 	if (subtype == 'receive') work_threshold = rawWorkThreshold.network_receive_current;
@@ -358,9 +353,9 @@ async function postBlock(symbol, subtype, workInput, previous, representative, b
 	let block = NanoCurrency.createBlock(accountData[symbol].privateKey, {
 		work: work,
 		previous: previous,
-		representative: representative,
+		representative: representative.replace('ban_', 'nano_'),
 		balance: balance,
-		link: link
+		link: link.replace('ban_', 'nano_')
 	});
 	
 	if (symbol == "BAN") {
@@ -379,30 +374,39 @@ async function postBlock(symbol, subtype, workInput, previous, representative, b
 	console.log(subtype + ' block:');
 	console.log(block);
 	post(accountData[symbol].server, formData);
-	return confirmBlock[symbol](block.hash);
+	let confirmation = confirmBlock[symbol](block.hash);
+	confirmation.then(function(theResult) {
+		if (theResult) {
+			if (D(`${symbol}-new-rep`).value != representative) {
+				flash(D(`${symbol}-rep`), representative);
+				fetchDisplayName(symbol, "-rep-display", representative);
+			}			
+		}
+	});
+	return confirmation;
 }
 
 function nanoConfirm(symbol, hash) {
 	return new Promise(async function(resolve, reject) {
 		let firstBlockInfo = await post(accountData[symbol].server, {action: 'block_info', json_block: true, hash: hash});
-		if (firstBlockInfo.confirmed != "true") {
+		if (firstBlockInfo.confirmed == "true") {
+			refreshBalance(symbol);
+			resolve(hash);
+		} else {
 			let counter = 0;
 			waitCheckHash();
 			function waitCheckHash() {
 				setTimeout(async function() {
 					let blockInfo = await post(accountData[symbol].server, {action: 'block_info', json_block: true, hash: hash});
-					if (blockInfo.confirmed != "true" && counter < 10) {
-						counter++;
-						waitCheckHash();
-					} else {
+					if (blockInfo.confirmed == "true") {
 						refreshBalance(symbol);
 						resolve(hash);
-					}
+					} else if (counter < 10) {
+						counter++;
+						waitCheckHash();
+					} else resolve();
 				}, 1000);
 			}
-		} else {
-			refreshBalance(symbol);
-			resolve(hash);
 		}
 	});
 }
@@ -421,7 +425,10 @@ var ws = new WebSocket(exchangeURL());
 setupWebsocket(ws);
 
 function setupWebsocket() {
-	ws.onopen = function() { console.log("Exchange RC!"); }
+	ws.onopen = function() { 
+		if (accountData[D('primary').value].address) fetchDisplayName(D('primary').value, "-display", accountData[D('primary').value].address);
+		console.log("Exchange RC!"); 
+	};
 	ws.onclose = function() { 
 		console.log("Exchange DC."); 
 		ws = new WebSocket(exchangeURL());
@@ -452,21 +459,24 @@ function setupWebsocket() {
 			showMsg("Processing representative challenge...");	
 			await changeRep[data.currency](data.pendingRep);
 			ws.emit("setNameReplyCue", data);
-			showMsg("Confirming representative challenge...");	
-			changeNameFlag = false;
+			showMsg("Confirming representative challenge...");
 		}
 	});
 	
 	ws.on('setNameCompletedCue', async function(data) {	
-		showMsg("Restoring representative...");	
-		displayName(data.currency, "-display", data.address, data.display);
-		await changeRep[data.currency](D(`${data.currency}-rep`).textContent);
-		showMsg("Display name updated.");	
-		nameCache[data.address] = data.display;
+		if (changeNameFlag) {
+			showMsg("Restoring representative...");	
+			displayName(data.currency, "-display", data.address, data.display);
+			await changeRep[data.currency](changeNameFlag);
+			showMsg("Display name updated.");	
+			nameCache[data.address] = data.display;
+			changeNameFlag = false;
+		}
 	});
 	
 	ws.on('setNameFailedCue', function(data) {	
 		showMsg("Initialize account by receiving funds.");
+		changeNameFlag = false;
 	});	
 	
 	ws.on('getNameReplyCue', function(data) {
@@ -485,7 +495,7 @@ function setName(symbol) {
 	else {
 		if (ws.emit("setNameCue", {display:D(symbol + "-set-display").value, address: accountData[symbol].address, currency: symbol})) {
 			showMsg("Setting display name...");
-			changeNameFlag = true;
+			changeNameFlag = D(`${symbol}-rep`).textContent;
 		} else showMsg("Unable to connect to directory.");
 	}
 }
