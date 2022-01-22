@@ -57,7 +57,6 @@ input[type=text], input[type=password] {
 
 input[type=text]:focus, input[type=password]:focus {  
 	border-bottom: solid 2px;
-	padding-bottom: 4px;
 	outline: none;
 	text-overflow: ellipsis;
 	overflow: hidden;
