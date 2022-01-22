@@ -42,24 +42,28 @@
 <script>
 'use strict';
 
+var returnVisitor = true;
 if ('serviceWorker' in navigator) {
 	navigator.serviceWorker.register('service-worker.js').then((reg) => {
 		console.log('Service worker registered.', reg);
 
 		reg.addEventListener('updatefound', () => {
 			// An updated service worker has appeared in reg.installing!
-			showMsg("Update found. Deleting security quote...");
-			D('msg').style.backgroundColor = "#FFB6C1";	
 			
-			D('quote').textContent = "";
-			if (typeof(Storage) !== "undefined") localStorage.removeItem("quote"); 
-			
-			showMsg("Security quote deleted. Installing update...");
-			
-			let newWorker = reg.installing;
-			newWorker.addEventListener('statechange', () => {		
-				if (newWorker.state == 'activated') showMsg("Update installed. Security quote deleted.");
-			});
+			if (returnVisitor) {
+				showMsg("Update found. Deleting security quote...");
+				D('msg').style.backgroundColor = "#FFB6C1";	
+				
+				D('quote').textContent = "";
+				if (typeof(Storage) !== "undefined") localStorage.removeItem("quote"); 
+				
+				showMsg("Security quote deleted. Installing update...");
+				
+				let newWorker = reg.installing;
+				newWorker.addEventListener('statechange', () => {		
+					if (newWorker.state == 'activated') showMsg("Update installed. Security quote deleted.");
+				});
+			}
 		});
 	});
 }
@@ -67,7 +71,8 @@ if ('serviceWorker' in navigator) {
 if (typeof(Storage) !== "undefined") {
 	let quoteData = localStorage.getItem("quote");	
 	if (quoteData) quoteData = JSON.parse(quoteData);
-	else {			    
+	else {
+		returnVisitor = false;
 		function getRandomIntInclusive(min, max) {
 			const randomBuffer = new Uint32Array(1);
 			window.crypto.getRandomValues(randomBuffer);
