@@ -570,11 +570,13 @@ function clearWallet(symbol) {
 	accountData[symbol].address = "";
 	
 	flash(D(`${symbol}-display`), "My Account (Unknown)");	
-	flash(D(`${symbol}-address`), "");	
+	flash(D(`${symbol}-address`), "\xa0");	
 	flash(D(`${symbol}-balance`), unitFromRaw[symbol](0));
 	flash(D(`${symbol}-balance-pending`), unitFromRaw[symbol](0));
-	flash(D(`${symbol}-rep`), "");	
-	D(`${symbol}-rep-display`).textContent = "";
+	flash(D(`${symbol}-rep`), "\xa0");	
+	flash(D(`${symbol}-rep-display`), "\xa0");
+	flash(D(`${symbol}-new-rep-display`), "\xa0");
+	flash(D(`${symbol}-dest-display`), "\xa0");
 	
 	D(symbol + "-new-rep").value = "";	
 	D(symbol + "-dest").value = "";	
@@ -582,8 +584,6 @@ function clearWallet(symbol) {
 	qrCode[symbol].makeCode("");
 	
 	D(`${symbol}-withdrawal-amount`).value = "0.00";
-	D(symbol + "-new-rep-display").textContent = "";
-	D(symbol + "-dest-display").textContent = "";
 	
 	if (D(symbol + "-editpanel").style.display != "none") D(symbol + "-editbutton").click();
 	
@@ -652,7 +652,7 @@ function showMsg(str, bold) {
 }
 
 function flash(elt, str) {
-	if (str) elt.textContent = str;
+	if (str != undefined) elt.textContent = str;
 	elt.style.backgroundColor = flashColor;	
 	setTimeout(function() {	elt.style.backgroundColor = "white";}, 500);
 }
@@ -678,7 +678,6 @@ function toggleVisibility(caller, symbol) {
 		x.type = "password";		
 		caller.textContent = 'Show';
 	}
-	D(`import-${symbol}-seed`).focus();
 }
 
 function toggleEdit(symbol) {
@@ -816,11 +815,11 @@ function generateHTML(symbol) {
 	sidebarElt[symbol].innerHTML = `
 	<div class="objectWrapper">
 		<strong>${symbol} wallet seed (private, save securely):</strong>
-		<br><input id="import-${symbol}-seed" style="max-width:calc(100% - 160px)" type="password" size="20" max="64" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')"> &nbsp;	
+		<br><input id="import-${symbol}-seed" style="max-width:calc(100% - 170px)" type="password" size="20" maxlength="64" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')"> &nbsp;	
 		<button style="margin-top:10px; margin-bottom:10px; font-size:0.8em" onclick="toggleVisibility(this, '${symbol}')">Show</button>
 		<button style="margin-top:10px; margin-bottom:10px; font-size:0.8em" onclick="generateWallet('${symbol}')">Generate New</button>	
 		<br><strong>Account index (any integer 0 or higher): </strong>
-		<br><input id="import-${symbol}-number" type="text" size="20" max="64" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')" value="0">		
+		<br><input id="import-${symbol}-number" type="text" size="20" maxlength="64" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')" value="0">		
 		<br>
 		<div style="text-align:center;">
 		<button style="margin-top:15px;" onclick="importWallet('${symbol}')">Load Account</button>
@@ -835,7 +834,7 @@ function generateHTML(symbol) {
 		
 		<div id="${symbol}-editpanel" style="display:none; margin-left:20px; margin-top:10px; margin-bottom:20px">
 			<strong>Public display name:</strong>
-			<br><input id="${symbol}-set-display" style="max-width:calc(100% - 70px)" type="text" size="30" max_length="64">&nbsp;&nbsp;
+			<br><input id="${symbol}-set-display" style="max-width:calc(100% - 55px); width:80%" type="text" maxlength="64">&nbsp;&nbsp;
 			<button style="font-size:0.8em" onclick="setName('${symbol}')">Set</button>
 		</div>
 		
@@ -853,10 +852,10 @@ function generateHTML(symbol) {
 
 	<div class="objectWrapper">
 		<strong>Destination address:</strong>
-		<br><input style="margin-bottom:10px" id="${symbol}-dest" type="text" size="30" max_length="64" onclick="this.select()" oninput="fetchDisplayName('${symbol}', '-dest-display', this.value)">
+		<br><input style="margin-bottom:10px; width:80%" id="${symbol}-dest" type="text" maxlength="128" onclick="this.select()" oninput="fetchDisplayName('${symbol}', '-dest-display', this.value)">
 		<br><strong>Destination: </strong><span id="${symbol}-dest-display"></span>
 		<br><strong>Amount:</strong>
-		<input style="margin-top:10px" id="${symbol}-withdrawal-amount" type="number" step="0.01" min="0.0" size="8" max_length="8" value="0.00">&nbsp; ${symbol}
+		<input style="margin-top:10px" id="${symbol}-withdrawal-amount" type="number" step="0.01" min="0.0" size="8" value="0.00">&nbsp; ${symbol}
 		<div style="text-align:center;">
 		<button style="margin-top:15px" onclick="withdraw('${symbol}')">Send ${symbol}</button>
 		</div>
@@ -866,7 +865,7 @@ function generateHTML(symbol) {
 		<strong>Current representative: </strong><span id="${symbol}-rep-display"></span>
 		<div style="margin-bottom:10px; overflow:hidden; text-overflow:ellipsis; cursor:pointer; font-size:0.8em" id="${symbol}-rep" onclick="clickCopy(this, this.textContent)">&nbsp;</div>	
 		<strong>New representative address:</strong>
-		<br><input style="margin-bottom:10px" id="${symbol}-new-rep" type="text" size="30" max_length="64" onclick="this.select()" oninput="fetchDisplayName('${symbol}', '-new-rep-display', this.value)" onkeyup="if (event.keyCode == 13) setRep('${symbol}')">
+		<br><input style="margin-bottom:10px; width:80%" id="${symbol}-new-rep" type="text" maxlength="128" onclick="this.select()" oninput="fetchDisplayName('${symbol}', '-new-rep-display', this.value)" onkeyup="if (event.keyCode == 13) setRep('${symbol}')">
 		<br><strong>New representative: </strong><span id="${symbol}-new-rep-display"></span>	
 		<div style="text-align:center;">
 		<button style="margin-top:15px" onclick="setRep('${symbol}')">Set Representative</button>	
@@ -876,7 +875,7 @@ function generateHTML(symbol) {
 	<div class="objectWrapper" style="margin-bottom50px;">
 		<strong>QR codify (for device-device copying):</strong>
 		<div style="position:relative; margin-top:10px; margin-bottom:10px">
-			<input style="margin-bottom:10px; max-width: calc(100% - 100px)" id="${symbol}-qr-input" type="text" size="30" max_length="64" onclick="this.select()" oninput="if (this.value) qrCode['${symbol}'].makeCode(this.value); else qrCode['${symbol}'].makeCode('')">
+			<input style="margin-bottom:10px; max-width: calc(100% - 100px); width:80%" id="${symbol}-qr-input" type="text" maxlength="128" onclick="this.select()" oninput="if (this.value) qrCode['${symbol}'].makeCode(this.value); else qrCode['${symbol}'].makeCode('')">
 			<button style="position:absolute; right:0px; font-size:0.8em" onclick="addressQR('${symbol}')">My Address</button>
 		</div>		
 		<div style="display:flex; justify-content:center" id="${symbol}-qrCodeImageBlock"></div>
