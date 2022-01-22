@@ -24,13 +24,13 @@
 								  position: fixed; left: 0px; top: 0px; border-radius: 5px;
 								  pointer-events: none; opacity: 0.9;">Welcome.</strong>
 		
-		<div style="position:relative; margin-top:20px;">
-		<label for="primary"><strong>Currency:</strong>&nbsp;&nbsp;</label>
-		<select name="primary" id="primary" onchange="selectPrimary(event.target.value)">
-			<option value="XNO">Nano (XNO)</option>
-			<option value="BAN">Banano (BAN)</option>
-		</select>
-		<button style="position:absolute; right:0px; font-size:0.8em" onclick="mainClearWallet()">Clear Wallet</button>
+		<div style="margin-top:20px; display:flex; justify-content:space-between">
+			<div><label for="primary"><strong>Currency:</strong>&nbsp;&nbsp;</label>
+			<select name="primary" id="primary" onchange="selectPrimary(event.target.value)">
+				<option value="XNO">Nano (XNO)</option>
+				<option value="BAN">Banano (BAN)</option>
+			</select></div>
+			<button style="font-size:0.8em" onclick="mainClearWallet()">Clear Wallet</button>
 		</div>
 	</div>
 	</div>
@@ -39,11 +39,8 @@
 	</div>
 </body>	
 
-
-
 <script>
 'use strict';
-
 
 if ('serviceWorker' in navigator) {
 	navigator.serviceWorker.register('service-worker.js').then((reg) => {
@@ -57,25 +54,19 @@ if ('serviceWorker' in navigator) {
 			D('quote').textContent = "";
 			if (typeof(Storage) !== "undefined") localStorage.removeItem("quote"); 
 			
-			showMsg("Update found. Security quote deleted. Installing...");
+			showMsg("Security quote deleted. Installing update...");
 			
 			let newWorker = reg.installing;
 			newWorker.addEventListener('statechange', () => {		
-				if (newWorker.state == 'activated') {
-					showMsg("Update installed. Selecting new security quote...");
-					buildSecurityQuote();
-					showMsg("Update installed. Security quote reset.");
-				}
+				if (newWorker.state == 'activated') showMsg("Update installed. Security quote deleted.");
 			});
 		});
 	});
 }
-	
-function buildSecurityQuote() {
+
 if (typeof(Storage) !== "undefined") {
-	let quoteData;
-	
-	if (localStorage.getItem("quote")) quoteData = JSON.parse(localStorage.getItem("quote"));
+	let quoteData = localStorage.getItem("quote");	
+	if (quoteData) quoteData = JSON.parse(quoteData);
 	else {			    
 		function getRandomIntInclusive(min, max) {
 			const randomBuffer = new Uint32Array(1);
@@ -92,7 +83,7 @@ if (typeof(Storage) !== "undefined") {
 		if (!author) author = "Anonymous";
 		author = author.replace(/ /g, '\xa0');
 		
-		quoteData = {quote:quoteDatabase[index].text, author:author};		
+		quoteData = {quote:quoteDatabase[index].text, author:author};
 		localStorage.setItem("quote", JSON.stringify(quoteData));
 		
 		D('quote').appendChild(document.createTextNode("New code loaded." + "\x0a\x0a"));
@@ -107,9 +98,6 @@ if (typeof(Storage) !== "undefined") {
 	D('quote').appendChild(quoteSpan);
 	D('quote').appendChild(authorSpan);
 }
-}
-
-buildSecurityQuote();
 
 var flashColor = "#def";
 var changeNameFlag = false;
@@ -119,19 +107,15 @@ var qrCode = {};
 var transactionElt = {};
 generateHTML('XNO');
 generateHTML('BAN');
-selectPrimary(D('primary').value);	
 
 var accountData = {};
 accountData['XNO'] = {representative:'nano_1center16ci77qw5w69ww8sy4i4bfmgfhr81ydzpurm91cauj11jn6y3uc5y',
-						server:'https://proxy.powernode.cc/proxy'}; // 'wss://ws.mynano.ninja/';
-						
+						server:'https://proxy.powernode.cc/proxy'}; // 'wss://ws.mynano.ninja/';		
 accountData['BAN'] = {representative:'ban_1ka1ium4pfue3uxtntqsrib8mumxgazsjf58gidh1xeo5te3whsq8z476goo',
 						server:'https://kaliumapi.appditto.com/api'};
 						
 accountData['XNO'].queue = new Promise(function(resolve, reject) { resolve(true); });
 accountData['BAN'].queue = new Promise(function(resolve, reject) { resolve(true); });
-
-
 
 //////////////////////////////////////////////////////// low level helper functions
 
@@ -160,14 +144,16 @@ checkAddress['XNO'] = function(address) { return NanoCurrency.checkAddress(addre
 
 let unpackSeed = {};
 unpackSeed['BAN'] = function() {
-	accountData['BAN'].privateKey = NanoCurrency.deriveSecretKey(D('import-BAN-seed').value, parseInt(D('import-BAN-number').value));
+	accountData['BAN'].privateKey = NanoCurrency.deriveSecretKey(D('import-BAN-seed').value, parseInt(D('import-BAN-index').value));
 	accountData['BAN'].publicKey = NanoCurrency.derivePublicKey(accountData['BAN'].privateKey);
-	accountData['BAN'].address = NanoCurrency.deriveAddress(accountData['BAN'].publicKey).replace('xrb_', 'ban_');
+	accountData['BAN'].address = NanoCurrency.deriveAddress(accountData['BAN'].publicKey).replace('xrb_', 'ban_');	
+	accountData['BAN'].index = parseInt(D('import-BAN-index').value);
 };
 unpackSeed['XNO'] = function() {
-	accountData['XNO'].privateKey = NanoCurrency.deriveSecretKey(D('import-XNO-seed').value, parseInt(D('import-XNO-number').value));
+	accountData['XNO'].privateKey = NanoCurrency.deriveSecretKey(D('import-XNO-seed').value, parseInt(D('import-XNO-index').value));
 	accountData['XNO'].publicKey = NanoCurrency.derivePublicKey(accountData['XNO'].privateKey);
 	accountData['XNO'].address = NanoCurrency.deriveAddress(accountData['XNO'].publicKey).replace('xrb_', 'nano_');
+	accountData['XNO'].index = parseInt(D('import-XNO-index').value);
 }
 
 let unitFromRaw = {};
@@ -281,34 +267,36 @@ changeRep['XNO'] = function(newrep) { return enqueue('XNO', function() {return n
 
 async function nanoReceive(symbol, hash) {
 	console.log('Receiving in address '+ accountData[symbol].address +' from block '+ hash);
-	let blockInfo = await post(accountData[symbol].server, {action: 'block_info', json_block: true, hash: hash});
+	let blockInfoFetch = post(accountData[symbol].server, {action: 'block_info', json_block: true, hash: hash});
 	let oldBalance = '0';
 	let previous = '0'.padStart(64, '0');
 	let representative = accountData[symbol].representative;
 	let workInput = accountData[symbol].publicKey;
 	
 	let frontierBlock = await checkFrontier(symbol);
-	if (frontierBlock === false) console.log("Fetched frontier failed check; attempting open block.");
+	if (!frontierBlock) console.log("Fetched frontier failed check; attempting open block.");
 	else {
 		oldBalance = frontierBlock.balance;
 		previous = frontierBlock.hash;
 		representative = frontierBlock.representative;
 		workInput = frontierBlock.hash;
 		console.log("Fetched frontier confirmed check; receive proceed: " + oldBalance);
-	}	
-	return await postBlock(symbol, 'receive', workInput, previous, representative, (BigInt(oldBalance) + BigInt(blockInfo.amount)).toString(), hash);
+	}
+	return await blockInfoFetch.then(async function(blockInfo) {
+		if (!blockInfo) return false;
+		return await postBlock(symbol, 'receive', workInput, previous, representative, (BigInt(oldBalance) + BigInt(blockInfo.amount)).toString(), hash);
+	});
 };
 
 async function nanoSend(symbol, destination, amt) {
 	console.log('Sending '+ amt +' Nano from address '+ accountData[symbol].address +' to '+ destination);
 	// check frontier
 	let frontierBlock = await checkFrontier(symbol);
-	if (frontierBlock === false) {
+	if (!frontierBlock) {
 		console.log("Fetched frontier failed check; abort send.");
 		return false;
 	}
 	console.log("Fetched frontier confirmed check; send proceed: " + frontierBlock.balance);
-	
 	return await postBlock(symbol, 'send', frontierBlock.hash, frontierBlock.hash, 
 		frontierBlock.representative, 
 		(BigInt(frontierBlock.balance) - BigInt(rawFromUnit[symbol](amt))).toString(),
@@ -319,19 +307,18 @@ async function nanoChange(symbol, newrep) {
 	console.log('Changing representative of '+ accountData[symbol].address +' to '+ newrep);
 	// check frontier
 	let frontierBlock = await checkFrontier(symbol);
-	if (frontierBlock === false) {
+	if (!frontierBlock) {
 		console.log("Fetched frontier failed check; abort change.");
 		return false;
 	}
 	console.log("Fetched frontier confirmed check; change proceed: " + frontierBlock.balance);	
-	
 	return await postBlock(symbol, 'change', frontierBlock.hash, frontierBlock.hash, newrep, frontierBlock.balance, '0'.padStart(64, '0'));
 }
 
 async function checkFrontier(symbol, hash) {
 	let accountInfo = await post(accountData[symbol].server, {action: 'account_info', representative: true, account: accountData[symbol].address});
 	
-	if (!accountInfo.frontier) {
+	if (!accountInfo || !accountInfo.frontier) {
 		console.log("No frontier found.");
 		return false;
 	}
@@ -344,13 +331,12 @@ async function checkFrontier(symbol, hash) {
 		balance: fetchedFrontierBlock.balance,
 		link: fetchedFrontierBlock.link
 	}).block;	
-	if (fetchedFrontierBlock.signature == producedFrontierBlock.signature) {
-		fetchedFrontierBlock.hash = accountInfo.frontier;
-		return fetchedFrontierBlock;
-	} else {
-		console.log("Frontier failed verification. This should NOT happen.");
+	if (fetchedFrontierBlock.signature != producedFrontierBlock.signature) {
+		console.error("Frontier failed verification. This should NOT happen.");
 		return false;
 	}
+	fetchedFrontierBlock.hash = accountInfo.frontier;
+	return fetchedFrontierBlock;
 }
 
 async function postBlock(symbol, subtype, workInput, previous, representative, balance, link) {
@@ -484,6 +470,9 @@ function setupWebsocket() {
 	});
 }
 
+
+selectPrimary(D('primary').value);	
+
 //////////////////////////////////////////////////////// Interface with helper functions, and websocket
 
 function setName(symbol) {
@@ -506,7 +495,7 @@ function fetchDisplayName(symbol, divString, address) {
 function displayName(symbol, divString, address, str) {
 	let displayString = str;
 	if (!str) {
-		if (divString == "-display") displayString = "My Account (Unknown)";
+		if (divString == "-display") displayString = "My Account #" + accountData[symbol].index + " (Unknown)";
 		else if (address == accountData[symbol].address) displayString = "(me)";
 		else displayString = "Unknown";
 	} else if (divString != "-display" && address == accountData[symbol].address) displayString += " (me)";
@@ -520,14 +509,15 @@ function generateWallet(symbol) {
 	navigator.clipboard.writeText(D(`import-${symbol}-seed`).value);	
 		showMsg("New seed generated. Copied to clipboard.");
 	flash(D(`import-${symbol}-seed`));
+	D(`${symbol}-generateButton`).disabled = true;
 }
 
-async function importWallet(symbol) {
+function importWallet(symbol) {
 	if (!checkSeed[symbol](D(`import-${symbol}-seed`).value)) {
 		if (!checkAddress[symbol](D(`import-${symbol}-seed`).value)) showMsg("Invalid seed.");
 		else showMsg("Submit a seed, not an address.");
 	}
-	else if (!/^[0-9]+$/.test(D(`import-${symbol}-number`).value)) showMsg("Invalid account index.");
+	else if (!/^[0-9]+$/.test(D(`import-${symbol}-index`).value)) showMsg("Invalid account index.");
 	else {
 		showMsg(`${symbol} account loading...`);
 		clearWallet(symbol);
@@ -537,7 +527,11 @@ async function importWallet(symbol) {
 		addressQR(symbol);		
 		
 		fetchDisplayName(symbol, "-display", accountData[symbol].address);
+		flash(D(`${symbol}-display`), "My Account #" + accountData[symbol].index + " (Unknown)");
 		refreshBalance(symbol);
+		
+		localStorage.setItem(`${symbol}-seed`, D(`import-${symbol}-seed`).value);
+		localStorage.setItem(`${symbol}-index`, D(`import-${symbol}-index`).value);
 		
 		post(accountData[symbol].server, {action: 'account_info', representative: true, account: accountData[symbol].address}).then(function(accountInfo) {
 			if (accountInfo && accountInfo.representative) {
@@ -556,8 +550,11 @@ function mainClearWallet() {
 	let symbol = D('primary').value;
 	clearWallet(symbol);
 	D(`import-${symbol}-seed`).value = ""; 
-	D(`import-${symbol}-number`).value = "0"; 	
-	showMsg(`${symbol} wallet cleared.`);
+	D(`${symbol}-generateButton`).disabled = false;
+	D(`import-${symbol}-index`).value = "0"; 	
+	showMsg(`${symbol} wallet cleared.`);	
+	localStorage.removeItem(`${symbol}-seed`); 
+	localStorage.removeItem(`${symbol}-index`); 
 }
 
 function clearWallet(symbol) {
@@ -568,8 +565,9 @@ function clearWallet(symbol) {
 	accountData[symbol].privateKey = "";
 	accountData[symbol].publicKey = "";
 	accountData[symbol].address = "";
+	accountData[symbol].index = "0";
 	
-	flash(D(`${symbol}-display`), "My Account (Unknown)");	
+	flash(D(`${symbol}-display`), "My Account #0 (Unknown)");	
 	flash(D(`${symbol}-address`), "\xa0");	
 	flash(D(`${symbol}-balance`), unitFromRaw[symbol](0));
 	flash(D(`${symbol}-balance-pending`), unitFromRaw[symbol](0));
@@ -619,15 +617,16 @@ async function withdraw(symbol) {
 		if ((D(`${symbol}-withdrawal-amount`).value.match(/\./g)||[]).length <= 1 && /^[0-9.]+$/.test(D(`${symbol}-withdrawal-amount`).value) &&		
 			rawFromUnit[symbol](D(`${symbol}-withdrawal-amount`).value) <= rawFromUnit[symbol](D(`${symbol}-balance`).textContent)) {
 			showMsg(symbol + " transfer initiated...");
-			await sendTo[symbol](D(`${symbol}-dest`).value, D(`${symbol}-withdrawal-amount`).value);
-			showMsg(D(`${symbol}-withdrawal-amount`).value + " " + symbol + " sent.");	
-			D(`${symbol}-withdrawal-amount`).value = "0.00";
+			if (await sendTo[symbol](D(`${symbol}-dest`).value, D(`${symbol}-withdrawal-amount`).value)) {
+				showMsg(D(`${symbol}-withdrawal-amount`).value + " " + symbol + " transferred.");	
+				D(`${symbol}-withdrawal-amount`).value = "0.00";
+			}
 		} else showMsg("Insufficient funds.");
 	} else showMsg("Invalid address.");
 }
 
 async function setRep(symbol) {
-	if (!checkAddress[symbol](D(`${symbol}-rep`).textContent)) showMsg("No representative to change.");
+	if (!checkAddress[symbol](D(`${symbol}-rep`).textContent)) showMsg("First open the account by receiving funds.");
 	else if (!checkAddress[symbol](D(`${symbol}-new-rep`).value)) showMsg("Invalid address.");
 	else {
 		showMsg("Updating representative...");
@@ -778,7 +777,7 @@ function donate(symbol) {
 	if (symbol == "XNO") D(symbol + "-dest").value = 'nano_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7';
 	flash(D(symbol + "-dest"));
 	fetchDisplayName(symbol, '-dest-display', D(symbol + "-dest").value);
-	}, 700);
+	}, 500);
 }
 
 
@@ -786,10 +785,10 @@ function D(string) { return document.getElementById(string); }
 	
 function selectPrimary(symbol) {
 	D('firstDiv').removeChild(D('firstDiv').lastChild);
-	D('firstDiv').appendChild(sidebarElt[symbol]);
 	D('secondDiv').removeChild(D('secondDiv').lastChild);
+	
+	D('firstDiv').appendChild(sidebarElt[symbol]);
 	D('secondDiv').appendChild(transactionElt[symbol]);
-	D('primary').value = symbol;
 	
 	if (!qrCode[symbol]) qrCode[symbol] = new QRCode(symbol + "-qrCodeImageBlock");
 	if (symbol == "XNO") {
@@ -799,6 +798,17 @@ function selectPrimary(symbol) {
 	if (symbol == "BAN") {
 		flashColor = "#ffc";
 		D('firstDiv').style.backgroundColor = "orange";	
+	}
+	
+	if (!accountData[symbol].address) {
+		let seed = localStorage.getItem(`${symbol}-seed`);	
+		if (seed) {	
+			D(`import-${symbol}-seed`).value = seed;
+			D(`${symbol}-generateButton`).disabled = true;
+			let index = localStorage.getItem(`${symbol}-index`);
+			if (index) D(`import-${symbol}-index`).value = index; 
+			importWallet(symbol);
+		}
 	}
 }
 	
@@ -815,11 +825,17 @@ function generateHTML(symbol) {
 	sidebarElt[symbol].innerHTML = `
 	<div class="objectWrapper">
 		<strong>${symbol} wallet seed (private, save securely):</strong>
-		<br><input id="import-${symbol}-seed" style="max-width:calc(100% - 170px)" type="password" size="20" maxlength="64" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')"> &nbsp;	
-		<button style="margin-top:10px; margin-bottom:10px; font-size:0.8em" onclick="toggleVisibility(this, '${symbol}')">Show</button>
-		<button style="margin-top:10px; margin-bottom:10px; font-size:0.8em" onclick="generateWallet('${symbol}')">Generate New</button>	
-		<br><strong>Account index (any integer 0 or higher): </strong>
-		<br><input id="import-${symbol}-number" type="text" size="20" maxlength="64" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')" value="0">		
+		<br>
+		
+		<div style="display:flex; justify-content:space-between; margin-top:10px; margin-bottom:10px;">
+			<input id="import-${symbol}-seed" style="width:calc(100% - 165px)" type="password" maxlength="64" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')" oninput="if (this.value.length == 0) D('${symbol}-generateButton').disabled = false; else D('${symbol}-generateButton').disabled = true;"> &nbsp;	
+			<div>
+			<button style="font-size:0.8em" onclick="toggleVisibility(this, '${symbol}')">Show</button>
+			<button id="${symbol}-generateButton" style="font-size:0.8em" onclick="generateWallet('${symbol}')">Generate New</button>
+			</div>			
+		</div>
+		<strong>Account index (any integer 0 or higher): </strong>
+		<br><input id="import-${symbol}-index" type="text" style="width:calc(100% - 165px)" maxlength="64" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')" value="0">		
 		<br>
 		<div style="text-align:center;">
 		<button style="margin-top:15px;" onclick="importWallet('${symbol}')">Load Account</button>
@@ -827,24 +843,24 @@ function generateHTML(symbol) {
 	</div>
 	<div id="${symbol}-gray" style="margin-top:20px;filter:opacity(0.5)">
 	<div class="objectWrapper">
-		<div style="position:relative">
-		<strong style="font-size:1.1em"><span id="${symbol}-display">My Account (Unknown)</span></strong>
-		<button id="${symbol}-editbutton" style="position:absolute; right:0px; font-size:0.8em" onclick="toggleEdit('${symbol}')">Edit</button>
+		<div style="display:flex; justify-content:space-between">
+			<div><strong style="font-size:1.1em"><span id="${symbol}-display">My Account #0 (Unknown)</span></strong></div>
+			<button id="${symbol}-editbutton" style="font-size:0.8em" onclick="toggleEdit('${symbol}')">Edit</button>
 		</div>
 		
-		<div id="${symbol}-editpanel" style="display:none; margin-left:20px; margin-top:10px; margin-bottom:20px">
+		<div id="${symbol}-editpanel" style="display:none; margin-left:20px; margin-right:20px; margin-top:10px; margin-bottom:20px">
 			<strong>Public display name:</strong>
-			<br><input id="${symbol}-set-display" style="max-width:calc(100% - 55px); width:80%" type="text" maxlength="64">&nbsp;&nbsp;
+			<br><input id="${symbol}-set-display" style="width:calc(100% - 55px)" type="text" maxlength="64">&nbsp;&nbsp;
 			<button style="font-size:0.8em" onclick="setName('${symbol}')">Set</button>
 		</div>
 		
-		<div style="position:relative; margin-top:15px">
-			<strong>Balance:</strong> <span id="${symbol}-balance">0.00</span> ${symbol}
-			<button style="position:absolute; right:0px; font-size:0.8em" onclick="refreshBalance('${symbol}')">Refresh</button>
+		<div style="margin-top:15px; display:flex; justify-content:space-between">
+			<div><strong>Balance:</strong> <span id="${symbol}-balance">0.00</span> ${symbol}</div>
+			<button style="font-size:0.8em" onclick="refreshBalance('${symbol}')">Refresh</button>
 		</div>
-		<div style="position:relative; margin-top:15px">
-		<strong>Arriving balance:</strong> <span id="${symbol}-balance-pending">0.00</span> ${symbol}
-		<button style="position:absolute; right:0px; font-size:0.8em" onclick="cyclePending('${symbol}')">Collect</button>
+		<div style="margin-top:15px; display:flex; justify-content:space-between">
+			<div><strong>Arriving balance:</strong> <span id="${symbol}-balance-pending">0.00</span> ${symbol}</div>
+			<button style="font-size:0.8em" onclick="cyclePending('${symbol}')">Collect</button>
 		</div>
 		<br><strong>My address (public, share freely):</strong>
 		<div style="overflow:hidden; text-overflow:ellipsis; cursor:pointer; font-size:0.8em" id="${symbol}-address" onclick="clickCopy(this, this.textContent)">&nbsp;</div>
@@ -857,7 +873,7 @@ function generateHTML(symbol) {
 		<br><strong>Amount:</strong>
 		<input style="margin-top:10px" id="${symbol}-withdrawal-amount" type="number" step="0.01" min="0.0" size="8" value="0.00">&nbsp; ${symbol}
 		<div style="text-align:center;">
-		<button style="margin-top:15px" onclick="withdraw('${symbol}')">Send ${symbol}</button>
+		<button style="margin-top:15px" onclick="withdraw('${symbol}')">Transfer ${symbol}</button>
 		</div>
 	</div>
 		
@@ -873,10 +889,10 @@ function generateHTML(symbol) {
 	</div>
 		
 	<div class="objectWrapper" style="margin-bottom50px;">
-		<strong>QR codify (for device-device copying):</strong>
-		<div style="position:relative; margin-top:10px; margin-bottom:10px">
-			<input style="margin-bottom:10px; max-width: calc(100% - 100px); width:80%" id="${symbol}-qr-input" type="text" maxlength="128" onclick="this.select()" oninput="if (this.value) qrCode['${symbol}'].makeCode(this.value); else qrCode['${symbol}'].makeCode('')">
-			<button style="position:absolute; right:0px; font-size:0.8em" onclick="addressQR('${symbol}')">My Address</button>
+		<strong>QR codify (for device-device copy):</strong>
+		<div style="margin-bottom:15px; display:flex; justify-content:space-between">
+			<input style="width: calc(100% - 100px);" id="${symbol}-qr-input" type="text" maxlength="128" onclick="this.select()" oninput="if (this.value) qrCode['${symbol}'].makeCode(this.value); else qrCode['${symbol}'].makeCode('')">
+			<button style="font-size:0.8em" onclick="addressQR('${symbol}')">My Address</button>
 		</div>		
 		<div style="display:flex; justify-content:center" id="${symbol}-qrCodeImageBlock"></div>
 	</div>
