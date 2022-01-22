@@ -133,9 +133,9 @@ async function fetchDestAddress(symbol, elt) {
 		}
 	} else {
 		D(symbol + "-dest-display").textContent = "";
-		flash(D(`${symbol}-rep`), "");	
-		D(`${symbol}-rep-display`).textContent = "";
-		flash(D(`${symbol}-challenge`), "");		
+		D(symbol + "-rep-display").textContent = "";
+		D(symbol + "-rep").textContent = "\xa0";
+		D(symbol + "-challenge").textContent = "\xa0";	
 	}
 }
 
@@ -209,7 +209,7 @@ function generateHTML(symbol) {
 	sidebarElt[symbol] = make('div');
 	sidebarElt[symbol].innerHTML = `
 		<strong>My address:</strong>
-		<br><input style="margin-bottom:10px" id="${symbol}-dest" type="text" size="30" max_length="64" onclick="this.select()" oninput="fetchDestAddress('${symbol}', this)">
+		<br><input style="margin-bottom:10px; width:80%" id="${symbol}-dest" type="text" maxlength="128" onclick="this.select()" oninput="fetchDestAddress('${symbol}', this)">
 		<br><strong>Display name: </strong><span id="${symbol}-dest-display"></span>
 		
 		<br><br><strong>Representative: </strong><span id="${symbol}-rep-display"></span>
@@ -231,7 +231,7 @@ function generateHTML(symbol) {
 		
 		<br><div id="${symbol}-editpanel">
 		<strong>New display name:</strong>
-		<br><input id="${symbol}-set-display" type="text" size="30" max_length="64" onkeyup="if (event.keyCode == 13) setName('${symbol}')">&nbsp;&nbsp;
+		<br><input id="${symbol}-set-display" type="text" style="width:80%" maxlength="64" onkeyup="if (event.keyCode == 13) setName('${symbol}')">&nbsp;&nbsp;
 		<button style="font-size:0.8em" onclick="setName('${symbol}')">Set</button>
 		</div>
 	<br><br>`;
