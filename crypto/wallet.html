@@ -868,11 +868,17 @@ function generateHTML(symbol) {
 		</div>
 		
 		<div style="margin-top:15px; display:flex; justify-content:space-between">
-			<div><strong>Balance:</strong> <span id="${symbol}-balance">0.00</span> ${symbol}</div>
+			<div style="width:calc(100% - 65px)">
+				<strong>Balance:</strong> 
+				<span id="${symbol}-balance" style="max-width:min-content; width:100%; display:inline-block; overflow:hidden; text-overflow:ellipsis; vertical-align:bottom;">0.00</span> ${symbol}
+			</div>
 			<button style="font-size:0.8em" onclick="refreshBalance('${symbol}')">Refresh</button>
 		</div>
 		<div style="margin-top:15px; display:flex; justify-content:space-between">
-			<div><strong>Arriving balance:</strong> <span id="${symbol}-balance-pending">0.00</span> ${symbol}</div>
+			<div style="width:calc(100% - 65px)">
+				<strong>Arriving balance:</strong> 
+				<span id="${symbol}-balance-pending" style="max-width:min-content; width:100%; display:inline-block; overflow:hidden; text-overflow:ellipsis; vertical-align:bottom;">0.00</span> ${symbol}
+			</div>
 			<button style="font-size:0.8em" onclick="cyclePending('${symbol}')">Collect</button>
 		</div>
 		<br><strong>My address (public, share freely):</strong>
