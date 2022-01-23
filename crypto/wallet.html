@@ -500,10 +500,10 @@ function setName(symbol) {
 	}
 }
 
-function fetchDisplayName(symbol, divString, address) {
+function fetchDisplayName(symbol, divString, address, skipCache) {
 	if (checkAddress[symbol](address)) {
-		if (nameCache[address]) displayName(symbol, divString, address, nameCache[address]);
-		else ws.emit("getNameCue", {div: divString, address: address, currency: symbol});	
+		if (nameCache[address] && !skipCache) displayName(symbol, divString, address, nameCache[address]);
+		else ws.emit("getNameCue", {div: divString, address: address, currency: symbol});
 	} else D(symbol + divString).textContent = "";
 }
 
@@ -857,7 +857,7 @@ function generateHTML(symbol) {
 	<div id="${symbol}-gray" style="margin-top:20px;filter:opacity(0.5)">
 	<div class="objectWrapper">
 		<div style="display:flex; justify-content:space-between">
-			<div><strong style="font-size:1.1em"><span id="${symbol}-display">My Account #0 (Unknown)</span></strong></div>
+			<strong><div id="${symbol}-display" style="font-size:1.1em" onclick="fetchDisplayName('${symbol}', '-display', accountData['${symbol}'].address, true)">My Account #0 (Unknown)</div></strong>
 			<button id="${symbol}-editbutton" style="font-size:0.8em" onclick="toggleEdit('${symbol}')">Edit</button>
 		</div>
 		
