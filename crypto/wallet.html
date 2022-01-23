@@ -326,7 +326,7 @@ async function nanoDisplayTransactions(symbol, start) {
 					li.firstChild.nextSibling.firstChild.id = symbol + '-' + history.history[i].height;
 					li.firstChild.nextSibling.firstChild.nextSibling.textContent = convertTimestamp(history.history[i].local_timestamp);
 					
-					li.style.marginBottom = "10px";
+					li.style.marginBottom = "15px";
 					li.title = history.history[i].height;			
 					addOrdered(li, D(symbol + '-transactions'));
 					fetchDisplayName(symbol, "-" + history.history[i].height + "-display", history.history[i].account);
