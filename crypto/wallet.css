@@ -8,11 +8,6 @@ body {
 	overflow:auto;
 }
 
-hr {
-	margin-top:30px;
-	margin-bottom:30px;
-}
-
 .containerdiv {	
 	display:flex;
 	height:100%;
@@ -45,8 +40,7 @@ div:focus {
 	outline:none;	
 }
 
-input[type=text], input[type=password] {  
-	box-sizing: border-box;
+input[type=number], input[type=text], input[type=password] { 
 	padding: 5px;
 	border-top: solid 0px;
 	border-left: solid 0px;
@@ -55,7 +49,7 @@ input[type=text], input[type=password] {
 	overflow: hidden;
 }
 
-input[type=text]:focus, input[type=password]:focus {  
+input[type=number]:focus, input[type=text]:focus, input[type=password]:focus {  
 	border-bottom: solid 2px;
 	outline: none;
 	text-overflow: ellipsis;
@@ -74,7 +68,7 @@ button {
 	color: #333;
 	border-radius: 10px;
 	border: 0px solid #fff;
-	background-color:#f4f7f7;
+	background-color:#f1f4f4;
 	font-size:1em;
 	cursor: pointer;
 }
@@ -92,34 +86,6 @@ button:disabled, button[disabled]{
 	cursor:initial;
 }
 
-h1 {     
-    font-family: Segoe UI, Roboto, Helvetica, sans-serif;  
-    font-size: 1.5em;
-    margin: 0px;
-	width:70%;
-}
-
-h2 {     
-    font-family: Segoe UI, Roboto, Helvetica, sans-serif;  
-    font-size: 1.2em;
-    margin: 0px;
-}
-
-h3 {
-    font-family: Segoe UI, Roboto, Helvetica, sans-serif; 
-    font-size: 1.2em;
-    margin-bottom: 0px;
-    margin-top: 0px;
-    padding-top: 10px;
-}
-
-h4 {	
-    font-family: Segoe UI, Roboto, Helvetica, sans-serif; 
-    font-size: 1em;
-    margin-bottom: 0px;
-    margin-top: 0px;
-}
-
 a {
 	text-decoration: none;
 	color: #699;
@@ -127,22 +93,6 @@ a {
 
 a:hover {
     color: #333;
-}
-
-h1 a {
-    color: #333;
-}
-
-h2 a {
-    color: #333;
-}
-
-h1 a:hover {
-    color: #588;
-}
-
-h2 a:hover {
-    color: #588;
 }
 
 /*-----------*/
@@ -178,8 +128,16 @@ ul::-webkit-scrollbar-thumb:hover {
 		scroll-snap-type: x mandatory;
 	}
 		
+	input[type=number], input[type=text], input[type=password] { 
+		text-overflow: initial;
+	}
+
+	input[type=number]:focus, input[type=text]:focus, input[type=password]:focus {  
+		text-overflow: initial;
+	}
+
 	button {
-		padding: 8px 10px;
+		padding: 10px 10px;
 	}
 
 	.containerdiv {	
