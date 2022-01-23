@@ -110,13 +110,81 @@ var sidebarElt = {};
 var qrCode = {};
 var transactionElt = {};
 var accountData = {};
-accountData['XNO'] = {representative:'nano_1center16ci77qw5w69ww8sy4i4bfmgfhr81ydzpurm91cauj11jn6y3uc5y',
+accountData['XNO'] = {representative:'nano_1natrium1o3z5519ifou7xii8crpxpk8y65qmkih8e8bpsjri651oza8imdd',
 						server:'https://proxy.powernode.cc/proxy',
-						gettingStarted:'https://nanolinks.info/'}; // 'wss://ws.mynano.ninja/';		
+						gettingStarted:'https://nanolinks.info/',
+						repRec:'https://mynano.ninja/api/accounts/verified',
+						donation:'nano_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7',
+						flashColor:'#def',
+						bgColor:'steelblue'};
+						
+						
 accountData['BAN'] = {representative:'ban_1ka1ium4pfue3uxtntqsrib8mumxgazsjf58gidh1xeo5te3whsq8z476goo',
 						server:'https://kaliumapi.appditto.com/api',
-						gettingStarted:'https://banano.how/links/'};
-						
+						gettingStarted:'https://banano.how/links/',
+						repRec:'https://api.spyglass.pw/banano/v1/representatives/scores',
+						donation:'ban_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7',
+						flashColor:'#ffc',
+						bgColor:'orange'};
+	
+var backupCache = {};
+fetch('https://mynano.ninja/api/accounts/aliases').then(function(response) { response.json().then(function(data) { 
+	let counter = 0;
+	if (data) {
+		for (let i = 0; i < data.length; i++) {
+			if (!backupCache[data[i].account]) {
+				backupCache[data[i].account] = data[i].alias;
+				counter++;
+			}
+		}
+	}		
+	fetch('https://nanolooker.com/api/known-accounts-balance').then(function(response) { response.json().then(function(data) { 
+		if (data) {
+			for (let i = 0; i < data.length; i++) {
+				if (!backupCache[data[i].account]) {
+					backupCache[data[i].account] = data[i].alias;
+					counter++;
+				}
+			}
+		}		
+		fetch('https://nano.to/known').then(function(response) { response.json().then(function(data) { 
+			if (data) {
+				for (let i = 0; i < data.length; i++) {
+					if (!backupCache[data[i].address]) {
+						backupCache[data[i].address] = data[i].name;
+						counter++;
+					}
+				}
+			}
+			console.log("Nano count: " + counter);
+		});});
+	});});	
+});});
+
+fetch('https://api.spyglass.pw/banano/v1/known/accounts',{ method: 'POST' }).then(function(response) { response.json().then(function(data) { 
+	let counter = 0;
+	if (data) {
+		for (let i = 0; i < data.length; i++) {
+			if (!backupCache[data[i].address]) {
+				backupCache[data[i].address] = data[i].alias;
+				counter++;
+			}
+		}
+	}
+	fetch('https://bananolooker.com/api/known-accounts').then(function(response) { response.json().then(function(data) { 
+		if (data) {
+			for (let i = 0; i < data.length; i++) {
+				if (!backupCache[data[i].account]) {
+					backupCache[data[i].account] = data[i].alias;
+					counter++;
+				}
+			}
+		}
+		console.log("Banano count: " + counter);
+	});});
+});});
+	
+	
 accountData['XNO'].queue = new Promise(function(resolve, reject) { resolve(true); });
 accountData['BAN'].queue = new Promise(function(resolve, reject) { resolve(true); });
 
@@ -225,7 +293,7 @@ async function nanoDisplayTransactions(symbol, start) {
 					let color = "#097";				
 					if (history.history[i].type == "send") {
 						sign = "-";
-						color = "#C00";
+						color = "#B00";
 					}
 					
 					let displayNameSpan = make('span');
@@ -514,7 +582,8 @@ function fetchDisplayName(symbol, divString, address, skipCache) {
 
 function displayName(symbol, divString, address, str) {
 	let displayString = str;
-	if (!str) {
+	if (!displayString) displayString = backupCache[address];
+	if (!displayString) {
 		if (divString == "-display") displayString = "My Account #" + accountData[symbol].index + " (Unknown)";
 		else if (address == accountData[symbol].address) displayString = "(me)";
 		else displayString = "Unknown";
@@ -791,8 +860,7 @@ function addressQR(symbol) {
 function donate(symbol) {
 	D(symbol + "-dest").scrollIntoView({block:"center", behavior:"auto"});
 	setTimeout(function() {
-	if (symbol == "BAN") D(symbol + "-dest").value = 'ban_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7';
-	if (symbol == "XNO") D(symbol + "-dest").value = 'nano_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7';
+	D(symbol + "-dest").value = accountData[symbol].donation;
 	flash(D(symbol + "-dest"));
 	fetchDisplayName(symbol, '-dest-display', D(symbol + "-dest").value);
 	}, 400);
@@ -808,17 +876,11 @@ function selectPrimary(symbol) {
 	D('firstDiv').appendChild(sidebarElt[symbol]);
 	D('secondDiv').appendChild(transactionElt[symbol]);
 	
-	if (!qrCode[symbol]) qrCode[symbol] = new QRCode(symbol + "-qrCodeImageBlock");
-	if (symbol == "XNO") {
-		flashColor = "#def";
-		D('firstDiv').style.backgroundColor = "steelblue";
-	}
-	if (symbol == "BAN") {
-		flashColor = "#ffc";
-		D('firstDiv').style.backgroundColor = "orange";	
-	}
-	
+	D('firstDiv').style.backgroundColor = accountData[symbol].bgColor;
 	D('clearButton').textContent = "Clear " + symbol + " Wallet";
+	flashColor = accountData[symbol].flashColor;
+	
+	if (!qrCode[symbol]) qrCode[symbol] = new QRCode(symbol + "-qrCodeImageBlock");
 	
 	if (!accountData[symbol].address) {
 		let seed = localStorage.getItem(`${symbol}-seed`);	
@@ -830,6 +892,23 @@ function selectPrimary(symbol) {
 			importWallet(symbol);
 		}
 	}
+	
+	fetch(accountData[symbol].repRec).then(function(response) {
+		response.json().then(function(data) { 
+			if (data) {
+				data.sort(function(x, y) {
+					return y.score - x.score;
+				});
+				console.log(data[0]);
+				let repAddr = data[0].account;
+				if (!repAddr) repAddr = data[0].address;
+				if (repAddr) {
+					flash(D(`${symbol}-rec-rep`), repAddr);
+					fetchDisplayName(symbol, "-rec-rep-display", repAddr);
+				}
+			}
+		});
+	});
 }
 	
 function generateHTML(symbol) {
@@ -910,6 +989,8 @@ function generateHTML(symbol) {
 	<div class="objectWrapper" style='margin-top:20px'>
 		<strong>Current representative: </strong><span id="${symbol}-rep-display"></span>
 		<div style="margin-bottom:10px; overflow:hidden; text-overflow:ellipsis; cursor:pointer; font-size:0.8em" id="${symbol}-rep" onclick="clickCopy(this, this.textContent)">&nbsp;</div>	
+		<strong>Suggested representative: </strong><span id="${symbol}-rec-rep-display"></span>
+		<div style="margin-bottom:10px; overflow:hidden; text-overflow:ellipsis; cursor:pointer; font-size:0.8em" id="${symbol}-rec-rep" onclick="clickCopy(this, this.textContent)">&nbsp;</div>
 		<strong>New representative: </strong><span id="${symbol}-new-rep-display"></span>	
 		<br><input placeholder="New representative address..." style="width:80%" id="${symbol}-new-rep" type="text" maxlength="128" onclick="this.select()" oninput="fetchDisplayName('${symbol}', '-new-rep-display', this.value)" onkeyup="if (event.keyCode == 13) setRep('${symbol}')">
 		<div style="text-align:center;">
