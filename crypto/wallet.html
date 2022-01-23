@@ -314,7 +314,7 @@ async function nanoDisplayTransactions(symbol, start) {
 					displayNameSpan.textContent = "Unknown";
 					
 					li.innerHTML = "<div style='display:flex; justify-content:space-between'><strong></strong>"
-					+ "<strong style='text-align:right; color:" + color + "'></strong></div>"
+					+ "<strong style='text-align:right; overflow:hidden; text-overflow:ellipsis; color:" + color + "'></strong></div>"
 					+ "<div style='display:flex; justify-content:space-between'><span style='cursor:pointer; font-size:0.8em; width:calc(100% - 180px); overflow:hidden; text-overflow:ellipsis; margin-top:4px' onclick='clickCopy(this, this.textContent)'></span>"
 					+ "<span style='text-align:right;'></span></div>";
 					
