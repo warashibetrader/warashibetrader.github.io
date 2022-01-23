@@ -611,17 +611,16 @@ function importWallet(symbol) {
 		if (D(`import-${symbol}-index`).value.length == 0) D(`import-${symbol}-index`).value = "0";
 		showMsg(`${symbol} account loading...`);
 		clearWallet(symbol);
+		localStorage.setItem(`${symbol}-seed`, D(`import-${symbol}-seed`).value);
+		localStorage.setItem(`${symbol}-index`, D(`import-${symbol}-index`).value);
 		
 		unpackSeed[symbol]();
 		flash(D(`${symbol}-address`), accountData[symbol].address);			
 		addressQR(symbol);		
 		
-		fetchDisplayName(symbol, "-display", accountData[symbol].address);
 		flash(D(`${symbol}-display`), "My Account #" + accountData[symbol].index + " (Unknown)");
-		refreshBalance(symbol);
-		
-		localStorage.setItem(`${symbol}-seed`, D(`import-${symbol}-seed`).value);
-		localStorage.setItem(`${symbol}-index`, D(`import-${symbol}-index`).value);
+		fetchDisplayName(symbol, "-display", accountData[symbol].address);
+		refreshBalance(symbol);	
 		
 		post(accountData[symbol].server, {action: 'account_info', representative: true, account: accountData[symbol].address}).then(function(accountInfo) {
 			if (accountInfo && accountInfo.representative) {
@@ -633,6 +632,23 @@ function importWallet(symbol) {
 			D(symbol + "-gray").style.filter = "opacity(1)";
 		});
 	}
+	
+	fetch(accountData[symbol].repRec).then(function(response) {
+		response.json().then(function(data) { 
+			if (data) {
+				data.sort(function(x, y) {
+					return y.score - x.score;
+				});
+				console.log(data[0]);
+				let repAddr = data[0].account;
+				if (!repAddr) repAddr = data[0].address;
+				if (repAddr) {
+					flash(D(`${symbol}-rec-rep`), repAddr);
+					fetchDisplayName(symbol, "-rec-rep-display", repAddr);
+				}
+			}
+		});
+	});
 }
 
 function mainClearWallet() {
@@ -892,23 +908,6 @@ function selectPrimary(symbol) {
 			importWallet(symbol);
 		}
 	}
-	
-	fetch(accountData[symbol].repRec).then(function(response) {
-		response.json().then(function(data) { 
-			if (data) {
-				data.sort(function(x, y) {
-					return y.score - x.score;
-				});
-				console.log(data[0]);
-				let repAddr = data[0].account;
-				if (!repAddr) repAddr = data[0].address;
-				if (repAddr) {
-					flash(D(`${symbol}-rec-rep`), repAddr);
-					fetchDisplayName(symbol, "-rec-rep-display", repAddr);
-				}
-			}
-		});
-	});
 }
 	
 function generateHTML(symbol) {
