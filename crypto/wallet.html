@@ -109,17 +109,19 @@ var nameCache = {};
 var sidebarElt = {};
 var qrCode = {};
 var transactionElt = {};
-generateHTML('XNO');
-generateHTML('BAN');
-
 var accountData = {};
 accountData['XNO'] = {representative:'nano_1center16ci77qw5w69ww8sy4i4bfmgfhr81ydzpurm91cauj11jn6y3uc5y',
-						server:'https://proxy.powernode.cc/proxy'}; // 'wss://ws.mynano.ninja/';		
+						server:'https://proxy.powernode.cc/proxy',
+						gettingStarted:'https://nanolinks.info/'}; // 'wss://ws.mynano.ninja/';		
 accountData['BAN'] = {representative:'ban_1ka1ium4pfue3uxtntqsrib8mumxgazsjf58gidh1xeo5te3whsq8z476goo',
-						server:'https://kaliumapi.appditto.com/api'};
+						server:'https://kaliumapi.appditto.com/api',
+						gettingStarted:'https://banano.how/links/'};
 						
 accountData['XNO'].queue = new Promise(function(resolve, reject) { resolve(true); });
 accountData['BAN'].queue = new Promise(function(resolve, reject) { resolve(true); });
+
+generateHTML('XNO');
+generateHTML('BAN');
 
 //////////////////////////////////////////////////////// low level helper functions
 
@@ -209,9 +211,13 @@ async function nanoDisplayTransactions(symbol, start) {
 			if (history.previous) {
 				if (!D(symbol + '-' + history.history[history.history.length - 1].height)) {
 					D(symbol + '-loadMore').style.display = "";
+					D(symbol + '-gettingStarted').style.display = "none";
 					D(symbol + '-loadMore').onclick = function() {getTransactions[symbol](history.previous);};
 				}
-			} else D(symbol + '-loadMore').style.display = "none";
+			} else {
+				D(symbol + '-loadMore').style.display = "none";				
+				D(symbol + '-gettingStarted').style.display = "";
+			}
 			for (let i = 0; i < history.history.length; i++) {
 				if (!D(symbol + '-' + history.history[i].height)) {
 					let li = make('li');
@@ -556,7 +562,6 @@ function importWallet(symbol) {
 			}
 			if (accountInfo) showMsg(`${symbol} account loaded.`);
 			D(symbol + "-gray").style.filter = "opacity(1)";
-			D(symbol + "-gray2").style.filter = "opacity(1)";
 		});
 	}
 }
@@ -580,6 +585,7 @@ function clearWallet(symbol) {
 	nameCache = {};
 	clearDOM(D(symbol + '-transactions'));	
 	D(symbol + '-loadMore').style.display = "none";
+	D(symbol + '-gettingStarted').style.display = "";
 	
 	accountData[symbol].privateKey = "";
 	accountData[symbol].publicKey = "";
@@ -601,7 +607,6 @@ function clearWallet(symbol) {
 	if (D(symbol + "-editpanel").style.display != "none") D(symbol + "-editbutton").click();
 	
 	D(symbol + "-gray").style.filter = "opacity(0.5)";
-	D(symbol + "-gray2").style.filter = "opacity(0.5)";
 }
 
 function refreshBalance(symbol) {
@@ -830,10 +835,13 @@ function selectPrimary(symbol) {
 function generateHTML(symbol) {
 	transactionElt[symbol] = make('div');
 	transactionElt[symbol].innerHTML = `	
-	<div id="${symbol}-gray2" style="filter:opacity(0.5)">
+	<div id="${symbol}-gray2">
 		<div style="max-width:620px; text-align:center"><strong style="display:inline-block; margin-top:30px; font-size:1.1em">Transactions</strong></div>
 		<ul id="${symbol}-transactions" style="padding-left:0px; max-width:620px; list-style: none;"></ul>
-		<div style="max-width:620px; margin-top:20px; margin-bottom:70px; text-align:center"><button style="display:none" id="${symbol}-loadMore">Load More</button></div>
+		<div style="max-width:620px; margin-top:30px; margin-bottom:70px; text-align:center">
+			<button style="display:none" id="${symbol}-loadMore">Load More</button>
+			<button id="${symbol}-gettingStarted"><a href="${accountData[symbol].gettingStarted}" target="_blank">${symbol} information, resources, and links</a></button>
+		</div>
 	</div>`;
 		
 	sidebarElt[symbol] = make('div');
