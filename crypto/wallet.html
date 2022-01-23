@@ -784,7 +784,7 @@ function addressQR(symbol) {
 
 
 function donate(symbol) {
-	D(symbol + "-dest").scrollIntoView({block:"center", behavior:"auto"});
+	D(symbol + "-dest").scrollIntoView({block:"center", behavior:"smooth"});
 	setTimeout(function() {
 	if (symbol == "BAN") D(symbol + "-dest").value = 'ban_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7';
 	if (symbol == "XNO") D(symbol + "-dest").value = 'nano_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7';
