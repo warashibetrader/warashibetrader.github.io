@@ -784,7 +784,7 @@ function addressQR(symbol) {
 
 
 function donate(symbol) {
-	D(symbol + "-dest").scrollIntoView({block:"center", behavior:"smooth"});
+	D(symbol + "-dest").scrollIntoView({block:"center", behavior:"auto"});
 	setTimeout(function() {
 	if (symbol == "BAN") D(symbol + "-dest").value = 'ban_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7';
 	if (symbol == "XNO") D(symbol + "-dest").value = 'nano_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7';
@@ -839,7 +839,7 @@ function generateHTML(symbol) {
 	sidebarElt[symbol] = make('div');
 	sidebarElt[symbol].innerHTML = `
 	<div class="objectWrapper">
-		<div style="display:flex; justify-content:space-between; margin-top:10px; margin-bottom:15px;">
+		<div style="display:flex; justify-content:space-between; margin-top:5px; margin-bottom:15px;">
 			<input placeholder="Seed (store securely) ..." id="import-${symbol}-seed" style="flex-grow:1; flex-basis:20px; margin-right:10px;" type="password" maxlength="64" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')" oninput="if (this.value.length == 0) D('${symbol}-generateButton').disabled = false; else D('${symbol}-generateButton').disabled = true;">
 			<div>
 			<button tabindex="-1" style="font-size:0.8em" onclick="toggleVisibility(this, '${symbol}')">Show</button>
@@ -862,7 +862,7 @@ function generateHTML(symbol) {
 			<strong>Public display name:</strong>
 			
 			<div style="display:flex; justify-content:space-between;">
-				<input id="${symbol}-set-display" style="flex-grow:1" type="text" maxlength="64">&nbsp;&nbsp;
+				<input id="${symbol}-set-display" style="flex-grow:1; margin-right:10px;" type="text" maxlength="64">
 				<button style="font-size:0.8em" onclick="setName('${symbol}')">Set</button>
 			</div>
 		</div>
@@ -893,7 +893,7 @@ function generateHTML(symbol) {
 		<strong>Destination: </strong><span id="${symbol}-dest-display"></span>
 		<br><input placeholder="Destination address..." style="width:80%" id="${symbol}-dest" type="text" maxlength="128" onclick="this.select()" oninput="fetchDisplayName('${symbol}', '-dest-display', this.value)">
 		<br><strong>Amount:</strong>
-		<input placeholder="0.00" style="margin-top:15px; text-align:right;" id="${symbol}-withdrawal-amount" type="number" step="0.01" min="0" size="10">&nbsp; ${symbol}
+		<input placeholder="0.00" style="margin-top:15px; text-align:right; width:calc(80% - 130px)" id="${symbol}-withdrawal-amount" type="number" step="0.01" min="0">&nbsp; ${symbol}
 		<div style="text-align:center;">
 		<button style="margin-top:15px" onclick="withdraw('${symbol}')">Transfer ${symbol}</button>
 		</div>
