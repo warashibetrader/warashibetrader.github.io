@@ -654,16 +654,22 @@ function importWallet(symbol) {
 function mainClearWallet() {
 	let symbol = D('primary').value;
 	clearWallet(symbol);
+	
 	D(`import-${symbol}-seed`).value = ""; 
 	D(`${symbol}-generateButton`).disabled = false;
 	D(`import-${symbol}-index`).value = ""; 	
-	showMsg(`${symbol} wallet cleared.`);	
+	
 	localStorage.removeItem(`${symbol}-seed`); 
 	localStorage.removeItem(`${symbol}-index`); 
 	
-	flash(D(`${symbol}-dest-display`), "\xa0");
+	flash(D(`${symbol}-dest-display`), "");
 	D(symbol + "-dest").value = "";	
 	D(`${symbol}-withdrawal-amount`).value = "";
+	
+	flash(D(`${symbol}-rec-rep`), "\xa0");
+	flash(D(`${symbol}-rec-rep-display`), "");
+	
+	showMsg(`${symbol} wallet cleared.`);	
 }
 
 function clearWallet(symbol) {
@@ -682,8 +688,8 @@ function clearWallet(symbol) {
 	flash(D(`${symbol}-balance`), unitFromRaw[symbol](0));
 	flash(D(`${symbol}-balance-pending`), unitFromRaw[symbol](0));
 	flash(D(`${symbol}-rep`), "\xa0");	
-	flash(D(`${symbol}-rep-display`), "\xa0");
-	flash(D(`${symbol}-new-rep-display`), "\xa0");
+	flash(D(`${symbol}-rep-display`), "");
+	flash(D(`${symbol}-new-rep-display`), "");
 	
 	D(symbol + "-new-rep").value = "";	
 	D(symbol + '-qr-input').value = "";
