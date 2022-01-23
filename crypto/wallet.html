@@ -128,60 +128,73 @@ accountData['BAN'] = {representative:'ban_1ka1ium4pfue3uxtntqsrib8mumxgazsjf58gi
 						bgColor:'orange'};
 	
 var backupCache = {};
-fetch('https://mynano.ninja/api/accounts/aliases').then(function(response) { response.json().then(function(data) { 
-	let counter = 0;
+
+
+let nanoCount = 0;
+let ninjaPromise = fetch('https://mynano.ninja/api/accounts/aliases').then(function(response) { response.json().then(function(data) { 
 	if (data) {
 		for (let i = 0; i < data.length; i++) {
 			if (!backupCache[data[i].account]) {
 				backupCache[data[i].account] = data[i].alias;
-				counter++;
+				nanoCount++;
+			}
+		}
+	}	
+	console.log("Nano ninja count: " + nanoCount);
+	return true;
+});});
+
+let lookerPromise = fetch('https://nanolooker.com/api/known-accounts-balance').then(function(response) { response.json().then(function(data) { 
+	if (data) {
+		for (let i = 0; i < data.length; i++) {
+			if (!backupCache[data[i].account]) {
+				backupCache[data[i].account] = data[i].alias;
+				nanoCount++;
 			}
 		}
 	}		
-	fetch('https://nanolooker.com/api/known-accounts-balance').then(function(response) { response.json().then(function(data) { 
-		if (data) {
-			for (let i = 0; i < data.length; i++) {
-				if (!backupCache[data[i].account]) {
-					backupCache[data[i].account] = data[i].alias;
-					counter++;
-				}
+	console.log("Nano looker count: " + nanoCount);
+	return true;
+});});	
+
+ninjaPromise.then(function() {
+lookerPromise.then(function() {
+fetch('https://nano.to/known').then(function(response) { response.json().then(function(data) { 
+	if (data) {
+		for (let i = 0; i < data.length; i++) {
+			if (!backupCache[data[i].address]) {
+				backupCache[data[i].address] = data[i].name;
+				nanoCount++;
 			}
-		}		
-		fetch('https://nano.to/known').then(function(response) { response.json().then(function(data) { 
-			if (data) {
-				for (let i = 0; i < data.length; i++) {
-					if (!backupCache[data[i].address]) {
-						backupCache[data[i].address] = data[i].name;
-						counter++;
-					}
-				}
-			}
-			console.log("Nano count: " + counter);
-		});});
-	});});	
+		}
+	}
+	console.log("Nano to count: " + nanoCount);
+});});
 });});
 
+let bananoCount = 0;
 fetch('https://api.spyglass.pw/banano/v1/known/accounts',{ method: 'POST' }).then(function(response) { response.json().then(function(data) { 
-	let counter = 0;
 	if (data) {
 		for (let i = 0; i < data.length; i++) {
 			if (!backupCache[data[i].address]) {
 				backupCache[data[i].address] = data[i].alias;
-				counter++;
+				bananoCount++;
 			}
 		}
 	}
-	fetch('https://bananolooker.com/api/known-accounts').then(function(response) { response.json().then(function(data) { 
-		if (data) {
-			for (let i = 0; i < data.length; i++) {
-				if (!backupCache[data[i].account]) {
-					backupCache[data[i].account] = data[i].alias;
-					counter++;
-				}
+	console.log("Banano spyglass count: " + bananoCount);
+});});
+
+fetch('https://bananolooker.com/api/known-accounts').then(function(response) { response.json().then(function(data) { 
+	if (data) {
+		for (let i = 0; i < data.length; i++) {
+			if (!backupCache[data[i].account]) {
+				backupCache[data[i].account] = data[i].alias;
+				bananoCount++;
 			}
 		}
-		console.log("Banano count: " + counter);
-	});});
+	}
+	console.log("Banano looker count: " + bananoCount);
 });});
 	
 	
