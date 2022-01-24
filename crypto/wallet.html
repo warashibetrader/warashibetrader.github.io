@@ -24,12 +24,11 @@
 								  position: fixed; left: 0px; top: 0px; border-radius: 5px;
 								  pointer-events: none; opacity: 0.9;">Welcome.</strong>
 		
-		<div style="margin-top:20px; display:flex; align-items:center; justify-content:space-between">
-			<div><select name="primary" id="primary" onchange="selectPrimary(event.target.value)">
+		<div style="margin-top:20px; display:flex; align-items:center; justify-content:center">
+			<select name="primary" id="primary" onchange="selectPrimary(event.target.value)">
 				<option value="XNO">Nano (XNO)</option>
 				<option value="BAN">Banano (BAN)</option>
-			</select></div>
-			<button id="clearButton" style="font-size:0.8em" onclick="mainClearWallet()">Clear Wallet</button>
+			</select>
 		</div>
 	</div>
 	</div>
@@ -501,10 +500,7 @@ function nanoConfirm(symbol, hash) {
 
 function exchangeURL() {
 	if ((new Date()).getDate() < 15) return 'wss://warashibetrader.herokuapp.com';
-	else {
-		console.log("Using new exchange");
-		return 'wss://wrsbtrader.herokuapp.com';
-	}
+	else return 'wss://wrsbtrader.herokuapp.com';
 }
 
 var ws = new WebSocket(exchangeURL());
@@ -664,8 +660,7 @@ function importWallet(symbol) {
 	});
 }
 
-function mainClearWallet() {
-	let symbol = D('primary').value;
+function mainClearWallet(symbol) {
 	clearWallet(symbol);
 	
 	D(`import-${symbol}-seed`).value = ""; 
@@ -912,7 +907,6 @@ function selectPrimary(symbol) {
 	D('secondDiv').appendChild(transactionElt[symbol]);
 	
 	D('firstDiv').style.backgroundColor = accountData[symbol].bgColor;
-	D('clearButton').textContent = "Clear " + symbol + " Wallet";
 	flashColor = accountData[symbol].flashColor;
 	
 	if (!qrCode[symbol]) qrCode[symbol] = new QRCode(symbol + "-qrCodeImageBlock");
@@ -937,7 +931,7 @@ function generateHTML(symbol) {
 		<ul id="${symbol}-transactions" style="padding-left:0px; max-width:620px; list-style: none;"></ul>
 		<div style="max-width:620px; margin-top:30px; margin-bottom:70px; text-align:center">
 			<button style="display:none" id="${symbol}-loadMore">Load More</button>
-			<button id="${symbol}-gettingStarted"><a href="${accountData[symbol].gettingStarted}" target="_blank">${symbol} information, resources, and links</a></button>
+			<div id="${symbol}-gettingStarted"><a href="${accountData[symbol].gettingStarted}" target="_blank">${symbol} information, resources, and links</a></div>
 		</div>
 	</div>`;
 		
@@ -954,6 +948,7 @@ function generateHTML(symbol) {
 		<input placeholder="Account index (0, 1, 2, etc) ..." id="import-${symbol}-index" type="number" style="width:80%" min="0" maxlength="64" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')">	
 		<div style="text-align:center;">
 		<button style="margin-top:15px;" onclick="importWallet('${symbol}')">Load Account</button>
+		<button onclick="mainClearWallet('${symbol}')">Clear Wallet</button>
 		</div>
 	</div>
 	<div id="${symbol}-gray" style="margin-top:20px; margin-bottom:20px; filter:opacity(0.5)">
