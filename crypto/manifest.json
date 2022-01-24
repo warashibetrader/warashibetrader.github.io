@@ -51,7 +51,7 @@
       "purpose": "any maskable"
     }
   ],
-  "start_url": "wallet.html",
+  "start_url": "/wallet.html",
   "display": "standalone",
   "background_color": "#fff",
   "theme_color": "#fff"
