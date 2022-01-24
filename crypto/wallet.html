@@ -984,7 +984,9 @@ window.addEventListener('appinstalled', function (evt) {  // CODELAB: Add code t
     console.log('Ansyble was installed.', evt);
 });
 
-
+function scrollPanel(elt) {
+	if ((screen.width <= 550 || screen.height <= 550)) elt.parentNode.scrollIntoView({block:'start', behavior:'smooth'});
+}
 	
 function generateHTML(symbol) {
 	transactionElt[symbol] = make('div');
@@ -1002,13 +1004,13 @@ function generateHTML(symbol) {
 	sidebarElt[symbol].innerHTML = `
 	<div id="${symbol}-tool1" class="objectWrapper">
 		<div style="display:flex; justify-content:space-between; margin-top:5px; margin-bottom:15px;">
-			<input placeholder="Seed (store securely) ..." id="import-${symbol}-seed" style="flex-grow:1; flex-basis:20px; margin-right:10px;" type="password" maxlength="64" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')" oninput="if (this.value.length == 0) D('${symbol}-generateButton').disabled = false; else D('${symbol}-generateButton').disabled = true;">
+			<input onfocus="scrollPanel(this.parentNode)" placeholder="Seed (store securely) ..." id="import-${symbol}-seed" style="flex-grow:1; flex-basis:20px; margin-right:10px;" type="password" maxlength="64" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')" oninput="if (this.value.length == 0) D('${symbol}-generateButton').disabled = false; else D('${symbol}-generateButton').disabled = true;">
 			<div>
 			<button tabindex="-1" style="font-size:0.8em" onclick="toggleVisibility(this, '${symbol}')">Show</button>
 			<button tabindex="-1" id="${symbol}-generateButton" style="font-size:0.8em" onclick="generateWallet('${symbol}')">Generate Seed</button>
 			</div>			
 		</div>
-		<input placeholder="Account index (0, 1, 2, etc) ..." id="import-${symbol}-index" type="number" style="width:80%" min="0" maxlength="64" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')">	
+		<input onfocus="scrollPanel(this)" placeholder="Account index (0, 1, 2, etc) ..." id="import-${symbol}-index" type="number" style="width:80%" min="0" maxlength="64" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')">	
 		<div style="text-align:center;">
 		<button style="margin-top:15px;" onclick="importWallet('${symbol}')">Load Account</button>
 		</div>
@@ -1024,7 +1026,7 @@ function generateHTML(symbol) {
 			<strong>Public display name:</strong>
 			
 			<div style="display:flex; justify-content:space-between;">
-				<input id="${symbol}-set-display" style="flex-grow:1; margin-right:10px;" type="text" maxlength="64">
+				<input onfocus="scrollPanel(this.parentNode.parentNode)" id="${symbol}-set-display" style="flex-grow:1; margin-right:10px;" type="text" maxlength="64">
 				<button style="font-size:0.8em" onclick="setName('${symbol}')">Set</button>
 			</div>
 		</div>
@@ -1053,9 +1055,9 @@ function generateHTML(symbol) {
 
 	<div class="objectWrapper">
 		<strong>Destination: </strong><span id="${symbol}-dest-display"></span>
-		<br><input placeholder="Destination address..." style="width:80%" id="${symbol}-dest" type="text" maxlength="128" onclick="this.select()" oninput="fetchDisplayName('${symbol}', '-dest-display', this.value)">
+		<br><input placeholder="Destination address..." style="width:80%" id="${symbol}-dest" type="text" maxlength="128" onclick="this.select()" onfocus="scrollPanel(this)" oninput="fetchDisplayName('${symbol}', '-dest-display', this.value)">
 		<br><strong>Amount:</strong>
-		<input placeholder="0.00" style="margin-top:15px; text-align:right; width:calc(80% - 130px)" id="${symbol}-withdrawal-amount" type="number" step="0.01" min="0">&nbsp; ${symbol}
+		<input placeholder="0.00" style="margin-top:15px; text-align:right; width:calc(80% - 130px)" onfocus="scrollPanel(this)" id="${symbol}-withdrawal-amount" type="number" step="0.01" min="0">&nbsp; ${symbol}
 		<div style="text-align:center;">
 		<button style="margin-top:15px" onclick="withdraw('${symbol}')">Transfer ${symbol}</button>
 		</div>
@@ -1067,7 +1069,7 @@ function generateHTML(symbol) {
 		<strong>Suggested representative: </strong><span id="${symbol}-rec-rep-display"></span>
 		<div style="margin-bottom:10px; overflow:hidden; text-overflow:ellipsis; cursor:pointer; font-size:0.8em" id="${symbol}-rec-rep" onclick="clickCopy(this, this.textContent)">&nbsp;</div>
 		<strong>New representative: </strong><span id="${symbol}-new-rep-display"></span>	
-		<br><input placeholder="New representative address..." style="width:80%" id="${symbol}-new-rep" type="text" maxlength="128" onclick="this.select()" oninput="fetchDisplayName('${symbol}', '-new-rep-display', this.value)" onkeyup="if (event.keyCode == 13) setRep('${symbol}')">
+		<br><input placeholder="New representative address..." onfocus="scrollPanel(this)" style="width:80%" id="${symbol}-new-rep" type="text" maxlength="128" onclick="this.select()" oninput="fetchDisplayName('${symbol}', '-new-rep-display', this.value)" onkeyup="if (event.keyCode == 13) setRep('${symbol}')">
 		<div style="text-align:center;">
 		<button style="margin-top:15px" onclick="setRep('${symbol}')">Set Representative</button>	
 		</div>
@@ -1076,7 +1078,7 @@ function generateHTML(symbol) {
 	<div id="${symbol}-tool3" class="objectWrapper" style="padding-bottom:20px">
 		<strong>QR codify (for device-device copy):</strong>
 		<div style="margin-bottom:20px; display:flex; justify-content:space-between">
-			<input style="flex-grow:1; margin-right:10px" id="${symbol}-qr-input" type="text" maxlength="128" onclick="this.select()" oninput="if (this.value) qrCode['${symbol}'].makeCode(this.value); else qrCode['${symbol}'].makeCode('')">
+			<input onfocus="scrollPanel(this.parentNode)" style="flex-grow:1; margin-right:10px" id="${symbol}-qr-input" type="text" maxlength="128" onclick="this.select()" oninput="if (this.value) qrCode['${symbol}'].makeCode(this.value); else qrCode['${symbol}'].makeCode('')">
 			<button style="font-size:0.8em" onclick="addressQR('${symbol}')">My Address</button>
 		</div>		
 		<div style="display:flex; justify-content:center" id="${symbol}-qrCodeImageBlock"></div>
