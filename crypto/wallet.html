@@ -18,16 +18,16 @@
 <body>
 	<div class="containerdiv">
 	<div id="firstDiv" class="firstDiv">
-	<div class="objectWrapper" style="margin-top:30px">
+	<div class="objectWrapper" style="margin-top:50px">
 		<div id="quote" style="white-space:pre-wrap; font-style:italic; font-size:0.9em" ></div>
 		<strong id="msg" style="padding:5px; z-index: 4; box-shadow: #ccc 2px 2px 2px; background-color: #fff;
 								  position: fixed; left: 0px; top: 0px; border-radius: 5px;
 								  pointer-events: none; opacity: 0.9;">Welcome.</strong>
 		
 		<div style="margin-top:20px; display:flex; align-items:center; justify-content:center">
-			<select style="padding:5px" name="primary" id="primary" onchange="selectPrimary(event.target.value)">
-				<option value="XNO">Nano (XNO)</option>
-				<option value="BAN">Banano (BAN)</option>
+			<select name="primary" id="primary" onchange="selectPrimary(event.target.value)">
+				<option style="background-color:#f1f4f4" value="XNO">Nano (XNO)</option>
+				<option style="background-color:#f1f4f4" value="BAN">Banano (BAN)</option>
 			</select>
 		</div>
 	</div>
@@ -102,6 +102,7 @@ if (typeof(Storage) !== "undefined") {
 	D('quote').appendChild(authorSpan);
 }
 
+var fullView = localStorage.getItem("view");
 var flashColor = "#def";
 var changeNameFlag = false;
 var nameCache = {};
@@ -629,8 +630,8 @@ function importWallet(symbol) {
 		
 		flash(D(`${symbol}-display`), "My Account #" + accountData[symbol].index + " (Unknown)");
 		fetchDisplayName(symbol, "-display", accountData[symbol].address);
-		refreshBalance(symbol);	
 		
+		refreshBalance(symbol);	
 		post(accountData[symbol].server, {action: 'account_info', representative: true, account: accountData[symbol].address}).then(function(accountInfo) {
 			if (accountInfo && accountInfo.representative) {
 				flash(D(`${symbol}-rep`), accountInfo.representative);	
@@ -639,7 +640,8 @@ function importWallet(symbol) {
 			}
 			if (accountInfo) showMsg(`${symbol} account loaded.`);
 			D(symbol + "-gray").style.filter = "opacity(1)";
-		});
+		});		
+		updateView(symbol);
 	}
 	
 	fetch(accountData[symbol].repRec).then(function(response) {
@@ -654,6 +656,7 @@ function importWallet(symbol) {
 				if (repAddr) {
 					flash(D(`${symbol}-rec-rep`), repAddr);
 					fetchDisplayName(symbol, "-rec-rep-display", repAddr);
+					accountData[symbol].representative = repAddr;
 				}
 			}
 		});
@@ -677,6 +680,7 @@ function mainClearWallet(symbol) {
 	flash(D(`${symbol}-rec-rep`), "\xa0");
 	flash(D(`${symbol}-rec-rep-display`), "");
 	
+	updateView(symbol);
 	showMsg(`${symbol} wallet cleared.`);	
 }
 
@@ -896,6 +900,31 @@ function donate(symbol) {
 	}, 400);
 }
 
+function updateView(symbol) {
+	if (fullView) {
+		D(symbol + "-tool1").style.display = "";
+		D(symbol + "-tool2").style.display = "";
+		D(symbol + "-tool3").style.display = "";
+		D(symbol + "-view").textContent = "Simple View";
+	} else {
+		if (accountData[symbol].address) D(symbol + "-tool1").style.display = "none";
+		else D(symbol + "-tool1").style.display = "";
+		D(symbol + "-tool2").style.display = "none";
+		D(symbol + "-tool3").style.display = "none";
+		D(symbol + "-view").textContent = "Show All Tools";
+	}
+}
+
+function toggleView(symbol) {
+	if (fullView) {
+		fullView = false;
+		localStorage.removeItem("view");
+	} else {
+		fullView = true;
+		localStorage.setItem("view", "true");
+	}
+	updateView(symbol);
+}
 
 function D(string) { return document.getElementById(string); }	
 	
@@ -906,6 +935,7 @@ function selectPrimary(symbol) {
 	D('firstDiv').appendChild(sidebarElt[symbol]);
 	D('secondDiv').appendChild(transactionElt[symbol]);
 	
+	updateView(symbol);
 	D('firstDiv').style.backgroundColor = accountData[symbol].bgColor;
 	flashColor = accountData[symbol].flashColor;
 	
@@ -937,7 +967,7 @@ function generateHTML(symbol) {
 		
 	sidebarElt[symbol] = make('div');
 	sidebarElt[symbol].innerHTML = `
-	<div class="objectWrapper">
+	<div id="${symbol}-tool1" class="objectWrapper">
 		<div style="display:flex; justify-content:space-between; margin-top:5px; margin-bottom:15px;">
 			<input placeholder="Seed (store securely) ..." id="import-${symbol}-seed" style="flex-grow:1; flex-basis:20px; margin-right:10px;" type="password" maxlength="64" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')" oninput="if (this.value.length == 0) D('${symbol}-generateButton').disabled = false; else D('${symbol}-generateButton').disabled = true;">
 			<div>
@@ -948,7 +978,6 @@ function generateHTML(symbol) {
 		<input placeholder="Account index (0, 1, 2, etc) ..." id="import-${symbol}-index" type="number" style="width:80%" min="0" maxlength="64" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')">	
 		<div style="text-align:center;">
 		<button style="margin-top:15px;" onclick="importWallet('${symbol}')">Load Account</button>
-		<button onclick="mainClearWallet('${symbol}')">Clear Wallet</button>
 		</div>
 	</div>
 	<div id="${symbol}-gray" style="margin-top:20px; margin-bottom:20px; filter:opacity(0.5)">
@@ -999,7 +1028,7 @@ function generateHTML(symbol) {
 		</div>
 	</div>
 		
-	<div class="objectWrapper" style='margin-top:20px'>
+	<div  id="${symbol}-tool2" class="objectWrapper" style='margin-top:20px'>
 		<strong>Current representative: </strong><span id="${symbol}-rep-display"></span>
 		<div style="margin-bottom:10px; overflow:hidden; text-overflow:ellipsis; cursor:pointer; font-size:0.8em" id="${symbol}-rep" onclick="clickCopy(this, this.textContent)">&nbsp;</div>	
 		<strong>Suggested representative: </strong><span id="${symbol}-rec-rep-display"></span>
@@ -1011,19 +1040,20 @@ function generateHTML(symbol) {
 		</div>
 	</div>
 		
-	<div class="objectWrapper" style="padding-bottom:20px">
+	<div id="${symbol}-tool3" class="objectWrapper" style="padding-bottom:20px">
 		<strong>QR codify (for device-device copy):</strong>
-		<div style="margin-bottom:20px; margin-top:10px; display:flex; justify-content:space-between">
+		<div style="margin-bottom:20px; display:flex; justify-content:space-between">
 			<input style="flex-grow:1; margin-right:10px" id="${symbol}-qr-input" type="text" maxlength="128" onclick="this.select()" oninput="if (this.value) qrCode['${symbol}'].makeCode(this.value); else qrCode['${symbol}'].makeCode('')">
 			<button style="font-size:0.8em" onclick="addressQR('${symbol}')">My Address</button>
 		</div>		
 		<div style="display:flex; justify-content:center" id="${symbol}-qrCodeImageBlock"></div>
 	</div>
-	
-		
-	<div style="text-align:center; margin-bottom:80px;">
-	<button style="margin-top:15px; font-size:0.8em" onclick="donate('${symbol}')">Donate!</button>	
 	</div>
+		
+	<div style="text-align:center; margin-top:25px; margin-bottom:80px;">
+	<button style="font-size:0.8em" onclick="donate('${symbol}')">Donate!</button>	
+	<button id="${symbol}-view" style="font-size:0.8em" onclick="toggleView('${symbol}')">Simple View</button>	
+	<button style="font-size:0.8em" onclick="mainClearWallet('${symbol}')">Clear Wallet</button>
 	</div>`;
 }
 
