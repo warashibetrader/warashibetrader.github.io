@@ -3,6 +3,7 @@
 	<title>Warashibe Wallet</title>	
 	<link rel="stylesheet" type="text/css" href="wallet.css">
 	<link rel="icon" href="strawicontrans.png">	
+	<link rel="manifest" href="manifest.json">
 	<script src="nanocurrency.js"></script>
 	<script src="quotes.js"></script>
 	<script src="qrcode.js"></script>
@@ -24,7 +25,8 @@
 								  position: fixed; left: 0px; top: 0px; border-radius: 5px;
 								  pointer-events: none; opacity: 0.9;">Welcome.</strong>
 		
-		<div style="margin-top:20px; display:flex; align-items:center; justify-content:center">
+		<div style="margin-top:20px; display:flex; align-items:center; justify-content:center">		
+			<button id="installButton" style="display:none;">Install Native App</button>
 			<select name="primary" id="primary" onchange="selectPrimary(event.target.value)">
 				<option style="background-color:#f1f4f4" value="XNO">Nano (XNO)</option>
 				<option style="background-color:#f1f4f4" value="BAN">Banano (BAN)</option>
@@ -952,6 +954,34 @@ function selectPrimary(symbol) {
 		}
 	}
 }
+
+
+let deferredInstallPrompt = null;
+D('installButton').addEventListener('click', function(event) {
+	deferredInstallPrompt.prompt();
+	
+	// CODELAB: Log user response to prompt.  
+	deferredInstallPrompt.userChoice.then((choice) => {
+		if (choice.outcome === 'accepted') {
+		  console.log('User accepted the A2HS prompt', choice);
+		  evt.srcElement.style.display = 'none';
+		} else console.log('User dismissed the A2HS prompt', choice);
+		deferredInstallPrompt = null;
+	});
+});
+
+// CODELAB: Add event listener for beforeinstallprompt event
+window.addEventListener('beforeinstallprompt', function (evt) {  // CODELAB: Add code to save event & show the install button.  
+    deferredInstallPrompt = evt;
+    evt.preventDefault();
+    D('installButton').style.display = 'inline';
+});
+
+window.addEventListener('appinstalled', function (evt) {  // CODELAB: Add code to log the event  
+    console.log('Ansyble was installed.', evt);
+});
+
+
 	
 function generateHTML(symbol) {
 	transactionElt[symbol] = make('div');
@@ -1053,9 +1083,12 @@ function generateHTML(symbol) {
 	<div style="text-align:center; margin-top:25px; margin-bottom:80px;">
 	<button style="font-size:0.8em" onclick="donate('${symbol}')">Donate!</button>	
 	<button id="${symbol}-view" style="font-size:0.8em" onclick="toggleView('${symbol}')">Simple View</button>	
-	<button style="font-size:0.8em" onclick="mainClearWallet('${symbol}')">Clear Wallet</button>
+	<button style="font-size:0.8em" onclick="mainClearWallet('${symbol}')">Clear ${symbol} Wallet</button>
 	</div>`;
 }
+
+
+
 
 
 </script>
