@@ -93,7 +93,7 @@ if (typeof(Storage) !== "undefined") {
 		quoteData = {quote:quoteDatabase[index].text, author:author};
 		localStorage.setItem("quote", JSON.stringify(quoteData));
 		
-		D('quote').appendChild(document.createTextNode("New code loaded." + "\x0a\x0a"));
+		D('quote').appendChild(document.createTextNode("New code installed." + "\x0a\x0a"));
 	}
 
 	let quoteSpan = make('span');
@@ -985,7 +985,7 @@ window.addEventListener('appinstalled', function (evt) {  // CODELAB: Add code t
 });
 
 function scrollPanel(elt) {
-	if ((screen.width <= 550 || screen.height <= 550)) elt.parentNode.scrollIntoView({block:'start', behavior:'smooth', inline: "nearest"});
+	if ((screen.width <= 550 || screen.height <= 550)) elt.parentNode.scrollIntoView({block:'start', behavior:'auto', inline: "nearest"});
 }
 	
 function generateHTML(symbol) {
