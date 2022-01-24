@@ -974,6 +974,7 @@ D('installButton').addEventListener('click', function(event) {
 
 // CODELAB: Add event listener for beforeinstallprompt event
 window.addEventListener('beforeinstallprompt', function (evt) {  // CODELAB: Add code to save event & show the install button.  
+	console.log("Detected that PWA can be installed.");
     deferredInstallPrompt = evt;
     evt.preventDefault();
     D('installButton').style.display = 'inline';
