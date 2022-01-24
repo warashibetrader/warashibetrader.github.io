@@ -51,7 +51,7 @@
       "purpose": "any maskable"
     }
   ],
-  "start_url": "/wallet.html",
+  "start_url": "https://warashibetrader.github.io/crypto/wallet",
   "display": "standalone",
   "background_color": "#fff",
   "theme_color": "#fff"
