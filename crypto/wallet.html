@@ -985,7 +985,7 @@ window.addEventListener('appinstalled', function (evt) {  // CODELAB: Add code t
 });
 
 function scrollPanel(elt) {
-	if ((screen.width <= 550 || screen.height <= 550)) elt.parentNode.scrollIntoView({block:'start', behavior:'smooth'});
+	if ((screen.width <= 550 || screen.height <= 550)) elt.parentNode.scrollIntoView({block:'start', behavior:'smooth', inline: "nearest"});
 }
 	
 function generateHTML(symbol) {
