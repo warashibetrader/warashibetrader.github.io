@@ -44,6 +44,8 @@
 <script>
 'use strict';
 
+//////////////////////////////////////////////////////// security quote setup
+
 var returnVisitor = true;
 if ('serviceWorker' in navigator) {
 	navigator.serviceWorker.register('service-worker.js').then((reg) => {
@@ -106,13 +108,15 @@ if (typeof(Storage) !== "undefined") {
 	D('quote').appendChild(authorSpan);
 }
 
+
+//////////////////////////////////////////////////////// global data
+
 var fullView = localStorage.getItem("view");
-var flashColor = "#def";
 var changeNameFlag = false;
+
 var nameCache = {};
-var sidebarElt = {};
-var qrCode = {};
-var transactionElt = {};
+var backupCache = {};
+
 var accountData = {};
 accountData['XNO'] = {representative:'nano_1natrium1o3z5519ifou7xii8crpxpk8y65qmkih8e8bpsjri651oza8imdd',
 						server:'https://proxy.powernode.cc/proxy',
@@ -130,77 +134,6 @@ accountData['BAN'] = {representative:'ban_1ka1ium4pfue3uxtntqsrib8mumxgazsjf58gi
 						donation:'ban_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7',
 						flashColor:'#ffc',
 						bgColor:'orange'};
-	
-var backupCache = {};
-
-
-let nanoCount = 0;
-let ninjaPromise = fetch('https://mynano.ninja/api/accounts/aliases').then(function(response) { response.json().then(function(data) { 
-	if (data) {
-		for (let i = 0; i < data.length; i++) {
-			if (!backupCache[data[i].account]) {
-				backupCache[data[i].account] = data[i].alias;
-				nanoCount++;
-			}
-		}
-	}	
-	console.log("Nano ninja count: " + nanoCount);
-	return true;
-});});
-
-let lookerPromise = fetch('https://nanolooker.com/api/known-accounts-balance').then(function(response) { response.json().then(function(data) { 
-	if (data) {
-		for (let i = 0; i < data.length; i++) {
-			if (!backupCache[data[i].account]) {
-				backupCache[data[i].account] = data[i].alias;
-				nanoCount++;
-			}
-		}
-	}		
-	console.log("Nano looker count: " + nanoCount);
-	return true;
-});});	
-
-ninjaPromise.then(function() {
-lookerPromise.then(function() {
-fetch('https://nano.to/known').then(function(response) { response.json().then(function(data) { 
-	if (data) {
-		for (let i = 0; i < data.length; i++) {
-			if (!backupCache[data[i].address]) {
-				backupCache[data[i].address] = data[i].name;
-				nanoCount++;
-			}
-		}
-	}
-	console.log("Nano to count: " + nanoCount);
-});});
-});});
-
-let bananoCount = 0;
-fetch('https://api.spyglass.pw/banano/v1/known/accounts',{ method: 'POST' }).then(function(response) { response.json().then(function(data) { 
-	if (data) {
-		for (let i = 0; i < data.length; i++) {
-			if (!backupCache[data[i].address]) {
-				backupCache[data[i].address] = data[i].alias;
-				bananoCount++;
-			}
-		}
-	}
-	console.log("Banano spyglass count: " + bananoCount);
-});});
-
-fetch('https://bananolooker.com/api/known-accounts').then(function(response) { response.json().then(function(data) { 
-	if (data) {
-		for (let i = 0; i < data.length; i++) {
-			if (!backupCache[data[i].account]) {
-				backupCache[data[i].account] = data[i].alias;
-				bananoCount++;
-			}
-		}
-	}
-	console.log("Banano looker count: " + bananoCount);
-});});
-	
 	
 accountData['XNO'].queue = new Promise(function(resolve, reject) { resolve(true); });
 accountData['BAN'].queue = new Promise(function(resolve, reject) { resolve(true); });
@@ -501,7 +434,71 @@ function nanoConfirm(symbol, hash) {
 	});
 }
 
-//////////////////////////////////////////////////////// Exchange websocket
+//////////////////////////////////////////////////////// Exchange websocket and other setup
+
+let nanoCount = 0;
+let ninjaPromise = fetch('https://mynano.ninja/api/accounts/aliases').then(function(response) { response.json().then(function(data) { 
+	if (data) {
+		for (let i = 0; i < data.length; i++) {
+			if (!backupCache[data[i].account]) {
+				backupCache[data[i].account] = data[i].alias;
+				nanoCount++;
+			}
+		}
+	}	
+	console.log("Nano ninja count: " + nanoCount);
+});});
+
+let lookerPromise = fetch('https://nanolooker.com/api/known-accounts-balance').then(function(response) { response.json().then(function(data) { 
+	if (data) {
+		for (let i = 0; i < data.length; i++) {
+			if (!backupCache[data[i].account]) {
+				backupCache[data[i].account] = data[i].alias;
+				nanoCount++;
+			}
+		}
+	}		
+	console.log("Nano looker count: " + nanoCount);
+});});	
+
+ninjaPromise.then(function() { lookerPromise.then(function() {
+fetch('https://nano.to/known').then(function(response) { response.json().then(function(data) { 
+	if (data) {
+		for (let i = 0; i < data.length; i++) {
+			if (!backupCache[data[i].address]) {
+				backupCache[data[i].address] = data[i].name;
+				nanoCount++;
+			}
+		}
+	}
+	console.log("Nano to count: " + nanoCount);
+});});
+});});
+
+let bananoCount = 0;
+fetch('https://api.spyglass.pw/banano/v1/known/accounts',{ method: 'POST' }).then(function(response) { response.json().then(function(data) { 
+	if (data) {
+		for (let i = 0; i < data.length; i++) {
+			if (!backupCache[data[i].address]) {
+				backupCache[data[i].address] = data[i].alias;
+				bananoCount++;
+			}
+		}
+	}
+	console.log("Banano spyglass count: " + bananoCount);
+});});
+
+fetch('https://bananolooker.com/api/known-accounts').then(function(response) { response.json().then(function(data) { 
+	if (data) {
+		for (let i = 0; i < data.length; i++) {
+			if (!backupCache[data[i].account]) {
+				backupCache[data[i].account] = data[i].alias;
+				bananoCount++;
+			}
+		}
+	}
+	console.log("Banano looker count: " + bananoCount);
+});});
 
 function exchangeURL() {
 	if ((new Date()).getDate() < 15) return 'wss://warashibetrader.herokuapp.com';
@@ -557,6 +554,7 @@ function setupWebsocket() {
 			await changeRep[data.currency](changeNameFlag);
 			showMsg("Display name updated.");	
 			nameCache[data.address] = data.display;
+			backupCache[data.address] = data.display;
 			changeNameFlag = false;
 		}
 	});
@@ -568,12 +566,37 @@ function setupWebsocket() {
 	
 	ws.on('getNameReplyCue', function(data) {
 		nameCache[data.address] = data.display;
+		backupCache[data.address] = data.display;
 		displayName(data.currency, data.div, data.address, data.display);
 	});
 }
 
 
-selectPrimary(D('primary').value);	
+selectPrimary(D('primary').value);
+
+function selectPrimary(symbol) {
+	D('firstDiv').removeChild(D('firstDiv').lastChild);
+	D('secondDiv').removeChild(D('secondDiv').lastChild);
+	
+	D('firstDiv').appendChild(accountData[symbol].sidebarElt);
+	D('secondDiv').appendChild(accountData[symbol].transactionElt);
+	
+	D('firstDiv').style.backgroundColor = accountData[symbol].bgColor;
+	updateView(symbol);
+	
+	if (!accountData[symbol].qrCode) accountData[symbol].qrCode = new QRCode(symbol + "-qrCodeImageBlock");
+	
+	if (!accountData[symbol].address) {
+		let seed = localStorage.getItem(`${symbol}-seed`);	
+		if (seed) {	
+			D(`import-${symbol}-seed`).value = seed;
+			D(`${symbol}-generateButton`).disabled = true;
+			let index = localStorage.getItem(`${symbol}-index`);
+			if (index) D(`import-${symbol}-index`).value = index; 
+			importWallet(symbol);
+		}
+	} else refreshBalance(symbol);
+}
 
 //////////////////////////////////////////////////////// Interface with helper functions, and websocket
 
@@ -590,13 +613,22 @@ function setName(symbol) {
 function fetchDisplayName(symbol, divString, address, skipCache) {
 	if (checkAddress[symbol](address)) {
 		if (nameCache[address] && !skipCache) displayName(symbol, divString, address, nameCache[address]);
-		else ws.emit("getNameCue", {div: divString, address: address, currency: symbol});
+		else if (!ws.emit("getNameCue", {div: divString, address: address, currency: symbol})) displayName(symbol, divString, address, nameCache[address]);
 	} else D(symbol + divString).textContent = "";
 }
 
 function displayName(symbol, divString, address, str) {
 	let displayString = str;
 	if (!displayString) displayString = backupCache[address];
+	
+	if (divString == "-display") {
+		if (displayString) localStorage.setItem(`${symbol}-display`, {address:address, name:displayString});
+		else {
+			let myDisplay = localStorage.getItem(`${symbol}-display`);
+			if (myDisplay && myDisplay.address == address) displayString = myDisplay.name;
+		}
+	}
+	
 	if (!displayString) {
 		if (divString == "-display") displayString = "My Account #" + accountData[symbol].index + " (Unknown)";
 		else if (address == accountData[symbol].address) displayString = "(me)";
@@ -606,7 +638,7 @@ function displayName(symbol, divString, address, str) {
 }
 
 //////////////////////////////////////////////////////// Interface with helper functions
-
+	
 function generateWallet(symbol) {
 	D(`import-${symbol}-seed`).value = generateSeed[symbol](); 	
 	navigator.clipboard.writeText(D(`import-${symbol}-seed`).value);	
@@ -623,29 +655,32 @@ function importWallet(symbol) {
 	else if (D(`import-${symbol}-index`).value.length > 0 && !/^[0-9]+$/.test(D(`import-${symbol}-index`).value)) showMsg("Invalid account index.");
 	else {
 		if (D(`import-${symbol}-index`).value.length == 0) D(`import-${symbol}-index`).value = "0";
-		showMsg(`${symbol} account loading...`);
+		showMsg(`Loading ${symbol} account...`);
 		clearWallet(symbol);
 		localStorage.setItem(`${symbol}-seed`, D(`import-${symbol}-seed`).value);
 		localStorage.setItem(`${symbol}-index`, D(`import-${symbol}-index`).value);
 		
 		unpackSeed[symbol]();
-		flash(D(`${symbol}-address`), accountData[symbol].address);			
-		addressQR(symbol);		
-		
 		flash(D(`${symbol}-display`), "My Account #" + accountData[symbol].index + " (Unknown)");
-		fetchDisplayName(symbol, "-display", accountData[symbol].address);
+		flash(D(`${symbol}-address`), accountData[symbol].address);			
+		addressQR(symbol);	
+		updateView(symbol);	
+		//D(symbol + "-gray").style.filter = "opacity(1)";
+		D(symbol + "-gray").style.display = "";
 		
+		fetchDisplayName(symbol, "-display", accountData[symbol].address);		
 		refreshBalance(symbol);	
 		post(accountData[symbol].server, {action: 'account_info', representative: true, account: accountData[symbol].address}).then(function(accountInfo) {
+			if (accountInfo && accountInfo.representative) localStorage.setItem(`${symbol}-info`, accountInfo);				
+			else accountInfo = localStorage.getItem(`${symbol}-info`);
+			
 			if (accountInfo && accountInfo.representative) {
 				flash(D(`${symbol}-rep`), accountInfo.representative);	
 				fetchDisplayName(symbol, "-rep-display", accountInfo.representative);
 				flash(D(`${symbol}-balance`), unitFromRaw[symbol](accountInfo.balance));
 			}
 			if (accountInfo) showMsg(`${symbol} account loaded.`);
-			D(symbol + "-gray").style.filter = "opacity(1)";
 		});		
-		updateView(symbol);
 	}
 	
 	fetch(accountData[symbol].repRec).then(function(response) {
@@ -668,24 +703,29 @@ function importWallet(symbol) {
 }
 
 function mainClearWallet(symbol) {
-	clearWallet(symbol);
-	
-	D(`import-${symbol}-seed`).value = ""; 
-	D(`${symbol}-generateButton`).disabled = false;
-	D(`import-${symbol}-index`).value = ""; 	
-	
-	localStorage.removeItem(`${symbol}-seed`); 
-	localStorage.removeItem(`${symbol}-index`); 
-	
-	flash(D(`${symbol}-dest-display`), "");
-	D(symbol + "-dest").value = "";	
-	D(`${symbol}-withdrawal-amount`).value = "";
-	
-	flash(D(`${symbol}-rec-rep`), "\xa0");
-	flash(D(`${symbol}-rec-rep-display`), "");
-	
-	updateView(symbol);
-	showMsg(`${symbol} wallet cleared.`);	
+	if (confirm("Clear all data for " + symbol + ", including the wallet seed?")) {
+		clearWallet(symbol);
+		
+		D(`import-${symbol}-seed`).value = ""; 
+		D(`${symbol}-generateButton`).disabled = false;
+		D(`import-${symbol}-index`).value = ""; 	
+		
+		localStorage.removeItem(`${symbol}-seed`); 
+		localStorage.removeItem(`${symbol}-index`); 
+		localStorage.removeItem(`${symbol}-display`); 
+		localStorage.removeItem(`${symbol}-info`);
+		
+		flash(D(`${symbol}-dest-display`), "");
+		D(symbol + "-dest").value = "";	
+		D(`${symbol}-withdrawal-amount`).value = "";
+		
+		flash(D(`${symbol}-rec-rep`), "\xa0");
+		flash(D(`${symbol}-rec-rep-display`), "");
+		
+		updateView(symbol);
+		showMsg(`${symbol} wallet cleared.`);
+		D('firstDiv').scrollTo(0, 0); 
+	}
 }
 
 function clearWallet(symbol) {
@@ -709,11 +749,12 @@ function clearWallet(symbol) {
 	
 	D(symbol + "-new-rep").value = "";	
 	D(symbol + '-qr-input').value = "";
-	qrCode[symbol].makeCode("");
+	accountData[symbol].qrCode.makeCode("");
 	
 	if (D(symbol + "-editpanel").style.display != "none") D(symbol + "-editbutton").click();
 	
-	D(symbol + "-gray").style.filter = "opacity(0.5)";
+	//D(symbol + "-gray").style.filter = "opacity(0.5)";
+	D(symbol + "-gray").style.display = "none";
 }
 
 function refreshBalance(symbol) {
@@ -762,37 +803,6 @@ async function setRep(symbol) {
 	}
 }
 
-//////////////////////////////////////////////////////// General helper functions
-
-function enqueue(symbol, func) {
-	accountData[symbol].queue = accountData[symbol].queue.then(func);
-	return accountData[symbol].queue;
-}
-
-function showMsg(str, bold) {
-	let e = new Date();
-	flash(D('msg'), e.toLocaleTimeString() + ": " + str);
-	if (bold) D('msg').style.backgroundColor = "#F00";
-}
-
-function flash(elt, str) {
-	if (str != undefined) elt.textContent = str;
-	elt.style.backgroundColor = flashColor;	
-	setTimeout(function() {	elt.style.backgroundColor = "white";}, 500);
-}
-
-function clearDOM(myNode) {	
-	while (myNode.firstChild) {
-		myNode.removeChild(myNode.lastChild);
-	}
-}
-
-function make(string, myClass) { 
-	let myObj = document.createElement(string);
-	if (myClass) myObj.classList.add(myClass);
-	return myObj;
-}
-
 function toggleVisibility(caller, symbol) {
 	let x = D(`import-${symbol}-seed`);
 	if (x.type === "password") {
@@ -813,6 +823,85 @@ function toggleEdit(symbol) {
 		D(symbol + "-set-display").value = "";
 		D(symbol + "-editbutton").textContent = "Edit";
 	}
+}
+
+function addressQR(symbol) {
+	if (accountData[symbol].address) {
+		D(symbol + '-qr-input').value = accountData[symbol].address;
+		flash(D(symbol + '-qr-input'));
+		accountData[symbol].qrCode.makeCode(accountData[symbol].address);
+	}
+}
+
+function donate(symbol) {
+	D(symbol + "-dest").scrollIntoView({block:"center", behavior:"auto"});
+	D(symbol + "-dest").value = accountData[symbol].donation;
+	flash(D(symbol + "-dest"));
+	fetchDisplayName(symbol, '-dest-display', D(symbol + "-dest").value);
+}
+
+function updateView(symbol) {
+	if (fullView) {
+		D(symbol + "-tool1").style.display = "";
+		D(symbol + "-tool2").style.display = "";
+		D(symbol + "-tool3").style.display = "";
+		D(symbol + "-view").textContent = "Simple View";
+	} else {
+		if (accountData[symbol].address) D(symbol + "-tool1").style.display = "none";
+		else D(symbol + "-tool1").style.display = "";
+		D(symbol + "-tool2").style.display = "none";
+		D(symbol + "-tool3").style.display = "none";
+		D(symbol + "-view").textContent = "Show All Tools";
+	}
+}
+
+function toggleView(symbol) {
+	if (fullView) {
+		fullView = false;
+		localStorage.removeItem("view");
+	} else {
+		fullView = true;
+		localStorage.setItem("view", "true");
+	}
+	updateView(symbol);
+}
+
+function scrollPanel(elt) {
+	if ((screen.width <= 550 || screen.height <= 550)) {
+		elt.parentNode.scrollIntoView({block:'start', behavior:'auto', inline: "nearest"});		
+		if (Math.ceil(D('firstDiv').scrollHeight - D('firstDiv').scrollTop) <= D('firstDiv').clientHeight + 1) D('firstDiv').scrollTo(0, D('firstDiv').scrollHeight);
+	}	
+}
+
+//////////////////////////////////////////////////////// General helper functions
+
+function enqueue(symbol, func) {
+	accountData[symbol].queue = accountData[symbol].queue.then(func);
+	return accountData[symbol].queue;
+}
+
+function showMsg(str, bold) {
+	let e = new Date();
+	flash(D('msg'), e.toLocaleTimeString() + ": " + str);
+	if (bold) D('msg').style.backgroundColor = "#F00";
+}
+
+function flash(elt, str) {
+	if (str != undefined) elt.textContent = str;
+	elt.style.backgroundColor = accountData[D('primary').value].flashColor;	
+	setTimeout(function() {	elt.style.backgroundColor = "white";}, 500);
+}
+
+function clearDOM(myNode) {	
+	while (myNode.firstChild) {
+		myNode.removeChild(myNode.lastChild);
+	}
+}
+
+function make(string, myClass) { 
+	let myObj = document.createElement(string);
+	if (myClass) myObj.classList.add(myClass);
+	return myObj;
 }
 
 function clickCopy(elt, str) {
@@ -886,77 +975,8 @@ function post(url, params) {
     });
 }
 
-function addressQR(symbol) {
-	if (accountData[symbol].address) {
-		D(symbol + '-qr-input').value = accountData[symbol].address;
-		flash(D(symbol + '-qr-input'));
-		qrCode[symbol].makeCode(accountData[symbol].address);
-	}
-}
-
-
-function donate(symbol) {
-	D(symbol + "-dest").scrollIntoView({block:"center", behavior:"auto"});
-	setTimeout(function() {
-	D(symbol + "-dest").value = accountData[symbol].donation;
-	flash(D(symbol + "-dest"));
-	fetchDisplayName(symbol, '-dest-display', D(symbol + "-dest").value);
-	}, 400);
-}
-
-function updateView(symbol) {
-	if (fullView) {
-		D(symbol + "-tool1").style.display = "";
-		D(symbol + "-tool2").style.display = "";
-		D(symbol + "-tool3").style.display = "";
-		D(symbol + "-view").textContent = "Simple View";
-	} else {
-		if (accountData[symbol].address) D(symbol + "-tool1").style.display = "none";
-		else D(symbol + "-tool1").style.display = "";
-		D(symbol + "-tool2").style.display = "none";
-		D(symbol + "-tool3").style.display = "none";
-		D(symbol + "-view").textContent = "Show All Tools";
-	}
-}
-
-function toggleView(symbol) {
-	if (fullView) {
-		fullView = false;
-		localStorage.removeItem("view");
-	} else {
-		fullView = true;
-		localStorage.setItem("view", "true");
-	}
-	updateView(symbol);
-}
 
 function D(string) { return document.getElementById(string); }	
-	
-function selectPrimary(symbol) {
-	D('firstDiv').removeChild(D('firstDiv').lastChild);
-	D('secondDiv').removeChild(D('secondDiv').lastChild);
-	
-	D('firstDiv').appendChild(sidebarElt[symbol]);
-	D('secondDiv').appendChild(transactionElt[symbol]);
-	
-	updateView(symbol);
-	D('firstDiv').style.backgroundColor = accountData[symbol].bgColor;
-	flashColor = accountData[symbol].flashColor;
-	
-	if (!qrCode[symbol]) qrCode[symbol] = new QRCode(symbol + "-qrCodeImageBlock");
-	
-	if (!accountData[symbol].address) {
-		let seed = localStorage.getItem(`${symbol}-seed`);	
-		if (seed) {	
-			D(`import-${symbol}-seed`).value = seed;
-			D(`${symbol}-generateButton`).disabled = true;
-			let index = localStorage.getItem(`${symbol}-index`);
-			if (index) D(`import-${symbol}-index`).value = index; 
-			importWallet(symbol);
-		}
-	}
-}
-
 
 let deferredInstallPrompt = null;
 D('installButton').addEventListener('click', function(event) {
@@ -983,14 +1003,10 @@ window.addEventListener('beforeinstallprompt', function (evt) {  // CODELAB: Add
 window.addEventListener('appinstalled', function (evt) {  // CODELAB: Add code to log the event  
     console.log('Ansyble was installed.', evt);
 });
-
-function scrollPanel(elt) {
-	if ((screen.width <= 550 || screen.height <= 550)) elt.parentNode.scrollIntoView({block:'start', behavior:'auto', inline: "nearest"});
-}
 	
 function generateHTML(symbol) {
-	transactionElt[symbol] = make('div');
-	transactionElt[symbol].innerHTML = `	
+	accountData[symbol].transactionElt = make('div');
+	accountData[symbol].transactionElt.innerHTML = `	
 	<div id="${symbol}-gray2">
 		<div style="max-width:620px; text-align:center"><strong style="display:inline-block; margin-top:30px; font-size:1.1em">Transactions</strong></div>
 		<ul id="${symbol}-transactions" style="padding-left:0px; max-width:620px; list-style: none;"></ul>
@@ -1000,8 +1016,8 @@ function generateHTML(symbol) {
 		</div>
 	</div>`;
 		
-	sidebarElt[symbol] = make('div');
-	sidebarElt[symbol].innerHTML = `
+	accountData[symbol].sidebarElt = make('div');
+	accountData[symbol].sidebarElt.innerHTML = `
 	<div id="${symbol}-tool1" class="objectWrapper">
 		<div style="display:flex; justify-content:space-between; margin-top:5px; margin-bottom:15px;">
 			<input onfocus="scrollPanel(this.parentNode)" placeholder="Seed (store securely) ..." id="import-${symbol}-seed" style="flex-grow:1; flex-basis:20px; margin-right:10px;" type="password" maxlength="64" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')" oninput="if (this.value.length == 0) D('${symbol}-generateButton').disabled = false; else D('${symbol}-generateButton').disabled = true;">
@@ -1010,12 +1026,12 @@ function generateHTML(symbol) {
 			<button tabindex="-1" id="${symbol}-generateButton" style="font-size:0.8em" onclick="generateWallet('${symbol}')">Generate Seed</button>
 			</div>			
 		</div>
-		<input onfocus="scrollPanel(this)" placeholder="Account index (0, 1, 2, etc) ..." id="import-${symbol}-index" type="number" style="width:80%" min="0" maxlength="64" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')">	
+		<input onfocus="scrollPanel(this)" placeholder="Account index (default 0; or 1, 2, etc) ..." id="import-${symbol}-index" type="number" style="width:80%" min="0" maxlength="64" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')">	
 		<div style="text-align:center;">
 		<button style="margin-top:15px;" onclick="importWallet('${symbol}')">Load Account</button>
 		</div>
 	</div>
-	<div id="${symbol}-gray" style="margin-top:20px; margin-bottom:20px; filter:opacity(0.5)">
+	<div id="${symbol}-gray" style="margin-top:20px; margin-bottom:20px; display:none; filter:opacity(1)">
 	<div class="objectWrapper">
 		<div style="display:flex; align-items:center; justify-content:space-between">
 			<strong><div id="${symbol}-display" style="font-size:1.1em" onclick="fetchDisplayName('${symbol}', '-display', accountData['${symbol}'].address, true)">My Account #0 (Unknown)</div></strong>
@@ -1033,7 +1049,7 @@ function generateHTML(symbol) {
 		
 		
 		<div style="margin-top:10px; margin-bottom:20px">
-		<strong>Address (share publicly):</strong>
+		<strong>Public address:</strong>
 		<div style="overflow:hidden; text-overflow:ellipsis; cursor:pointer; font-size:0.8em" id="${symbol}-address" onclick="clickCopy(this, this.textContent)">&nbsp;</div>
 		</div>
 		
@@ -1076,19 +1092,20 @@ function generateHTML(symbol) {
 	</div>
 		
 	<div id="${symbol}-tool3" class="objectWrapper" style="padding-bottom:20px">
-		<strong>QR codify (for device-device copy):</strong>
+		<strong>Device-to-device communication:</strong>
 		<div style="margin-bottom:20px; display:flex; justify-content:space-between">
-			<input onfocus="scrollPanel(this.parentNode)" style="flex-grow:1; margin-right:10px" id="${symbol}-qr-input" type="text" maxlength="128" onclick="this.select()" oninput="if (this.value) qrCode['${symbol}'].makeCode(this.value); else qrCode['${symbol}'].makeCode('')">
+			<input placeholder="Text to QR-encode..." onfocus="scrollPanel(this.parentNode)" style="flex-grow:1; margin-right:10px" id="${symbol}-qr-input" type="text" maxlength="128" onclick="this.select()" oninput="if (this.value) accountData['${symbol}'].qrCode.makeCode(this.value); else accountData['${symbol}'].qrCode.makeCode('')">
 			<button style="font-size:0.8em" onclick="addressQR('${symbol}')">My Address</button>
 		</div>		
 		<div style="display:flex; justify-content:center" id="${symbol}-qrCodeImageBlock"></div>
 	</div>
-	</div>
 		
 	<div style="text-align:center; margin-top:30px; margin-bottom:80px;">
-	<button style="font-size:0.8em" onclick="donate('${symbol}')">Donate!</button>	
-	<button id="${symbol}-view" style="font-size:0.8em" onclick="toggleView('${symbol}')">Simple View</button>	
-	<button style="font-size:0.8em" onclick="mainClearWallet('${symbol}')">Clear ${symbol} Wallet</button>
+		<button style="font-size:0.8em" onclick="donate('${symbol}')">Donate!</button>	
+		<button id="${symbol}-view" style="font-size:0.8em" onclick="toggleView('${symbol}')">Simple View</button>	
+		<button style="font-size:0.8em" onclick="mainClearWallet('${symbol}')">Clear ${symbol} Wallet</button>
+	</div>
+	
 	</div>`;
 }
 
