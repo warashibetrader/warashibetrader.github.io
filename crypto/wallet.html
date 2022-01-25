@@ -30,7 +30,7 @@
 								  pointer-events: none; opacity: 0.9;">Welcome.</strong>
 		
 		<div style="margin-top:20px; display:flex; align-items:center; justify-content:center">		
-			<button id="installButton" style="display:none;">Install Native App</button>&nbsp;
+			<button id="installButton" style="display:none; margin-right:5px;">Install Native App</button>
 			<select name="primary" id="primary" onchange="selectPrimary(event.target.value)">
 				<option style="background-color:#f1f4f4" value="XNO">Nano (XNO)</option>
 				<option style="background-color:#f1f4f4" value="BAN">Banano (BAN)</option>
@@ -567,8 +567,10 @@ function setupWebsocket() {
 	});	
 	
 	ws.on('getNameReplyCue', function(data) {
-		nameCache[data.address] = data.display;
-		backupCache[data.address] = data.display;
+		if (data.display) {
+			nameCache[data.address] = data.display;
+			backupCache[data.address] = data.display;
+		}
 		displayName(data.currency, data.div, data.address, data.display);
 	});
 }
