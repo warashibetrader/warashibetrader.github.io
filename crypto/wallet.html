@@ -869,13 +869,21 @@ function toggleView(symbol) {
 	updateView(symbol);
 }
 
+var currentElt;
+
 function scrollPanel(elt) {
-	if ((screen.width <= 550 || screen.height <= 550)) elt.parentNode.scrollIntoView({block:'start', behavior:'auto', inline: "nearest"});	
+	if ((screen.width <= 550 || screen.height <= 550)) {
+		elt.parentNode.scrollIntoView({block:'start', behavior:'auto', inline: "nearest"});	
+		currentElt = elt;
+		setTimeout(function() {currentElt = null;}, 2000);
+	}
 }
 
-window.addEventListener("resize", function() {		
-	if (Math.ceil(D('firstDiv').scrollHeight - D('firstDiv').scrollTop) <= D('firstDiv').clientHeight + 1) D('firstDiv').scrollTo(0, D('firstDiv').scrollHeight); 
-});
+if ((screen.width <= 550 || screen.height <= 550)) {
+	window.addEventListener("resize", function() {	
+		currentElt.parentNode.scrollIntoView({block:'start', behavior:'auto', inline: "nearest"});	
+	});
+}
 
 //////////////////////////////////////////////////////// General helper functions
 
