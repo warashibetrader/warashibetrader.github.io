@@ -671,15 +671,16 @@ function importWallet(symbol) {
 		fetchDisplayName(symbol, "-display", accountData[symbol].address);		
 		refreshBalance(symbol);	
 		post(accountData[symbol].server, {action: 'account_info', representative: true, account: accountData[symbol].address}).then(function(accountInfo) {
-			if (accountInfo && accountInfo.representative) localStorage.setItem(`${symbol}-info`, accountInfo);				
-			else accountInfo = localStorage.getItem(`${symbol}-info`);
+			if (accountInfo) {
+				showMsg(`${symbol} account loaded.`);
+				if (accountInfo.representative) localStorage.setItem(`${symbol}-info`, accountInfo);	
+			} else accountInfo = localStorage.getItem(`${symbol}-info`);
 			
 			if (accountInfo && accountInfo.representative) {
 				flash(D(`${symbol}-rep`), accountInfo.representative);	
 				fetchDisplayName(symbol, "-rep-display", accountInfo.representative);
 				flash(D(`${symbol}-balance`), unitFromRaw[symbol](accountInfo.balance));
 			}
-			if (accountInfo) showMsg(`${symbol} account loaded.`);
 		});		
 	}
 	
