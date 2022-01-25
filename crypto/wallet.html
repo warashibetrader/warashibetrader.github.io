@@ -875,7 +875,7 @@ function scrollPanel(elt) {
 	if ((screen.width <= 550 || screen.height <= 550)) {
 		elt.parentNode.scrollIntoView({block:'start', behavior:'auto', inline: "nearest"});	
 		currentElt = elt;
-		setTimeout(function() {currentElt = null;}, 3000);
+		setTimeout(function() {currentElt = null;}, 1000);
 	}
 }
 
