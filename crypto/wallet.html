@@ -11,6 +11,8 @@
 
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">	
 	<meta name="theme-color" content="#fff">	
+	<meta name="description" content="A multi-asset cryptocurrency wallet for Nano and Banano, featuring integration with a public directory of addresses. Designed as a single page application emphasizing security, speed, and simplicity. Progressive Web App (PWA) support.">	
+	
 	<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
 	<meta content="utf-8" http-equiv="encoding">
 	<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -28,7 +30,7 @@
 								  pointer-events: none; opacity: 0.9;">Welcome.</strong>
 		
 		<div style="margin-top:20px; display:flex; align-items:center; justify-content:center">		
-			<button id="installButton" style="display:none;">Install Native App</button>
+			<button id="installButton" style="display:none;">Install Native App</button>&nbsp;
 			<select name="primary" id="primary" onchange="selectPrimary(event.target.value)">
 				<option style="background-color:#f1f4f4" value="XNO">Nano (XNO)</option>
 				<option style="background-color:#f1f4f4" value="BAN">Banano (BAN)</option>
@@ -102,7 +104,7 @@ if (typeof(Storage) !== "undefined") {
 	let authorSpan = make('div');		
 	quoteSpan.textContent = quoteData.quote;
 	authorSpan.textContent = ' -\xa0' + quoteData.author;
-	authorSpan.innerHTML += '\xa0(<a href="" target="_blank">?</a>)';
+	authorSpan.innerHTML += '\xa0(<a rel="noopener" href="" target="_blank">?</a>)';
 	authorSpan.style.textAlign = "right";
 	D('quote').appendChild(quoteSpan);
 	D('quote').appendChild(authorSpan);
@@ -1013,7 +1015,7 @@ function generateHTML(symbol) {
 		<ul id="${symbol}-transactions" style="padding-left:0px; max-width:620px; list-style: none;"></ul>
 		<div style="max-width:620px; margin-top:30px; margin-bottom:70px; text-align:center">
 			<button style="display:none" id="${symbol}-loadMore">Load More</button>
-			<div id="${symbol}-gettingStarted"><a href="${accountData[symbol].gettingStarted}" target="_blank">${symbol} information, resources, and links</a></div>
+			<div id="${symbol}-gettingStarted"><a href="${accountData[symbol].gettingStarted}" rel="noopener" target="_blank">${symbol} information, resources, and links</a></div>
 		</div>
 	</div>`;
 		
