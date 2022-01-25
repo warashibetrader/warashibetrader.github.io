@@ -10,7 +10,7 @@ body {
 	height:100%;
 	width:100%;
 	overflow:auto;
-	overscroll-behavior: contain;
+	overscroll-behavior:contain;
 }
 
 .containerdiv {	
@@ -33,6 +33,7 @@ body {
 	box-shadow: #d4d4d4 0px 0px 7px; 
 	width:400px;	
 	scrollbar-width:thin;
+	overscroll-behavior:contain;
 }
 
 .secondDiv {
