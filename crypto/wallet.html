@@ -1,6 +1,6 @@
 <!DOCTYPE html><html>	
 <head>
-	<title>Warashibe Wallet</title>	
+	<title>Crypto Wallet</title>	
 	<link rel="stylesheet" type="text/css" href="wallet.css">
 	<link rel="icon" href="strawicontrans.png">	
 	<link rel="manifest" href="manifest.json">
@@ -29,8 +29,8 @@
 								  position: fixed; left: 0px; top: 0px; border-radius: 5px;
 								  pointer-events: none; opacity: 0.9;">Welcome.</strong>
 		
-		<div style="margin-top:20px; display:flex; align-items:center; justify-content:center">		
-			<button id="installButton" style="display:none; margin-right:5px;">Install Native App</button>
+		<div style="margin-top:15px; display:flex; align-items:center; justify-content:center">		
+			<button id="installButton" style="display:none; margin-right:15px;">Native App</button>
 			<select name="primary" id="primary" onchange="selectPrimary(event.target.value)">
 				<option style="background-color:#f1f4f4" value="XNO">Nano (XNO)</option>
 				<option style="background-color:#f1f4f4" value="BAN">Banano (BAN)</option>
@@ -626,9 +626,10 @@ function displayName(symbol, divString, address, str) {
 	if (!displayString) displayString = backupCache[address];
 	
 	if (divString == "-display") {
-		if (displayString) localStorage.setItem(`${symbol}-display`, {address:address, name:displayString});
+		if (displayString) localStorage.setItem(`${symbol}-display`, JSON.stringify({address:address, name:displayString}));
 		else {
 			let myDisplay = localStorage.getItem(`${symbol}-display`);
+			if (myDisplay) myDisplay = JSON.parse(myDisplay);
 			if (myDisplay && myDisplay.address == address) displayString = myDisplay.name;
 		}
 	}
@@ -677,8 +678,11 @@ function importWallet(symbol) {
 		post(accountData[symbol].server, {action: 'account_info', representative: true, account: accountData[symbol].address}).then(function(accountInfo) {
 			if (accountInfo) {
 				showMsg(`${symbol} account loaded.`);
-				if (accountInfo.representative) localStorage.setItem(`${symbol}-info`, accountInfo);	
-			} else accountInfo = localStorage.getItem(`${symbol}-info`);
+				if (accountInfo.representative) localStorage.setItem(`${symbol}-info`, JSON.stringify(accountInfo));	
+			} else {
+				accountInfo = localStorage.getItem(`${symbol}-info`);
+				if (accountInfo) accountInfo = JSON.parse(accountInfo);
+			}
 			
 			if (accountInfo && accountInfo.representative) {
 				flash(D(`${symbol}-rep`), accountInfo.representative);	
@@ -977,7 +981,7 @@ function post(url, params) {
 						resolve();
 					}
 				} else {
-					console.error('Failed to connect to '+ url);
+					console.log('Failed to connect to '+ url);
 					showMsg('Unable to connect to network.');
 					resolve();
 				}
@@ -1115,7 +1119,7 @@ function generateHTML(symbol) {
 	</div>
 		
 	<div style="text-align:center; margin-top:30px; margin-bottom:120px;">
-		<button style="font-size:0.8em" onclick="donate('${symbol}')">Donate!</button>	
+		<button style="font-size:0.8em; margin-right:15px;" onclick="donate('${symbol}')">Donate!</button>	
 		<button id="${symbol}-view" style="font-size:0.8em" onclick="toggleView('${symbol}')">Simple View</button>	
 		<button style="font-size:0.8em" onclick="mainClearWallet('${symbol}')">Clear ${symbol} Wallet</button>
 	</div>
