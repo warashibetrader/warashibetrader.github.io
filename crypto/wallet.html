@@ -875,7 +875,7 @@ var currentElt;
 
 function scrollPanel(elt) {
 	if ((screen.width <= 550 || screen.height <= 550)) {
-		elt.parentNode.scrollIntoView({block:'start', behavior:'auto', inline: "nearest"});	
+		elt.parentNode.scrollIntoView({block:'center', behavior:'auto', inline: "nearest"});	
 		currentElt = elt;
 		setTimeout(function() {currentElt = null;}, 1000);
 	}
@@ -883,7 +883,7 @@ function scrollPanel(elt) {
 
 if ((screen.width <= 550 || screen.height <= 550)) {
 	window.addEventListener("resize", function() {
-		if (currentElt) currentElt.parentNode.scrollIntoView({block:'start', behavior:'auto', inline: "nearest"});	
+		if (currentElt) currentElt.parentNode.scrollIntoView({block:'center', behavior:'auto', inline: "nearest"});	
 	});
 }
 
@@ -1114,7 +1114,7 @@ function generateHTML(symbol) {
 		<div style="display:flex; justify-content:center" id="${symbol}-qrCodeImageBlock"></div>
 	</div>
 		
-	<div style="text-align:center; margin-top:30px; margin-bottom:130px;">
+	<div style="text-align:center; margin-top:30px; margin-bottom:120px;">
 		<button style="font-size:0.8em" onclick="donate('${symbol}')">Donate!</button>	
 		<button id="${symbol}-view" style="font-size:0.8em" onclick="toggleView('${symbol}')">Simple View</button>	
 		<button style="font-size:0.8em" onclick="mainClearWallet('${symbol}')">Clear ${symbol} Wallet</button>
