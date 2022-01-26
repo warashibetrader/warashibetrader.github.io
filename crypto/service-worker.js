@@ -26,7 +26,7 @@ self.addEventListener('install', (evt) => {
 		caches.open(CACHE_NAME).then((cache) => {
 			console.log('[ServiceWorker] Pre-caching offline page');
 			return cache.addAll(FILES_TO_CACHE);
-		})
+		});
 	);
 });
 
@@ -49,27 +49,23 @@ self.addEventListener('activate', (evt) => {
 					return caches.delete(key);
 				}
 			}));
-		})
+		});
 	);
 });
 
 self.addEventListener('fetch', (evt) => {
 	console.log('[ServiceWorker] Fetch', evt.request.url);	
-	if (evt.request.url.startsWith(self.location.origin)) {
-		evt.respondWith(
-			caches.open(CACHE_NAME).then((cache) => {
-			return cache.match(evt.request).then((response) => {
-				if (response) console.log('[ServiceWorker] Cache fetched', evt.request.url);
-				else console.log('[ServiceWorker] Network fetched', evt.request.url);
-				return response || fetch(evt.request).catch(() => {
-					return caches.open(CACHE_NAME).then((cache) => {
-						return cache.match('wallet.html');
-					});							
-				})
+	if (evt.request.url.startsWith(self.location.origin)) evt.respondWith(
+		caches.open(CACHE_NAME).then((cache) => {
+		return cache.match(evt.request).then((response) => {
+			if (response) console.log('[ServiceWorker] Cache fetched', evt.request.url);
+			else console.log('[ServiceWorker] Network fetched', evt.request.url);
+			return response || fetch(evt.request).catch(() => {
+				return cache.match('wallet.html');		
 			});
-			})
-		);
-	}
-	// else console.log('[ServiceWorker] Skipping fetch', evt.request.url);	
+		});
+		});
+	);
+	else console.log('[ServiceWorker] Outside fetch', evt.request.url);	
 });
 
