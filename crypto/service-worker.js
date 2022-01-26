@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_NAME = 'static-cache-v1';
+const CACHE_NAME = 'static-cache-v2';
 const FILES_TO_CACHE = ['wallet', 'wallet.html', 'wallet.css', 'strawicontrans.png', 'nanocurrency.js', 'quotes.js', 'qrcode.js'];
 
 //console.log("trying to refresh pages automatically at start");
@@ -21,12 +21,12 @@ self.addEventListener('install', (evt) => {
 	});
 	
 	self.skipWaiting();
-	console.log('[sw] Install');  	
+	console.log('[ServiceWorker] Install');  	
 	evt.waitUntil(
 		caches.open(CACHE_NAME).then((cache) => {
-			console.log('[sw] Pre-caching offline page');
+			console.log('[ServiceWorker] Pre-caching offline page');
 			return cache.addAll(FILES_TO_CACHE);
-		});
+		})
 	);
 });
 
@@ -40,32 +40,35 @@ self.addEventListener('activate', (evt) => {
 	});
 	
 	self.clients.claim();
-	console.log('[sw] Activate');	
+	console.log('[ServiceWorker] Activate');	
 	evt.waitUntil(
 		caches.keys().then((keyList) => {
 			return Promise.all(keyList.map((key) => {
 				if (key !== CACHE_NAME) {
-					console.log('[sw] Removing old cache', key);
+					console.log('[ServiceWorker] Removing old cache', key);
 					return caches.delete(key);
 				}
 			}));
-		});
+		})
 	);
 });
 
 self.addEventListener('fetch', (evt) => {
-	console.log('[sw] Fetch', evt.request.url);	
-	if (evt.request.url.startsWith(self.location.origin)) evt.respondWith(
-		caches.open(CACHE_NAME).then((cache) => {
-		return cache.match(evt.request).then((response) => {
-			if (response) console.log('[sw] Cache fetched', evt.request.url);
-			else console.log('[sw] Network fetched', evt.request.url);
-			return response || fetch(evt.request).catch(() => {
-				return cache.match('wallet.html');		
+	console.log('[ServiceWorker] Fetch', evt.request.url);	
+	if (evt.request.url.startsWith(self.location.origin)) {
+		evt.respondWith(
+			caches.open(CACHE_NAME).then((cache) => {
+			return cache.match(evt.request).then((response) => {
+				if (response) console.log('[ServiceWorker] Cache fetched', evt.request.url);
+				else console.log('[ServiceWorker] Network fetched', evt.request.url);
+				return response || fetch(evt.request).catch(() => {
+					return caches.open(CACHE_NAME).then((cache) => {
+						return cache.match('wallet.html');
+					});							
+				})
 			});
-		});
-		});
-	);
-	else console.log('[sw] Outside fetch', evt.request.url);	
+			})
+		);
+	}
+	// else console.log('[ServiceWorker] Skipping fetch', evt.request.url);	
 });
-
