@@ -5,8 +5,10 @@
 	<link rel="icon" href="strawicontrans.png">	
 	<link rel="manifest" href="manifest.json">
 	<link rel="apple-touch-icon" href="strawicontrans.png">
+	
 	<script src="quotes.js"></script>
 	<script src="qrcode.js"></script>
+	<script src="qrscan.js"></script>
 	<script src="xno.js"></script>
 	<script src="nacl.js"></script>
 
@@ -118,6 +120,10 @@ var fullView = localStorage.getItem("view");
 var changeNameFlag = false;
 var nameCache = {};
 var backupCache = {};
+const video = document.createElement("video");
+var qrScanning = false;
+var qrScanningSymbol = D('primary').value;
+var qrScanningType = "";			
 
 //////////////////////////////////////////////////////// crypto currency classes
 
@@ -159,7 +165,6 @@ ccc['BAN'].checkSeed = function(seed) { return typeof seed === "string" && /^[0-
 ccc['XNO'].checkSeed = function(seed) {	return typeof seed === "string" && /^[0-9a-fA-F]{64}$/.test(seed);};
 
 ccc['XNO'].checkAddress = function(address) { 
-	const invalid = { valid: false, publicKeyBytes: null };
 	if (!(typeof address === "string") || !/^(xrb_|nano_)[13][13-9a-km-uw-z]{59}$/.test(address)) return false;
 
 	let prefixLength = 5;
@@ -665,6 +670,8 @@ generateHTML('BAN');
 selectPrimary(D('primary').value);
 
 function selectPrimary(symbol) {
+	qrclose();
+	
 	D('firstDiv').removeChild(D('firstDiv').lastChild);
 	D('secondDiv').removeChild(D('secondDiv').lastChild);
 	
@@ -679,10 +686,10 @@ function selectPrimary(symbol) {
 	if (!ccc[symbol].address) {
 		let seed = localStorage.getItem(`${symbol}-seed`);	
 		if (seed) {	
-			D(`import-${symbol}-seed`).value = seed;
+			D(`${symbol}-seed`).value = seed;
 			D(`${symbol}-generateButton`).disabled = true;
 			let index = localStorage.getItem(`${symbol}-index`);
-			if (index) D(`import-${symbol}-index`).value = index; 
+			if (index) D(`${symbol}-index`).value = index; 
 			importWallet(symbol);
 		}
 	} else {
@@ -743,16 +750,16 @@ function displayName(symbol, divString, address, str) {
 //////////////////////////////////////////////////////// Interface with helper functions
 	
 function generateWallet(symbol) {
-	D(`import-${symbol}-seed`).value = ccc[symbol].generateSeed(); 	
-	navigator.clipboard.writeText(D(`import-${symbol}-seed`).value);	
-		showMsg("New seed generated. Copied to clipboard.");
-	flash(D(`import-${symbol}-seed`));
+	D(`${symbol}-seed`).value = ccc[symbol].generateSeed(); 	
+	navigator.clipboard.writeText(D(`${symbol}-seed`).value);	
+		showMsg("New seed generated. Copied to clipboard. Save it securely (somewhere else)!");
+	flash(D(`${symbol}-seed`));
 	D(`${symbol}-generateButton`).disabled = true;
 }
 
 function importWallet(symbol) {
-	let seed = D(`import-${symbol}-seed`).value;
-	let index = D(`import-${symbol}-index`).value;
+	let seed = D(`${symbol}-seed`).value;
+	let index = D(`${symbol}-index`).value;
 	if (!ccc[symbol].checkSeed(seed)) {
 		if (!ccc[symbol].checkAddress(seed)) showMsg("Invalid seed.");
 		else showMsg("Submit a seed, not an address.");
@@ -782,9 +789,9 @@ function mainClearWallet(symbol) {
 	if (confirm("Clear all data for " + symbol + ", including the wallet seed?")) {
 		clearWallet(symbol);
 		
-		D(`import-${symbol}-seed`).value = ""; 
+		D(`${symbol}-seed`).value = ""; 
 		D(`${symbol}-generateButton`).disabled = false;
-		D(`import-${symbol}-index`).value = ""; 	
+		D(`${symbol}-index`).value = ""; 	
 		
 		localStorage.removeItem(`${symbol}-seed`); 
 		localStorage.removeItem(`${symbol}-index`); 
@@ -804,6 +811,7 @@ function mainClearWallet(symbol) {
 
 function clearWallet(symbol) {
 	nameCache = {};
+	qrclose();
 	clearDOM(D(symbol + '-transactions'));	
 	D(symbol + '-loadMore').style.display = "none";
 	D(symbol + '-gettingStarted').style.display = "";
@@ -912,7 +920,7 @@ function suggestRep(symbol) {
 }
 
 function toggleVisibility(caller, symbol) {
-	let x = D(`import-${symbol}-seed`);
+	let x = D(`${symbol}-seed`);
 	if (x.type === "password") {
 		x.type = "text";
 		caller.textContent = 'Hide';
@@ -931,6 +939,84 @@ function toggleEdit(symbol) {
 		D(symbol + "-set-display").value = "";
 		D(symbol + "-editbutton").textContent = "Edit";
 	}
+}
+
+function qrclose() {
+	if (qrScanning) {
+		qrScanning.hidden = true;
+		if (qrScanningType == "-dest") qrScanning.id = qrScanningSymbol + "-qr-canvas";
+		else if (qrScanningType == "-seed") qrScanning.id = qrScanningSymbol + "-qr-canvas-seed";
+		
+		qrScanning = false;		
+		qrScanningType = "";
+		
+		video.srcObject.getTracks().forEach(track => { track.stop(); });
+	}
+}
+
+window.qrcode.callback = res => {
+	if (res) {
+		if (D(qrScanningSymbol + qrScanningType)) {
+			if (qrScanningType == "-dest") {
+				const nano_scheme = /^(nano):.+$/g;
+				if (ccc[qrScanningSymbol].checkAddress(res)) {
+					D(qrScanningSymbol + qrScanningType).value = res;
+					fetchDisplayName(qrScanningSymbol, '-dest-display', D(qrScanningSymbol + qrScanningType).value);
+				} else if (qrScanningSymbol == "XNO" && nano_scheme.test(res)) {
+					const url = new URL(res);
+					if (url.protocol === 'nano:' && ccc[qrScanningSymbol].checkAddress(url.pathname)) {
+						D(qrScanningSymbol + qrScanningType).value = url.pathname;
+						fetchDisplayName(qrScanningSymbol, '-dest-display', D(qrScanningSymbol + qrScanningType).value);
+						D(qrScanningSymbol + "-withdrawal-amount").value = ccc['XNO'].unitFromRaw(url.searchParams.get('amount'));
+					}
+				} else showMsg("Not a valid address: " + res);
+			}
+			
+			if (qrScanningType == "-seed") {
+				if (ccc[qrScanningSymbol].checkSeed(res)) D(qrScanningSymbol + qrScanningType).value = res;
+				else showMsg("Not a valid seed: " + res);
+			}
+		}
+		qrclose();
+	}
+};
+
+function qrscan(symbol, type) {
+	if (!qrScanning) {
+		navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(function(stream) {
+			if (type == "-dest") qrScanning = D(symbol + "-qr-canvas");
+			if (type == "-seed") qrScanning = D(symbol + "-qr-canvas-seed");
+			qrScanningType = type;
+			qrScanningSymbol = symbol;
+			
+			qrScanning.hidden = false;
+			qrScanning.id = "qr-canvas";
+			
+			video.setAttribute("playsinline", true); // required to tell iOS safari we don't want fullscreen
+			video.srcObject = stream;
+			video.play();
+			
+			const canvas = qrScanning.getContext("2d");
+			tick();
+			scan();
+			
+			function tick() {
+				if (qrScanning) {
+					qrScanning.height = video.videoHeight;
+					qrScanning.width = video.videoWidth;
+					canvas.drawImage(video, 0, 0, qrScanning.width, qrScanning.height);
+					if (qrScanning) requestAnimationFrame(tick);
+				}
+			}
+
+			function scan() {
+				if (qrScanning) {
+					try { window.qrcode.decode();} 
+					catch (e) { setTimeout(scan, 300);}
+				}
+			}
+		});
+	} else qrclose();
 }
 
 function addressQR(symbol) {
@@ -1136,14 +1222,16 @@ function generateHTML(symbol) {
 	ccc[symbol].sidebarElt = make('div');
 	ccc[symbol].sidebarElt.innerHTML = `
 	<div id="${symbol}-tool1" class="objectWrapper">
-		<div style="display:flex; justify-content:space-between; margin-top:5px; margin-bottom:15px;">
-			<input onfocus="scrollPanel(this.parentNode)" placeholder="Seed (store securely) ..." id="import-${symbol}-seed" style="flex-grow:1; flex-basis:20px; margin-right:10px;" type="password" maxlength="64" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')" oninput="if (this.value.length == 0) D('${symbol}-generateButton').disabled = false; else D('${symbol}-generateButton').disabled = true;">
+		<div style="display:flex; justify-content:space-between; margin-top:5px;">
+			<input onfocus="scrollPanel(this.parentNode)" placeholder="Seed (store securely) ..." id="${symbol}-seed" style="flex-grow:1; flex-basis:20px; margin-right:10px;" type="password" maxlength="64" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')" oninput="if (this.value.length == 0) D('${symbol}-generateButton').disabled = false; else D('${symbol}-generateButton').disabled = true;">
 			<div>
 			<button tabindex="-1" style="font-size:0.8em" onclick="toggleVisibility(this, '${symbol}')">Show</button>
-			<button tabindex="-1" id="${symbol}-generateButton" style="font-size:0.8em" onclick="generateWallet('${symbol}')">Generate Seed</button>
+			<button tabindex="-1" id="${symbol}-generateButton" style="font-size:0.8em" onclick="generateWallet('${symbol}')">Generate New</button>
+			<button tabindex="-1" style="font-size:0.8em" onclick="qrscan('${symbol}', '-seed')">QR</button>
 			</div>			
 		</div>
-		<input onfocus="scrollPanel(this)" placeholder="Account index (default 0; or 1, 2, etc) ..." id="import-${symbol}-index" type="number" style="width:80%" min="0" maxlength="64" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')">	
+		<canvas style="width:100%; margin-top:10px;" hidden="" id="${symbol}-qr-canvas-seed"></canvas>
+		<input onfocus="scrollPanel(this)" placeholder="Account index (default 0; or 1, 2, etc) ..." id="${symbol}-index" type="number" style="margin-top:15px; width:80%" min="0" maxlength="64" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')">	
 		<div style="text-align:center;">
 		<button style="margin-top:15px;" onclick="importWallet('${symbol}')">Load Account</button>
 		</div>
@@ -1188,8 +1276,12 @@ function generateHTML(symbol) {
 
 	<div class="objectWrapper">
 		<strong>Destination: </strong><span id="${symbol}-dest-display"></span>
-		<br><input placeholder="Destination address..." style="width:80%" id="${symbol}-dest" type="text" maxlength="128" onclick="this.select()" onfocus="scrollPanel(this)" oninput="fetchDisplayName('${symbol}', '-dest-display', this.value)">
-		<br><strong>Amount:</strong>
+		<div style="display:flex; justify-content:space-between">
+			<input placeholder="Destination address..." onfocus="scrollPanel(this.parentNode)" style="flex-grow:1; margin-right:10px" id="${symbol}-dest" type="text" maxlength="128" onclick="this.select()" oninput="fetchDisplayName('${symbol}', '-dest-display', this.value)">
+			<button style="font-size:0.8em" onclick="qrscan('${symbol}', '-dest')">QR</button>
+		</div>		
+		<canvas style="width:100%; margin-top:10px;" hidden="" id="${symbol}-qr-canvas"></canvas>
+		<strong>Amount:</strong>
 		<input placeholder="0.00" style="margin-top:15px; text-align:right; width:calc(80% - 130px)" onfocus="scrollPanel(this)" id="${symbol}-withdrawal-amount" type="number" step="0.01" min="0">&nbsp; ${symbol}
 		<div style="text-align:center;">
 		<button style="margin-top:15px" onclick="withdraw('${symbol}')">Transfer ${symbol}</button>
