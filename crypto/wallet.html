@@ -5,9 +5,10 @@
 	<link rel="icon" href="strawicontrans.png">	
 	<link rel="manifest" href="manifest.json">
 	<link rel="apple-touch-icon" href="strawicontrans.png">
-	<script src="nanocurrency.js"></script>
 	<script src="quotes.js"></script>
 	<script src="qrcode.js"></script>
+	<script src="nano.js"></script>
+	<script src="nacl.js"></script>
 
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">	
 	<meta name="theme-color" content="#fff">	
@@ -115,12 +116,13 @@ if (typeof(Storage) !== "undefined") {
 
 var fullView = localStorage.getItem("view");
 var changeNameFlag = false;
-
 var nameCache = {};
 var backupCache = {};
 
-var accountData = {};
-accountData['XNO'] = {representative:'nano_1natrium1o3z5519ifou7xii8crpxpk8y65qmkih8e8bpsjri651oza8imdd',
+//////////////////////////////////////////////////////// crypto currency classes
+
+var ccc = {};
+ccc['XNO'] = {representative:'nano_1natrium1o3z5519ifou7xii8crpxpk8y65qmkih8e8bpsjri651oza8imdd',
 						server:'https://proxy.powernode.cc/proxy',
 						gettingStarted:'https://nanolinks.info/',
 						repRec:'https://mynano.ninja/api/accounts/verified',
@@ -129,7 +131,7 @@ accountData['XNO'] = {representative:'nano_1natrium1o3z5519ifou7xii8crpxpk8y65qm
 						bgColor:'steelblue'};
 						
 						
-accountData['BAN'] = {representative:'ban_1ka1ium4pfue3uxtntqsrib8mumxgazsjf58gidh1xeo5te3whsq8z476goo',
+ccc['BAN'] = {representative:'ban_1ka1ium4pfue3uxtntqsrib8mumxgazsjf58gidh1xeo5te3whsq8z476goo',
 						server:'https://kaliumapi.appditto.com/api',
 						gettingStarted:'https://banano.how/links/',
 						repRec:'https://api.spyglass.pw/banano/v1/representatives/scores',
@@ -137,54 +139,141 @@ accountData['BAN'] = {representative:'ban_1ka1ium4pfue3uxtntqsrib8mumxgazsjf58gi
 						flashColor:'#ffc',
 						bgColor:'orange'};
 	
-accountData['XNO'].queue = new Promise(function(resolve, reject) { resolve(true); });
-accountData['BAN'].queue = new Promise(function(resolve, reject) { resolve(true); });
-
-generateHTML('XNO');
-generateHTML('BAN');
+ccc['XNO'].queue = new Promise(function(resolve, reject) { resolve(true); });
+ccc['BAN'].queue = new Promise(function(resolve, reject) { resolve(true); });
 
 //////////////////////////////////////////////////////// low level helper functions
 
-let generateSeed = {};
-generateSeed['BAN'] = function() {
+ccc['BAN'].generateSeed = function() {
 	const seed = new Uint8Array(32);
 	crypto.getRandomValues(seed);
 	return Array.prototype.map.call(seed, (x) => ('00' + x.toString(16)).slice(-2)).join('').toUpperCase();
 };
-generateSeed['XNO'] = function() {
+ccc['XNO'].generateSeed = function() {
 	const seed = new Uint8Array(32);
 	crypto.getRandomValues(seed);
 	return Array.prototype.map.call(seed, (x) => ('00' + x.toString(16)).slice(-2)).join('').toUpperCase();
 };
 
-let checkSeed = {};
-checkSeed['BAN'] = function(seed) { return typeof seed === "string" && /^[0-9a-fA-F]{64}$/.test(seed);};
-checkSeed['XNO'] = function(seed) {	return typeof seed === "string" && /^[0-9a-fA-F]{64}$/.test(seed);};
+ccc['BAN'].checkSeed = function(seed) { return typeof seed === "string" && /^[0-9a-fA-F]{64}$/.test(seed);};
+ccc['XNO'].checkSeed = function(seed) {	return typeof seed === "string" && /^[0-9a-fA-F]{64}$/.test(seed);};
 
-let checkAddress = {};
-checkAddress['BAN'] = function(address) { 
+ccc['XNO'].checkAddress = function(address) { 
+	const invalid = { valid: false, publicKeyBytes: null };
+	if (!(typeof address === "string") || !/^(xrb_|nano_)[13][13-9a-km-uw-z]{59}$/.test(address)) return false;
+
+	let prefixLength = 5;
+	if (address.startsWith('xrb_')) prefixLength = 4;
+
+	const publicKeyBytes = decodeNanoBase32(address.substr(prefixLength, 52));
+	const checksumBytes = decodeNanoBase32(address.substr(prefixLength + 52));
+	const computedChecksumBytes = blake2b(publicKeyBytes, null, 5).reverse();
+	for (let i = 0; i < checksumBytes.length; i++) {
+		if (checksumBytes[i] !== computedChecksumBytes[i]) return false;
+	}
+	return true;
+};
+ccc['BAN'].checkAddress = function(address) { 
 	let nanoAddr = address.replace('ban_', 'nano_');
-	return (nanoAddr != address) && NanoCurrency.checkAddress(nanoAddr);
+	return (nanoAddr != address) && ccc['XNO'].checkAddress(nanoAddr);
 };
-checkAddress['XNO'] = function(address) { return NanoCurrency.checkAddress(address);};
 
-let unpackSeed = {};
-unpackSeed['BAN'] = function() {
-	accountData['BAN'].privateKey = NanoCurrency.deriveSecretKey(D('import-BAN-seed').value, parseInt(D('import-BAN-index').value));
-	accountData['BAN'].publicKey = NanoCurrency.derivePublicKey(accountData['BAN'].privateKey);
-	accountData['BAN'].address = NanoCurrency.deriveAddress(accountData['BAN'].publicKey).replace('xrb_', 'ban_');	
-	accountData['BAN'].index = parseInt(D('import-BAN-index').value);
+ccc['XNO'].derivePrivateKey = function(seed, index) {
+  const indexBuffer = new ArrayBuffer(4)
+  const indexView = new DataView(indexBuffer)
+  indexView.setUint32(0, index)
+  const indexBytes = new Uint8Array(indexBuffer)
+
+  const context = blake2bInit(32)
+  blake2bUpdate(context, hexToByteArray(seed))
+  blake2bUpdate(context, indexBytes)
+  return byteArrayToHex(blake2bFinal(context))
+}
+ccc['BAN'].derivePrivateKey = ccc['XNO'].derivePrivateKey;
+
+
+ccc['XNO'].derivePublicKey = function(secretKeyOrAddress) {
+	let publicKeyBytes;
+	if (!ccc['XNO'].checkAddress(secretKeyOrAddress)) publicKeyBytes = derivePublicFromSecret(hexToByteArray(secretKeyOrAddress));
+	else publicKeyBytes = decodeNanoBase32(secretKeyOrAddress.substr(5, 52));
+	return byteArrayToHex(publicKeyBytes);
+}
+ccc['BAN'].derivePublicKey = ccc['XNO'].derivePublicKey;
+
+ccc['XNO'].deriveAddress = function(publicKey) {
+  const checksum = blake2b(hexToByteArray(publicKey), null, 5).reverse()
+  return 'nano_' + encodeNanoBase32(hexToByteArray(publicKey)) + encodeNanoBase32(checksum);
+}
+ccc['BAN'].deriveAddress = function(publicKey) {
+	return ccc['XNO'].deriveAddress(publicKey).replace('nano_', 'ban_');
 };
-unpackSeed['XNO'] = function() {
-	accountData['XNO'].privateKey = NanoCurrency.deriveSecretKey(D('import-XNO-seed').value, parseInt(D('import-XNO-index').value));
-	accountData['XNO'].publicKey = NanoCurrency.derivePublicKey(accountData['XNO'].privateKey);
-	accountData['XNO'].address = NanoCurrency.deriveAddress(accountData['XNO'].publicKey).replace('xrb_', 'nano_');
-	accountData['XNO'].index = parseInt(D('import-XNO-index').value);
+
+ccc['XNO'].createBlock = function(secretKey, data) {
+	if (typeof data.work === 'undefined') throw new Error('Work is not set');
+	if (!ccc['XNO'].checkAddress(data.representative)) throw new Error('Representative is not valid');
+
+	let correctedPrevious = data.previous;
+	if (data.previous === null) correctedPrevious = BLANK_HASH;
+
+	let linkIsAddress = false;
+	let correctedLink = data.link;
+	if (data.link === null) correctedLink = BLANK_HASH;
+	else if (ccc['XNO'].checkAddress(correctedLink)) linkIsAddress = true;
+	if (correctedPrevious === BLANK_HASH && (linkIsAddress || correctedLink === BLANK_HASH)) throw new Error('Block is impossible');
+
+	let publicKey = ccc['XNO'].derivePublicKey(secretKey);
+	let linkBytes;
+	if (ccc['XNO'].checkAddress(correctedLink)) linkBytes = hexToByteArray(ccc['XNO'].derivePublicKey(correctedLink));
+	else linkBytes = hexToByteArray(correctedLink);
+	
+	const context = blake2bInit(32)
+	blake2bUpdate(context, STATE_BLOCK_PREAMBLE_BYTES)
+	blake2bUpdate(context, hexToByteArray(publicKey))
+	blake2bUpdate(context, hexToByteArray(correctedPrevious))
+	blake2bUpdate(context, hexToByteArray(ccc['XNO'].derivePublicKey(data.representative)))
+	blake2bUpdate(context, hexToByteArray(BigInt(data.balance).toString(16).padStart(32, '0')))
+	blake2bUpdate(context, linkBytes)
+	const hashBytes = blake2bFinal(context)
+	let link
+	let linkAsAddress
+	if (linkIsAddress) {
+		linkAsAddress = correctedLink
+		link = ccc['XNO'].derivePublicKey(linkAsAddress)
+	} else {
+		link = correctedLink
+		linkAsAddress = ccc['XNO'].deriveAddress(link)
+	}
+	const block = {
+		type: 'state',
+		account: ccc['XNO'].deriveAddress(publicKey),
+		previous: correctedPrevious,
+		representative: data.representative,
+		balance: data.balance,
+		link,
+		// eslint-disable-next-line @typescript-eslint/camelcase
+		link_as_account: linkAsAddress,
+		work: data.work,
+		signature: byteArrayToHex(signDetached(hashBytes, hexToByteArray(secretKey))),
+	}
+	return { hash: byteArrayToHex(hashBytes), block: block };
+}
+ccc['BAN'].createBlock = ccc['XNO'].createBlock;
+
+ccc['BAN'].unpackSeed = function(seed, index) {
+	ccc['BAN'].privateKey = ccc['BAN'].derivePrivateKey(seed, index);
+	ccc['BAN'].publicKey = ccc['BAN'].derivePublicKey(ccc['BAN'].privateKey);
+	ccc['BAN'].address = ccc['BAN'].deriveAddress(ccc['BAN'].publicKey);	
+	ccc['BAN'].index = parseInt(index);
+};
+ccc['XNO'].unpackSeed = function(seed, index) {
+	ccc['XNO'].privateKey = ccc['XNO'].derivePrivateKey(seed, index);
+	ccc['XNO'].publicKey = ccc['XNO'].derivePublicKey(ccc['XNO'].privateKey);
+	ccc['XNO'].address = ccc['XNO'].deriveAddress(ccc['XNO'].publicKey);
+	ccc['XNO'].index = parseInt(index);
 }
 
-let unitFromRaw = {};
-unitFromRaw['BAN'] = function(bal) {return shiftDecimalLeft(bal, 29);};
-unitFromRaw['XNO'] = function(bal) {return shiftDecimalLeft(bal, 30);};
+ccc['BAN'].unitFromRaw = function(bal) {return shiftDecimalLeft(bal, 29);};
+ccc['XNO'].unitFromRaw = function(bal) {return shiftDecimalLeft(bal, 30);};
 function shiftDecimalLeft(str, shift) {
 	let n = str.toString();	
 	while (n.length < shift + 1) {
@@ -197,9 +286,8 @@ function shiftDecimalLeft(str, shift) {
 	return whole + '.' + fraction;	
 }
 
-let rawFromUnit = {};
-rawFromUnit['BAN'] = function(bal) { return shiftDecimalRight(bal, 29);};
-rawFromUnit['XNO'] = function(bal) { return shiftDecimalRight(bal, 30);};
+ccc['BAN'].rawFromUnit = function(bal) { return shiftDecimalRight(bal, 29);};
+ccc['XNO'].rawFromUnit = function(bal) { return shiftDecimalRight(bal, 30);};
 function shiftDecimalRight(str, shift) {	
 	let parts = str.toString().split(".");	
 	let whole = parts[0];
@@ -211,28 +299,25 @@ function shiftDecimalRight(str, shift) {
 	return `${whole}${fraction}`;
 }
 
-//////////////////////////////////////////////////////// information fetch helper functions
+//////////////////////////////////////////////////////// information fetch helper functions. Todo: remove connections with DOM somehow
 
-let getAccountBalance = {};
-getAccountBalance['BAN'] = function() {return post(accountData['BAN'].server, { action: 'account_balance',  account: accountData['BAN'].address });};
-getAccountBalance['XNO'] = function() {return post(accountData['XNO'].server, { action: 'account_balance',  account: accountData['XNO'].address });};
+ccc['BAN'].getAccountInfo = function() {return post(ccc['BAN'].server, {action: 'account_info', pending: true, representative: true, account: ccc['BAN'].address});};
+ccc['XNO'].getAccountInfo = function() {return post(ccc['XNO'].server, {action: 'account_info', pending: true, representative: true, account: ccc['XNO'].address});};
 
-let getPending = {};
-getPending['XNO'] = async function() {return (await post(accountData['XNO'].server, {action: 'pending', account: accountData['XNO'].address, source:true})).blocks;};
-getPending['BAN'] = async function() {return (await post(accountData['BAN'].server, {action: 'pending', account: accountData['BAN'].address, source:true})).blocks;};
+ccc['XNO'].getPending = async function() {return (await post(ccc['XNO'].server, {action: 'pending', account: ccc['XNO'].address, source:true})).blocks;};
+ccc['BAN'].getPending = async function() {return (await post(ccc['BAN'].server, {action: 'pending', account: ccc['BAN'].address, source:true})).blocks;};
 
-let getTransactions = {};
-getTransactions['BAN'] = function(start) {nanoDisplayTransactions('BAN', start);};
-getTransactions['XNO'] = function(start) {nanoDisplayTransactions('XNO', start);};
+ccc['BAN'].getTransactions = function(start) {nanoDisplayTransactions('BAN', start);};
+ccc['XNO'].getTransactions = function(start) {nanoDisplayTransactions('XNO', start);};
 
 async function nanoDisplayTransactions(symbol, start) {
-	post(accountData[symbol].server, { action: 'account_history', head:start, account: accountData[symbol].address, count:10 }).then(function(history) {
+	post(ccc[symbol].server, { action: 'account_history', head:start, account: ccc[symbol].address, count:10 }).then(function(history) {
 		if (history && history.history) {
 			if (history.previous) {
 				if (!D(symbol + '-' + history.history[history.history.length - 1].height)) {
 					D(symbol + '-loadMore').style.display = "";
 					D(symbol + '-gettingStarted').style.display = "none";
-					D(symbol + '-loadMore').onclick = function() {getTransactions[symbol](history.previous);};
+					D(symbol + '-loadMore').onclick = function() {ccc[symbol].getTransactions(history.previous);};
 				}
 			} else {
 				D(symbol + '-loadMore').style.display = "none";				
@@ -251,15 +336,21 @@ async function nanoDisplayTransactions(symbol, start) {
 					let displayNameSpan = make('span');
 					displayNameSpan.id = `${symbol}-${history.history[i].height}-display`;
 					displayNameSpan.textContent = "Unknown";
+					displayNameSpan.onclick = function() {
+						fetchDisplayName(symbol, "-" + history.history[i].height + "-display", history.history[i].account, true);
+					}
 					
 					li.innerHTML = "<div style='display:flex; justify-content:space-between'><strong></strong>"
-					+ "<strong style='text-align:right; overflow:hidden; text-overflow:ellipsis; color:" + color + "'></strong></div>"
+					+ "<strong style='text-align:right; overflow:hidden; text-overflow:ellipsis; color:" + color + "'>" + sign + "<span></span> " + symbol + "</strong></div>"
 					+ "<div style='display:flex; justify-content:space-between'><span style='cursor:pointer; font-size:0.8em; width:calc(100% - 180px); overflow:hidden; text-overflow:ellipsis; margin-top:4px' onclick='clickCopy(this, this.textContent)'></span>"
 					+ "<span style='text-align:right;'></span></div>";
 					
 					li.firstChild.firstChild.textContent = history.history[i].height + ": ";
 					li.firstChild.firstChild.appendChild(displayNameSpan);
-					li.firstChild.firstChild.nextSibling.textContent = sign + unitFromRaw[symbol](history.history[i].amount) + " " + symbol;
+					li.firstChild.firstChild.nextSibling.firstElementChild.textContent = ccc[symbol].unitFromRaw(history.history[i].amount);
+					li.firstChild.firstChild.nextSibling.firstElementChild.onclick = function() {
+						clickCopy(li.firstChild.firstChild.nextSibling.firstElementChild, li.firstChild.firstChild.nextSibling.firstElementChild.textContent);
+					};
 					
 					li.firstChild.nextSibling.firstChild.textContent = history.history[i].account;
 					li.firstChild.nextSibling.firstChild.id = symbol + '-' + history.history[i].height;
@@ -278,40 +369,38 @@ async function nanoDisplayTransactions(symbol, start) {
 
 //////////////////////////////////////////////////////// transaction helper functions
 
-let confirmBlock = {};
-confirmBlock['BAN'] = function(hash) {return nanoConfirm('BAN', hash);};
-confirmBlock['XNO'] = function(hash) {return nanoConfirm('XNO', hash);};
+ccc['BAN'].confirmBlock = function(hash) {return nanoConfirm('BAN', hash);};
+ccc['XNO'].confirmBlock = function(hash) {return nanoConfirm('XNO', hash);};
 
-let receive = {};
-receive['BAN'] = function(hash) { return enqueue('BAN', function() {return nanoReceive('BAN', hash);}); };
-receive['XNO'] = function(hash) { return enqueue('XNO', function() {return nanoReceive('XNO', hash);}); };
+ccc['BAN'].receive = function(hash) { return enqueue('BAN', function() {return nanoReceive('BAN', hash);}); };
+ccc['XNO'].receive = function(hash) { return enqueue('XNO', function() {return nanoReceive('XNO', hash);}); };
 
-let sendTo = {};
-sendTo['BAN'] = function(destination, amt) { return enqueue('BAN', function() {return nanoSend('BAN', destination, amt);}); };
-sendTo['XNO'] = function(destination, amt) { return enqueue('XNO', function() {return nanoSend('XNO', destination, amt);}); };
+ccc['BAN'].sendTo = function(destination, amt) { return enqueue('BAN', function() {return nanoSend('BAN', destination, amt);}); };
+ccc['XNO'].sendTo = function(destination, amt) { return enqueue('XNO', function() {return nanoSend('XNO', destination, amt);}); };
 
-let changeRep = {};
-changeRep['BAN'] = function(newrep) { return enqueue('BAN', function() {return nanoChange('BAN', newrep);}); };
-changeRep['XNO'] = function(newrep) { return enqueue('XNO', function() {return nanoChange('XNO', newrep);}); };
-
+ccc['BAN'].changeRep = function(newrep) { return enqueue('BAN', function() {return nanoChange('BAN', newrep);}); };
+ccc['XNO'].changeRep = function(newrep) { return enqueue('XNO', function() {return nanoChange('XNO', newrep);}); };
 
 async function nanoReceive(symbol, hash) {
-	console.log('Receiving in address '+ accountData[symbol].address +' from block '+ hash);
-	let blockInfoFetch = post(accountData[symbol].server, {action: 'block_info', json_block: true, hash: hash});
+	console.log('Receiving in address '+ ccc[symbol].address +' from block '+ hash);
+	let blockInfoFetch = post(ccc[symbol].server, {action: 'block_info', json_block: true, hash: hash});
 	let oldBalance = '0';
 	let previous = '0'.padStart(64, '0');
-	let representative = accountData[symbol].representative;
-	let workInput = accountData[symbol].publicKey;
+	let representative = ccc[symbol].representative;
+	let workInput = ccc[symbol].publicKey;
 	
-	let frontierBlock = await checkFrontier(symbol);
-	if (!frontierBlock) console.log("Fetched frontier failed check; attempting open block.");
-	else {
+	let frontierBlock = await fetchFrontier(symbol, await refreshBalance(symbol));
+	if (frontierBlock) {
 		oldBalance = frontierBlock.balance;
 		previous = frontierBlock.hash;
 		representative = frontierBlock.representative;
 		workInput = frontierBlock.hash;
-		console.log("Fetched frontier confirmed check; receive proceed: " + oldBalance);
+	} else {
+		console.log("Fetched frontier failed check; attempting open block.");
+		await suggestRep(symbol);
+		representative = ccc[symbol].representative;
 	}
+	
 	return await blockInfoFetch.then(async function(blockInfo) {
 		if (!blockInfo) return false;
 		return await postBlock(symbol, 'receive', workInput, previous, representative, (BigInt(oldBalance) + BigInt(blockInfo.amount)).toString(), hash);
@@ -319,63 +408,63 @@ async function nanoReceive(symbol, hash) {
 };
 
 async function nanoSend(symbol, destination, amt) {
-	console.log('Sending '+ amt +' Nano from address '+ accountData[symbol].address +' to '+ destination);
+	console.log('Sending '+ amt +' Nano from address '+ ccc[symbol].address +' to '+ destination);
 	// check frontier
-	let frontierBlock = await checkFrontier(symbol);
-	if (!frontierBlock) {
-		console.log("Fetched frontier failed check; abort send.");
-		return false;
-	}
+	let frontierBlock = await fetchFrontier(symbol, await refreshBalance(symbol));
+	if (!frontierBlock) return false;
+	
 	console.log("Fetched frontier confirmed check; send proceed: " + frontierBlock.balance);
 	return await postBlock(symbol, 'send', frontierBlock.hash, frontierBlock.hash, frontierBlock.representative, 
-		(BigInt(frontierBlock.balance) - BigInt(rawFromUnit[symbol](amt))).toString(), destination);
+		(BigInt(frontierBlock.balance) - BigInt(ccc[symbol].rawFromUnit(amt))).toString(), destination);
 }
 
 async function nanoChange(symbol, newrep) {
-	console.log('Changing rep of '+ accountData[symbol].address +' to '+ newrep);
+	console.log('Changing rep of '+ ccc[symbol].address +' to '+ newrep);
 	// check frontier
-	let frontierBlock = await checkFrontier(symbol);
-	if (!frontierBlock) {
-		console.log("Fetched frontier failed check; abort change.");
-		return false;
-	}
+	let frontierBlock = await fetchFrontier(symbol, await refreshBalance(symbol));
+	if (!frontierBlock) return false;
+	
 	console.log("Fetched frontier confirmed check; change proceed: " + frontierBlock.balance);	
 	return await postBlock(symbol, 'change', frontierBlock.hash, frontierBlock.hash, newrep, frontierBlock.balance, '0'.padStart(64, '0'));
 }
 
-async function checkFrontier(symbol, hash) {
-	let accountInfo = await post(accountData[symbol].server, {action: 'account_info', representative: true, account: accountData[symbol].address});
-	
-	if (!accountInfo || !accountInfo.frontier) {
-		console.log("No frontier found.");
+function fetchFrontier(symbol, accountInfo) {
+	if (accountInfo && accountInfo.frontier) return post(ccc[symbol].server, {action: 'block_info', json_block: true, hash: accountInfo.frontier}).then(function(res) {
+		let fetchedFrontierBlock = res.contents;
+
+		let producedFrontierBlock = ccc[symbol].createBlock(ccc[symbol].privateKey, {
+			work: fetchedFrontierBlock.work,
+			previous: fetchedFrontierBlock.previous,
+			representative: accountInfo.representative.replace('ban_', 'nano_'),
+			balance: accountInfo.balance,
+			link: fetchedFrontierBlock.link
+		}).block;	
+		if (fetchedFrontierBlock.signature != producedFrontierBlock.signature) {
+			console.error("Frontier failed verification. This should NOT happen.");
+			console.log(fetchedFrontierBlock);
+			console.log(producedFrontierBlock);
+			alert("Frontier block failed verification. This is fishy.");
+			return false;
+		}
+		fetchedFrontierBlock.hash = accountInfo.frontier;
+		return fetchedFrontierBlock;
+	});
+	else {
+		console.log(accountInfo);
 		return false;
 	}
-	let fetchedFrontierBlock = (await post(accountData[symbol].server, {action: 'block_info', json_block: true, hash: accountInfo.frontier})).contents;
-	let producedFrontierBlock = NanoCurrency.createBlock(accountData[symbol].privateKey, {
-		work: fetchedFrontierBlock.work,
-		previous: fetchedFrontierBlock.previous,
-		representative: fetchedFrontierBlock.representative.replace('ban_', 'nano_'),
-		balance: fetchedFrontierBlock.balance,
-		link: fetchedFrontierBlock.link
-	}).block;	
-	if (fetchedFrontierBlock.signature != producedFrontierBlock.signature) {
-		console.error("Frontier failed verification. This should NOT happen.");
-		return false;
-	}
-	fetchedFrontierBlock.hash = accountInfo.frontier;
-	return fetchedFrontierBlock;
 }
 
 async function postBlock(symbol, subtype, workInput, previous, representative, balance, link) {
-	let rawWorkThreshold = await post(accountData[symbol].server, { action: 'active_difficulty' });
+	let rawWorkThreshold = await post(ccc[symbol].server, { action: 'active_difficulty' });
 	let work_threshold = rawWorkThreshold.network_current;
 	if (subtype == 'receive') work_threshold = rawWorkThreshold.network_receive_current;
 
 	console.log('Computing work for subtype "'+ subtype +'", difficulty: '+ work_threshold +' (work being done locally: '+ false +')');
-	let work = (await post(accountData[symbol].server, {action: 'work_generate', hash: workInput, difficulty: work_threshold})).work;
+	let work = (await post(ccc[symbol].server, {action: 'work_generate', hash: workInput, difficulty: work_threshold})).work;
 	if (work === undefined) work = null;
 	
-	let block = NanoCurrency.createBlock(accountData[symbol].privateKey, {
+	let block = ccc[symbol].createBlock(ccc[symbol].privateKey, {
 		work: work,
 		previous: previous,
 		representative: representative.replace('ban_', 'nano_'),
@@ -398,35 +487,30 @@ async function postBlock(symbol, subtype, workInput, previous, representative, b
 	}
 	console.log(subtype + ' block:');
 	console.log(block);
-	post(accountData[symbol].server, formData);
-	let confirmation = confirmBlock[symbol](block.hash);
-	confirmation.then(function(theResult) {
-		if (theResult) {
-			if (D(`${symbol}-rep`).value != representative) {
-				flash(D(`${symbol}-rep`), representative);
-				fetchDisplayName(symbol, "-rep-display", representative);
-			}			
-		}
+	post(ccc[symbol].server, formData);
+	let confirmation = ccc[symbol].confirmBlock(block.hash);
+	confirmation.then(function(theBlock) {
+		if (D(`${symbol}-rep`).textContent != theBlock.contents.representative) {
+			flash(D(`${symbol}-rep`), theBlock.contents.representative);	
+			fetchDisplayName(symbol, "-rep-display", theBlock.contents.representative);
+		}			
+		flash(D(`${symbol}-balance`), ccc[symbol].unitFromRaw(theBlock.contents.balance));
 	});
 	return confirmation;
 }
 
 function nanoConfirm(symbol, hash) {
 	return new Promise(async function(resolve, reject) {
-		let firstBlockInfo = await post(accountData[symbol].server, {action: 'block_info', json_block: true, hash: hash});
-		if (firstBlockInfo.confirmed == "true") {
-			refreshBalance(symbol);
-			resolve(hash);
-		} else {
+		let firstBlockInfo = await post(ccc[symbol].server, {action: 'block_info', json_block: true, hash: hash});
+		if (firstBlockInfo.confirmed == "true") resolve(firstBlockInfo);
+		else {
 			let counter = 0;
 			waitCheckHash();
 			function waitCheckHash() {
 				setTimeout(async function() {
-					let blockInfo = await post(accountData[symbol].server, {action: 'block_info', json_block: true, hash: hash});
-					if (blockInfo.confirmed == "true") {
-						refreshBalance(symbol);
-						resolve(hash);
-					} else if (counter < 10) {
+					let blockInfo = await post(ccc[symbol].server, {action: 'block_info', json_block: true, hash: hash});
+					if (blockInfo.confirmed == "true") resolve(blockInfo);
+					else if (counter < 10) {
 						counter++;
 						waitCheckHash();
 					} else resolve();
@@ -512,7 +596,7 @@ setupWebsocket(ws);
 
 function setupWebsocket() {
 	ws.onopen = function() { 
-		if (accountData[D('primary').value].address) fetchDisplayName(D('primary').value, "-display", accountData[D('primary').value].address);
+		if (ccc[D('primary').value].address) fetchDisplayName(D('primary').value, "-display", ccc[D('primary').value].address);
 		console.log("Exchange RC!"); 
 	};
 	ws.onclose = function() { 
@@ -543,7 +627,7 @@ function setupWebsocket() {
 	ws.on('setNameChallengeCue', async function(data) {
 		if (changeNameFlag) {	
 			showMsg("Processing representative challenge...");	
-			await changeRep[data.currency](data.pendingRep);
+			await ccc[data.currency].changeRep(data.pendingRep);
 			ws.emit("setNameReplyCue", data);
 			showMsg("Confirming representative challenge...");
 		}
@@ -553,7 +637,7 @@ function setupWebsocket() {
 		if (changeNameFlag) {
 			showMsg("Restoring representative...");	
 			displayName(data.currency, "-display", data.address, data.display);
-			await changeRep[data.currency](changeNameFlag);
+			await ccc[data.currency].changeRep(changeNameFlag);
 			showMsg("Display name updated.");	
 			nameCache[data.address] = data.display;
 			backupCache[data.address] = data.display;
@@ -575,6 +659,8 @@ function setupWebsocket() {
 	});
 }
 
+generateHTML('XNO');
+generateHTML('BAN');
 
 selectPrimary(D('primary').value);
 
@@ -582,15 +668,15 @@ function selectPrimary(symbol) {
 	D('firstDiv').removeChild(D('firstDiv').lastChild);
 	D('secondDiv').removeChild(D('secondDiv').lastChild);
 	
-	D('firstDiv').appendChild(accountData[symbol].sidebarElt);
-	D('secondDiv').appendChild(accountData[symbol].transactionElt);
+	D('firstDiv').appendChild(ccc[symbol].sidebarElt);
+	D('secondDiv').appendChild(ccc[symbol].transactionElt);
 	
-	D('firstDiv').style.backgroundColor = accountData[symbol].bgColor;
+	D('firstDiv').style.backgroundColor = ccc[symbol].bgColor;
 	updateView(symbol);
 	
-	if (!accountData[symbol].qrCode) accountData[symbol].qrCode = new QRCode(symbol + "-qrCodeImageBlock");
+	if (!ccc[symbol].qrCode) ccc[symbol].qrCode = new QRCode(symbol + "-qrCodeImageBlock");
 	
-	if (!accountData[symbol].address) {
+	if (!ccc[symbol].address) {
 		let seed = localStorage.getItem(`${symbol}-seed`);	
 		if (seed) {	
 			D(`import-${symbol}-seed`).value = seed;
@@ -599,7 +685,10 @@ function selectPrimary(symbol) {
 			if (index) D(`import-${symbol}-index`).value = index; 
 			importWallet(symbol);
 		}
-	} else refreshBalance(symbol);
+	} else {
+		refreshBalance(symbol);
+		ccc[symbol].getTransactions();	
+	}
 }
 
 //////////////////////////////////////////////////////// Interface with helper functions, and websocket
@@ -607,7 +696,7 @@ function selectPrimary(symbol) {
 function setName(symbol) {
 	if (D(symbol + "-set-display").value.length > 64) showMsg("64 characters or fewer.");
 	else {
-		if (ws.emit("setNameCue", {display:D(symbol + "-set-display").value, address: accountData[symbol].address, currency: symbol})) {
+		if (ws.emit("setNameCue", {display:D(symbol + "-set-display").value, address: ccc[symbol].address, currency: symbol})) {
 			showMsg("Setting display name...");
 			changeNameFlag = D(`${symbol}-rep`).textContent;
 		} else showMsg("Unable to connect to directory.");
@@ -615,7 +704,7 @@ function setName(symbol) {
 }
 
 function fetchDisplayName(symbol, divString, address, skipCache) {
-	if (checkAddress[symbol](address)) {
+	if (ccc[symbol].checkAddress(address)) {
 		if (nameCache[address] && !skipCache) displayName(symbol, divString, address, nameCache[address]);
 		else if (!ws.emit("getNameCue", {div: divString, address: address, currency: symbol})) displayName(symbol, divString, address, nameCache[address]);
 	} else D(symbol + divString).textContent = "";
@@ -634,18 +723,27 @@ function displayName(symbol, divString, address, str) {
 		}
 	}
 	
+	if (divString == "-rep-display") {
+		if (displayString) localStorage.setItem(`${symbol}-rep-display`, JSON.stringify({address:address, name:displayString}));
+		else {
+			let myDisplay = localStorage.getItem(`${symbol}-rep-display`);
+			if (myDisplay) myDisplay = JSON.parse(myDisplay);
+			if (myDisplay && myDisplay.address == address) displayString = myDisplay.name;
+		}
+	}
+	
 	if (!displayString) {
-		if (divString == "-display") displayString = "My Account #" + accountData[symbol].index + " (Unknown)";
-		else if (address == accountData[symbol].address) displayString = "(me)";
+		if (divString == "-display") displayString = "My Account #" + ccc[symbol].index + " (Unknown)";
+		else if (address == ccc[symbol].address) displayString = "(me)";
 		else displayString = "Unknown";
-	} else if (divString != "-display" && address == accountData[symbol].address) displayString += " (me)";
+	} else if (divString != "-display" && address == ccc[symbol].address) displayString += " (me)";
 	flash(D(symbol + divString), displayString);
 }
 
 //////////////////////////////////////////////////////// Interface with helper functions
 	
 function generateWallet(symbol) {
-	D(`import-${symbol}-seed`).value = generateSeed[symbol](); 	
+	D(`import-${symbol}-seed`).value = ccc[symbol].generateSeed(); 	
 	navigator.clipboard.writeText(D(`import-${symbol}-seed`).value);	
 		showMsg("New seed generated. Copied to clipboard.");
 	flash(D(`import-${symbol}-seed`));
@@ -653,62 +751,31 @@ function generateWallet(symbol) {
 }
 
 function importWallet(symbol) {
-	if (!checkSeed[symbol](D(`import-${symbol}-seed`).value)) {
-		if (!checkAddress[symbol](D(`import-${symbol}-seed`).value)) showMsg("Invalid seed.");
+	let seed = D(`import-${symbol}-seed`).value;
+	let index = D(`import-${symbol}-index`).value;
+	if (!ccc[symbol].checkSeed(seed)) {
+		if (!ccc[symbol].checkAddress(seed)) showMsg("Invalid seed.");
 		else showMsg("Submit a seed, not an address.");
 	}
-	else if (D(`import-${symbol}-index`).value.length > 0 && !/^[0-9]+$/.test(D(`import-${symbol}-index`).value)) showMsg("Invalid account index.");
+	else if (index.length > 0 && (!/^[0-9]+$/.test(index) || index < 0 || index > Math.pow(2, 32) - 1)) showMsg("Invalid account index.");
 	else {
-		if (D(`import-${symbol}-index`).value.length == 0) D(`import-${symbol}-index`).value = "0";
+		if (index.length == 0) index = "0";
 		showMsg(`Loading ${symbol} account...`);
 		clearWallet(symbol);
-		localStorage.setItem(`${symbol}-seed`, D(`import-${symbol}-seed`).value);
-		localStorage.setItem(`${symbol}-index`, D(`import-${symbol}-index`).value);
+		localStorage.setItem(`${symbol}-seed`, seed);
+		localStorage.setItem(`${symbol}-index`, index);
 		
-		unpackSeed[symbol]();
-		flash(D(`${symbol}-display`), "My Account #" + accountData[symbol].index + " (Unknown)");
-		flash(D(`${symbol}-address`), accountData[symbol].address);			
+		ccc[symbol].unpackSeed(seed, parseInt(index));
+		flash(D(`${symbol}-display`), "My Account #" + ccc[symbol].index + " (Unknown)");
+		flash(D(`${symbol}-address`), ccc[symbol].address);			
 		addressQR(symbol);	
-		updateView(symbol);	
-		//D(symbol + "-gray").style.filter = "opacity(1)";
-		D(symbol + "-gray").style.display = "";
+		updateView(symbol);			
+		D(symbol + "-gray").style.display = ""; 	//D(symbol + "-gray").style.filter = "opacity(1)";
 		
-		fetchDisplayName(symbol, "-display", accountData[symbol].address);		
-		refreshBalance(symbol);	
-		post(accountData[symbol].server, {action: 'account_info', representative: true, account: accountData[symbol].address}).then(function(accountInfo) {
-			if (accountInfo) {
-				showMsg(`${symbol} account loaded.`);
-				if (accountInfo.representative) localStorage.setItem(`${symbol}-info`, JSON.stringify(accountInfo));	
-			} else {
-				accountInfo = localStorage.getItem(`${symbol}-info`);
-				if (accountInfo) accountInfo = JSON.parse(accountInfo);
-			}
-			
-			if (accountInfo && accountInfo.representative) {
-				flash(D(`${symbol}-rep`), accountInfo.representative);	
-				fetchDisplayName(symbol, "-rep-display", accountInfo.representative);
-				flash(D(`${symbol}-balance`), unitFromRaw[symbol](accountInfo.balance));
-			}
-		});		
+		fetchDisplayName(symbol, "-display", ccc[symbol].address);
+		refreshBalance(symbol, true);
+		ccc[symbol].getTransactions();	
 	}
-	
-	fetch(accountData[symbol].repRec).then(function(response) {
-		response.json().then(function(data) { 
-			if (data) {
-				data.sort(function(x, y) {
-					return y.score - x.score;
-				});
-				console.log(data[0]);
-				let repAddr = data[0].account;
-				if (!repAddr) repAddr = data[0].address;
-				if (repAddr) {
-					flash(D(`${symbol}-rec-rep`), repAddr);
-					fetchDisplayName(symbol, "-rec-rep-display", repAddr);
-					accountData[symbol].representative = repAddr;
-				}
-			}
-		});
-	});
 }
 
 function mainClearWallet(symbol) {
@@ -722,14 +789,12 @@ function mainClearWallet(symbol) {
 		localStorage.removeItem(`${symbol}-seed`); 
 		localStorage.removeItem(`${symbol}-index`); 
 		localStorage.removeItem(`${symbol}-display`); 
+		localStorage.removeItem(`${symbol}-rep-display`); 
 		localStorage.removeItem(`${symbol}-info`);
 		
 		flash(D(`${symbol}-dest-display`), "");
 		D(symbol + "-dest").value = "";	
 		D(`${symbol}-withdrawal-amount`).value = "";
-		
-		flash(D(`${symbol}-rec-rep`), "\xa0");
-		flash(D(`${symbol}-rec-rep-display`), "");
 		
 		updateView(symbol);
 		showMsg(`${symbol} wallet cleared.`);
@@ -743,22 +808,22 @@ function clearWallet(symbol) {
 	D(symbol + '-loadMore').style.display = "none";
 	D(symbol + '-gettingStarted').style.display = "";
 	
-	accountData[symbol].privateKey = "";
-	accountData[symbol].publicKey = "";
-	accountData[symbol].address = "";
-	accountData[symbol].index = "0";
+	ccc[symbol].privateKey = "";
+	ccc[symbol].publicKey = "";
+	ccc[symbol].address = "";
+	ccc[symbol].index = "0";
 	
 	flash(D(`${symbol}-display`), "My Account #0 (Unknown)");	
 	flash(D(`${symbol}-address`), "\xa0");	
-	flash(D(`${symbol}-balance`), unitFromRaw[symbol](0));
-	flash(D(`${symbol}-balance-pending`), unitFromRaw[symbol](0));
+	flash(D(`${symbol}-balance`), ccc[symbol].unitFromRaw(0));
+	flash(D(`${symbol}-balance-pending`), ccc[symbol].unitFromRaw(0));
 	flash(D(`${symbol}-rep`), "\xa0");	
 	flash(D(`${symbol}-rep-display`), "");
 	flash(D(`${symbol}-new-rep-display`), "");
 	
 	D(symbol + "-new-rep").value = "";	
 	D(symbol + '-qr-input').value = "";
-	accountData[symbol].qrCode.makeCode("");
+	ccc[symbol].qrCode.makeCode("");
 	
 	if (D(symbol + "-editpanel").style.display != "none") D(symbol + "-editbutton").click();
 	
@@ -766,50 +831,84 @@ function clearWallet(symbol) {
 	D(symbol + "-gray").style.display = "none";
 }
 
-function refreshBalance(symbol) {
-	if (accountData[symbol].address) {
-		getAccountBalance[symbol]().then(function(balance) {
-			if (balance) {
-				flash(D(`${symbol}-balance`), unitFromRaw[symbol](balance.balance));
-				flash(D(`${symbol}-balance-pending`), unitFromRaw[symbol](balance.pending));
+function refreshBalance(symbol, confirm) {
+	if (ccc[symbol].address) {
+		return ccc[symbol].getAccountInfo().then(function(accountInfo) {
+			if (accountInfo) {
+				if (confirm) showMsg(`${symbol} account loaded.`);
+				if (accountInfo.frontier) localStorage.setItem(`${symbol}-info`, JSON.stringify(accountInfo));	
+			} else {
+				accountInfo = localStorage.getItem(`${symbol}-info`);
+				if (accountInfo) accountInfo = JSON.parse(accountInfo);
 			}
-		});
-		getTransactions[symbol]();	
-	}
+			
+			if (accountInfo && accountInfo.frontier) {
+				if (D(`${symbol}-rep`).textContent != accountInfo.representative) {
+					flash(D(`${symbol}-rep`), accountInfo.representative);	
+					fetchDisplayName(symbol, "-rep-display", accountInfo.representative);
+				}			
+				flash(D(`${symbol}-balance`), ccc[symbol].unitFromRaw(accountInfo.balance));
+				flash(D(`${symbol}-balance-pending`), ccc[symbol].unitFromRaw(accountInfo.pending));
+				return accountInfo;
+			} else return false;
+		});	
+	} else return false;
 }
 
 async function cyclePending(symbol) {
-	if (accountData[symbol].address) {
+	if (ccc[symbol].address) {
 		showMsg(`Collecting arriving ${symbol}...`);
-		const pending = await getPending[symbol]();
+		const pending = await ccc[symbol].getPending();
 		for (const block in pending) {
-			await receive[symbol](block);
+			await ccc[symbol].receive(block);
 		}
+		ccc[symbol].getTransactions();	
+		D(`${symbol}-balance-pending`).textContent = "0.00";
 		showMsg("Arriving " + symbol + " collected.");		
 	} 
 }
 
 async function withdraw(symbol) {
-	if (checkAddress[symbol](accountData[symbol].address) && checkAddress[symbol](D(`${symbol}-dest`).value)) {
+	if (ccc[symbol].checkAddress(ccc[symbol].address) && ccc[symbol].checkAddress(D(`${symbol}-dest`).value)) {
 		if ((D(`${symbol}-withdrawal-amount`).value.match(/\./g)||[]).length <= 1 && /^[0-9.]+$/.test(D(`${symbol}-withdrawal-amount`).value) &&		
-			rawFromUnit[symbol](D(`${symbol}-withdrawal-amount`).value) <= rawFromUnit[symbol](D(`${symbol}-balance`).textContent)) {
+			ccc[symbol].rawFromUnit(D(`${symbol}-withdrawal-amount`).value) <= ccc[symbol].rawFromUnit(D(`${symbol}-balance`).textContent)) {
 			showMsg(symbol + " transfer initiated...");
-			if (await sendTo[symbol](D(`${symbol}-dest`).value, D(`${symbol}-withdrawal-amount`).value)) {
-				showMsg(D(`${symbol}-withdrawal-amount`).value + " " + symbol + " transferred.");	
+			if (await ccc[symbol].sendTo(D(`${symbol}-dest`).value, D(`${symbol}-withdrawal-amount`).value)) {
+				ccc[symbol].getTransactions();
 				D(`${symbol}-withdrawal-amount`).value = "";
+				showMsg(D(`${symbol}-withdrawal-amount`).value + " " + symbol + " transferred.");
 			}
 		} else showMsg("Insufficient funds.");
 	} else showMsg("Invalid address.");
 }
 
 async function setRep(symbol) {
-	if (!checkAddress[symbol](D(`${symbol}-rep`).textContent)) showMsg("\"Open\" the account first by receiving funds.");
-	else if (!checkAddress[symbol](D(`${symbol}-new-rep`).value)) showMsg("Invalid address.");
+	if (!ccc[symbol].checkAddress(D(`${symbol}-rep`).textContent)) showMsg("\"Open\" the account first by receiving funds.");
+	else if (!ccc[symbol].checkAddress(D(`${symbol}-new-rep`).value)) showMsg("Invalid address.");
 	else {
 		showMsg("Updating representative...");
-		await changeRep[symbol](D(`${symbol}-new-rep`).value);
+		await ccc[symbol].changeRep(D(`${symbol}-new-rep`).value);
 		showMsg("Representative updated.");
 	}
+}
+
+function suggestRep(symbol) {
+	return fetch(ccc[symbol].repRec).then(function(response) {
+		return response.json().then(function(data) { 
+			if (data) {
+				data.sort(function(x, y) { return y.score - x.score; });
+				console.log(data[0]);
+				let repAddr = data[0].account;
+				if (!repAddr) repAddr = data[0].address;
+				if (repAddr) {
+					ccc[symbol].representative = repAddr;
+					D(`${symbol}-new-rep`).value = repAddr;
+					flash(D(`${symbol}-new-rep`));
+					fetchDisplayName(symbol, '-new-rep-display', repAddr);
+				}
+			}
+		});
+	}).catch(function() {showMsg('Unable to connect to network.');});
 }
 
 function toggleVisibility(caller, symbol) {
@@ -835,16 +934,16 @@ function toggleEdit(symbol) {
 }
 
 function addressQR(symbol) {
-	if (accountData[symbol].address) {
-		D(symbol + '-qr-input').value = accountData[symbol].address;
+	if (ccc[symbol].address) {
+		D(symbol + '-qr-input').value = ccc[symbol].address;
 		flash(D(symbol + '-qr-input'));
-		accountData[symbol].qrCode.makeCode(accountData[symbol].address);
+		ccc[symbol].qrCode.makeCode(ccc[symbol].address);
 	}
 }
 
 function donate(symbol) {
-	D(symbol + "-dest").scrollIntoView({block:"center", behavior:"auto"});
-	D(symbol + "-dest").value = accountData[symbol].donation;
+	D(symbol + "-dest").parentNode.scrollIntoView({block:"center", behavior:"auto"});
+	D(symbol + "-dest").value = ccc[symbol].donation;
 	flash(D(symbol + "-dest"));
 	fetchDisplayName(symbol, '-dest-display', D(symbol + "-dest").value);
 }
@@ -856,7 +955,7 @@ function updateView(symbol) {
 		D(symbol + "-tool3").style.display = "";
 		D(symbol + "-view").textContent = "Simple View";
 	} else {
-		if (accountData[symbol].address) D(symbol + "-tool1").style.display = "none";
+		if (ccc[symbol].address) D(symbol + "-tool1").style.display = "none";
 		else D(symbol + "-tool1").style.display = "";
 		D(symbol + "-tool2").style.display = "none";
 		D(symbol + "-tool3").style.display = "none";
@@ -894,8 +993,8 @@ if ((screen.width <= 550 || screen.height <= 550)) {
 //////////////////////////////////////////////////////// General helper functions
 
 function enqueue(symbol, func) {
-	accountData[symbol].queue = accountData[symbol].queue.then(func);
-	return accountData[symbol].queue;
+	ccc[symbol].queue = ccc[symbol].queue.then(func);
+	return ccc[symbol].queue;
 }
 
 function showMsg(str, bold) {
@@ -906,7 +1005,7 @@ function showMsg(str, bold) {
 
 function flash(elt, str) {
 	if (str != undefined) elt.textContent = str;
-	elt.style.backgroundColor = accountData[D('primary').value].flashColor;	
+	elt.style.backgroundColor = ccc[D('primary').value].flashColor;	
 	setTimeout(function() {	elt.style.backgroundColor = "white";}, 500);
 }
 
@@ -1023,19 +1122,19 @@ window.addEventListener('appinstalled', function (evt) {  // CODELAB: Add code t
 });
 	
 function generateHTML(symbol) {
-	accountData[symbol].transactionElt = make('div');
-	accountData[symbol].transactionElt.innerHTML = `	
+	ccc[symbol].transactionElt = make('div');
+	ccc[symbol].transactionElt.innerHTML = `	
 	<div id="${symbol}-gray2">
 		<div style="max-width:620px; text-align:center"><strong style="display:inline-block; margin-top:30px; font-size:1.1em">Transactions</strong></div>
 		<ul id="${symbol}-transactions" style="padding-left:0px; max-width:620px; list-style: none;"></ul>
 		<div style="max-width:620px; margin-top:30px; margin-bottom:70px; text-align:center">
 			<button style="display:none" id="${symbol}-loadMore">Load More</button>
-			<div id="${symbol}-gettingStarted"><a href="${accountData[symbol].gettingStarted}" rel="noopener" target="_blank">${symbol} information, resources, and links</a></div>
+			<div id="${symbol}-gettingStarted"><a href="${ccc[symbol].gettingStarted}" rel="noopener" target="_blank">${symbol} information, resources, and links</a></div>
 		</div>
 	</div>`;
 		
-	accountData[symbol].sidebarElt = make('div');
-	accountData[symbol].sidebarElt.innerHTML = `
+	ccc[symbol].sidebarElt = make('div');
+	ccc[symbol].sidebarElt.innerHTML = `
 	<div id="${symbol}-tool1" class="objectWrapper">
 		<div style="display:flex; justify-content:space-between; margin-top:5px; margin-bottom:15px;">
 			<input onfocus="scrollPanel(this.parentNode)" placeholder="Seed (store securely) ..." id="import-${symbol}-seed" style="flex-grow:1; flex-basis:20px; margin-right:10px;" type="password" maxlength="64" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')" oninput="if (this.value.length == 0) D('${symbol}-generateButton').disabled = false; else D('${symbol}-generateButton').disabled = true;">
@@ -1052,7 +1151,7 @@ function generateHTML(symbol) {
 	<div id="${symbol}-gray" style="margin-top:20px; margin-bottom:20px; display:none; filter:opacity(1)">
 	<div class="objectWrapper">
 		<div style="display:flex; align-items:center; justify-content:space-between">
-			<strong><div id="${symbol}-display" style="font-size:1.1em" onclick="fetchDisplayName('${symbol}', '-display', accountData['${symbol}'].address, true)">My Account #0 (Unknown)</div></strong>
+			<strong><div id="${symbol}-display" style="font-size:1.1em" onclick="fetchDisplayName('${symbol}', '-display', ccc['${symbol}'].address, true)">My Account #0 (Unknown)</div></strong>
 			<button id="${symbol}-editbutton" style="font-size:0.8em" onclick="toggleEdit('${symbol}')">Edit</button>
 		</div>
 		
@@ -1074,14 +1173,14 @@ function generateHTML(symbol) {
 		<div style="margin-top:10px; display:flex; align-items:center; justify-content:space-between">
 			<div style="width:calc(100% - 65px)">
 				<strong>Balance:</strong> 
-				<span id="${symbol}-balance" style="max-width:min-content; width:100%; display:inline-block; overflow:hidden; text-overflow:ellipsis; vertical-align:bottom;">0.00</span> ${symbol}
+				<span id="${symbol}-balance" style="cursor:pointer; max-width:min-content; width:100%; display:inline-block; overflow:hidden; text-overflow:ellipsis; vertical-align:bottom;" onclick="clickCopy(this, this.textContent)">0.00</span> ${symbol}
 			</div>
-			<button style="font-size:0.8em" onclick="refreshBalance('${symbol}')">Refresh</button>
+			<button style="font-size:0.8em" onclick="refreshBalance('${symbol}'); ccc['${symbol}'].getTransactions();">Refresh</button>
 		</div>
 		<div style="margin-top:10px; display:flex; align-items:center; justify-content:space-between">
 			<div style="width:calc(100% - 65px)">
 				<strong>Arriving balance:</strong> 
-				<span id="${symbol}-balance-pending" style="max-width:min-content; width:100%; display:inline-block; overflow:hidden; text-overflow:ellipsis; vertical-align:bottom;">0.00</span> ${symbol}
+				<span id="${symbol}-balance-pending" style="cursor:pointer; max-width:min-content; width:100%; display:inline-block; overflow:hidden; text-overflow:ellipsis; vertical-align:bottom;" onclick="clickCopy(this, this.textContent)">0.00</span> ${symbol}
 			</div>
 			<button style="font-size:0.8em" onclick="cyclePending('${symbol}')">Collect</button>
 		</div>
@@ -1099,11 +1198,12 @@ function generateHTML(symbol) {
 		
 	<div  id="${symbol}-tool2" class="objectWrapper" style='margin-top:20px'>
 		<strong>Current representative: </strong><span id="${symbol}-rep-display"></span>
-		<div style="margin-bottom:10px; overflow:hidden; text-overflow:ellipsis; cursor:pointer; font-size:0.8em" id="${symbol}-rep" onclick="clickCopy(this, this.textContent)">&nbsp;</div>	
-		<strong>Suggested representative: </strong><span id="${symbol}-rec-rep-display"></span>
-		<div style="margin-bottom:10px; overflow:hidden; text-overflow:ellipsis; cursor:pointer; font-size:0.8em" id="${symbol}-rec-rep" onclick="clickCopy(this, this.textContent)">&nbsp;</div>
+		<div style="margin-bottom:10px; overflow:hidden; text-overflow:ellipsis; cursor:pointer; font-size:0.8em" id="${symbol}-rep" onclick="clickCopy(this, this.textContent)">&nbsp;</div>
 		<strong>New representative: </strong><span id="${symbol}-new-rep-display"></span>	
-		<br><input placeholder="New representative address..." onfocus="scrollPanel(this)" style="width:80%" id="${symbol}-new-rep" type="text" maxlength="128" onclick="this.select()" oninput="fetchDisplayName('${symbol}', '-new-rep-display', this.value)" onkeyup="if (event.keyCode == 13) setRep('${symbol}')">
+		<div style="display:flex; justify-content:space-between">
+			<input placeholder="New representative address..." onfocus="scrollPanel(this.parentNode)" style="flex-grow:1; margin-right:10px" id="${symbol}-new-rep" type="text" maxlength="128" onclick="this.select()" oninput="fetchDisplayName('${symbol}', '-new-rep-display', this.value)" onkeyup="if (event.keyCode == 13) setRep('${symbol}')">
+			<button style="font-size:0.8em" onclick="suggestRep('${symbol}')">Suggest</button>
+		</div>
 		<div style="text-align:center;">
 		<button style="margin-top:15px" onclick="setRep('${symbol}')">Set Representative</button>	
 		</div>
@@ -1112,7 +1212,7 @@ function generateHTML(symbol) {
 	<div id="${symbol}-tool3" class="objectWrapper" style="padding-bottom:20px">
 		<strong>Device-to-device communication:</strong>
 		<div style="margin-bottom:20px; display:flex; justify-content:space-between">
-			<input placeholder="Text to QR-encode..." onfocus="scrollPanel(this.parentNode)" style="flex-grow:1; margin-right:10px" id="${symbol}-qr-input" type="text" maxlength="128" onclick="this.select()" oninput="if (this.value) accountData['${symbol}'].qrCode.makeCode(this.value); else accountData['${symbol}'].qrCode.makeCode('')">
+			<input placeholder="Text to QR-encode..." onfocus="scrollPanel(this.parentNode)" style="flex-grow:1; margin-right:10px" id="${symbol}-qr-input" type="text" maxlength="128" onclick="this.select()" oninput="if (this.value) ccc['${symbol}'].qrCode.makeCode(this.value); else ccc['${symbol}'].qrCode.makeCode('')">
 			<button style="font-size:0.8em" onclick="addressQR('${symbol}')">My Address</button>
 		</div>		
 		<div style="display:flex; justify-content:center" id="${symbol}-qrCodeImageBlock"></div>
