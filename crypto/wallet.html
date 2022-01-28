@@ -1018,7 +1018,6 @@ function qrscan(symbol, type) {
 			
 			function tick() {
 				if (qrScanning) {
-					if (video.videoHeight > 0 && qrScanning.height != video.videoHeight) qrScanning.parentNode.scrollIntoView({block:"start", behavior:"auto"});
 					qrScanning.height = video.videoHeight;
 					qrScanning.width = video.videoWidth;
 					canvas.drawImage(video, 0, 0, qrScanning.width, qrScanning.height);
