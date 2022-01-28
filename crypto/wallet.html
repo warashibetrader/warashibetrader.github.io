@@ -852,7 +852,7 @@ function refreshBalance(symbol, confirm) {
 		return ccc[symbol].getAccountInfo().then(function(accountInfo) {
 			if (accountInfo) {
 				if (confirm) showMsg(`${symbol} account loaded.`);
-				else if (D('msg').textContent == 'Unable to connect to network.') showMsg(`Connected.`);
+				else if (D('msg').textContent.indexOf('Unable to connect to network.') != -1) showMsg(`Connected.`);
 				if (accountInfo.frontier) localStorage.setItem(`${symbol}-info`, JSON.stringify(accountInfo));	
 			} else {
 				accountInfo = localStorage.getItem(`${symbol}-info`);
