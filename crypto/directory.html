@@ -42,18 +42,88 @@ generateHTML('XNO');
 generateHTML('BAN');
 selectPrimary(D('primary').value);	
 
-var accountData = {};
-accountData['XNO'] = {server:'https://proxy.powernode.cc/proxy'};						
-accountData['BAN'] = {server:'https://kaliumapi.appditto.com/api'};
+var ccc = {};
+ccc['XNO'] = {server:'https://proxy.powernode.cc/proxy'};						
+ccc['BAN'] = {server:'https://kaliumapi.appditto.com/api'};
+
 
 //////////////////////////////////////////////////////// low level helper functions
 
-let checkAddress = {};
-checkAddress['BAN'] = function(address) { 
+ccc['BAN'].checkAddress = function(address) { 
 	let nanoAddr = address.replace('ban_', 'nano_');
 	return (nanoAddr != address) && NanoCurrency.checkAddress(nanoAddr);
 };
-checkAddress['XNO'] = function(address) { return NanoCurrency.checkAddress(address);};
+ccc['XNO'].checkAddress = function(address) { return NanoCurrency.checkAddress(address);};
+
+
+
+var backupCache = {};
+
+
+let nanoCount = 0;
+let ninjaPromise = fetch('https://mynano.ninja/api/accounts/aliases').then(function(response) { response.json().then(function(data) { 
+	if (data) {
+		for (let i = 0; i < data.length; i++) {
+			if (!backupCache[data[i].account]) {
+				backupCache[data[i].account] = data[i].alias;
+				nanoCount++;
+			}
+		}
+	}	
+	console.log("Nano ninja count: " + nanoCount);
+});});
+
+let lookerPromise = fetch('https://nanolooker.com/api/known-accounts-balance').then(function(response) { response.json().then(function(data) { 
+	if (data) {
+		for (let i = 0; i < data.length; i++) {
+			if (!backupCache[data[i].account]) {
+				backupCache[data[i].account] = data[i].alias;
+				nanoCount++;
+			}
+		}
+	}		
+	console.log("Nano looker count: " + nanoCount);
+});});	
+
+ninjaPromise.then(function() { lookerPromise.then(function() {
+fetch('https://nano.to/known').then(function(response) { response.json().then(function(data) { 
+	if (data) {
+		for (let i = 0; i < data.length; i++) {
+			if (!backupCache[data[i].address]) {
+				backupCache[data[i].address] = data[i].name;
+				nanoCount++;
+			}
+		}
+	}
+	console.log("Nano to count: " + nanoCount);
+});});
+});});
+
+let bananoCount = 0;
+fetch('https://api.spyglass.pw/banano/v1/known/accounts',{ method: 'POST' }).then(function(response) { response.json().then(function(data) { 
+	if (data) {
+		for (let i = 0; i < data.length; i++) {
+			if (!backupCache[data[i].address]) {
+				backupCache[data[i].address] = data[i].alias;
+				bananoCount++;
+			}
+		}
+	}
+	console.log("Banano spyglass count: " + bananoCount);
+});});
+
+fetch('https://bananolooker.com/api/known-accounts').then(function(response) { response.json().then(function(data) { 
+	if (data) {
+		for (let i = 0; i < data.length; i++) {
+			if (!backupCache[data[i].account]) {
+				backupCache[data[i].account] = data[i].alias;
+				bananoCount++;
+			}
+		}
+	}
+	console.log("Banano looker count: " + bananoCount);
+});});
+
 
 //////////////////////////////////////////////////////// Exchange websocket
 
@@ -104,7 +174,8 @@ function setupWebsocket() {
 	
 	ws.on('getNameReplyCue', async function(data) {
 		if (!data.display) {
-			if (data.address == accountData[data.currency].address) data.display = "(not set)";
+			if (data.address == ccc[data.currency].address) data.display = "(not set)";
+			else if (backupCache[data.address])	data.display = backupCache[data.address];
 			else data.display = "Unknown";
 		}
 		flash(D(data.div), data.display);
@@ -114,19 +185,20 @@ function setupWebsocket() {
 
 //////////////////////////////////////////////////////// Interface with helper functions, and websocket
 
+
 function setName(symbol) {
 	if (D(symbol + "-set-display").value.length > 64) showMsg("64 characters or fewer.");
-	else if (ws.emit("setNameReplyCue", {display:D(symbol + "-set-display").value, address: accountData[symbol].address, currency: symbol})) 
+	else if (ws.emit("setNameReplyCue", {display:D(symbol + "-set-display").value, address: ccc[symbol].address, currency: symbol})) 
 		showMsg("Setting display name...");
 }
 
 
 async function fetchDestAddress(symbol, elt) {
-	if (checkAddress[symbol](elt.value)) {
-		accountData[symbol].address = elt.value;
+	if (ccc[symbol].checkAddress(elt.value)) {
+		ccc[symbol].address = elt.value;
 		ws.emit("getNameChallengeCue", {div:symbol + "-dest-display", address: elt.value, currency: symbol});
 		
-		let accountInfo = await post(accountData[symbol].server, {action: 'account_info', representative: true, account: elt.value});
+		let accountInfo = await post(ccc[symbol].server, {action: 'account_info', representative: true, account: elt.value});
 		if (accountInfo && accountInfo.representative) {
 			flash(D(`${symbol}-rep`), accountInfo.representative);	
 			ws.emit("getNameCue", {div:symbol + "-rep-display", address: accountInfo.representative, currency: symbol});
