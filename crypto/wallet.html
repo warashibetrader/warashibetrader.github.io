@@ -659,7 +659,7 @@ function setupWebsocket() {
 	});
 	
 	ws.on('setNameFailedCue', function(data) {	
-		showMsg("Initialize account by receiving funds.");
+		showMsg("\"Open\" the account first by receiving funds.");
 		changeNameFlag = false;
 	});	
 	
@@ -852,6 +852,7 @@ function refreshBalance(symbol, confirm) {
 		return ccc[symbol].getAccountInfo().then(function(accountInfo) {
 			if (accountInfo) {
 				if (confirm) showMsg(`${symbol} account loaded.`);
+				else if (D('msg').textContent == 'Unable to connect to network.') showMsg(`Connected.`);
 				if (accountInfo.frontier) localStorage.setItem(`${symbol}-info`, JSON.stringify(accountInfo));	
 			} else {
 				accountInfo = localStorage.getItem(`${symbol}-info`);
@@ -1004,6 +1005,7 @@ function qrscan(symbol, type) {
 			
 			qrScanning.hidden = false;
 			qrScanning.id = "qr-canvas";
+			qrScanning.scrollIntoView({block:"center", behavior:"auto"});
 			
 			video.setAttribute("playsinline", true); // required to tell iOS safari we don't want fullscreen
 			video.srcObject = stream;
