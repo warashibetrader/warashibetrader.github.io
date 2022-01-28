@@ -1013,10 +1013,10 @@ function qrscan(symbol, type) {
 			const canvas = qrScanning.getContext("2d");
 			tick();
 			scan();
-			qrScanning.scrollIntoView({block:"center", behavior:"auto"});
 			
 			function tick() {
 				if (qrScanning) {
+					if (video.videoHeight > 0 && qrScanning.height != video.videoHeight) qrScanning.scrollIntoView({block:"center", behavior:"auto"});
 					qrScanning.height = video.videoHeight;
 					qrScanning.width = video.videoWidth;
 					canvas.drawImage(video, 0, 0, qrScanning.width, qrScanning.height);
