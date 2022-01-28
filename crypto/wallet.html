@@ -1248,7 +1248,7 @@ function generateHTML(symbol) {
 			</div>			
 		</div>
 		<canvas style="width:100%; margin-top:10px;" hidden="" id="${symbol}-qr-canvas-seed"></canvas>
-		<input onfocus="scrollPanel(this)" placeholder="Account index (default 0; or 1, 2, etc) ..." id="${symbol}-index" type="number" style="margin-top:15px; width:80%" min="0" maxlength="64" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')">	
+		<input onfocus="scrollPanel(this)" placeholder="Account index (default 0; or 1, 2, etc) ..." id="${symbol}-index" type="number" style="margin-top:15px; width:calc(100% - 70px)" min="0" maxlength="64" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')">	
 		<div style="text-align:center;">
 		<button style="margin-top:15px;" onclick="importWallet('${symbol}')">Load Account</button>
 		</div>
