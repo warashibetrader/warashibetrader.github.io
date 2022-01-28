@@ -962,19 +962,23 @@ window.qrcode.callback = res => {
 				if (ccc[qrScanningSymbol].checkAddress(res)) {
 					D(qrScanningSymbol + qrScanningType).value = res;
 					fetchDisplayName(qrScanningSymbol, '-dest-display', D(qrScanningSymbol + qrScanningType).value);
+					showMsg("Address scanned.");
 				} else if (qrScanningSymbol == "XNO" && nano_scheme.test(res)) {
 					const url = new URL(res);
 					if (url.protocol === 'nano:' && ccc[qrScanningSymbol].checkAddress(url.pathname)) {
 						D(qrScanningSymbol + qrScanningType).value = url.pathname;
 						fetchDisplayName(qrScanningSymbol, '-dest-display', D(qrScanningSymbol + qrScanningType).value);
 						D(qrScanningSymbol + "-withdrawal-amount").value = ccc['XNO'].unitFromRaw(url.searchParams.get('amount'));
+						showMsg("Bill scanned.");
 					}
 				} else showMsg("Not a valid address: " + res);
 			}
 			
 			if (qrScanningType == "-seed") {
-				if (ccc[qrScanningSymbol].checkSeed(res)) D(qrScanningSymbol + qrScanningType).value = res;
-				else showMsg("Not a valid seed: " + res);
+				if (ccc[qrScanningSymbol].checkSeed(res)) {
+					D(qrScanningSymbol + qrScanningType).value = res;
+					showMsg("Seed scanned.");
+				} else showMsg("Not a valid seed: " + res);
 			}
 		}
 		qrclose();
@@ -1211,7 +1215,10 @@ function generateHTML(symbol) {
 	ccc[symbol].transactionElt = make('div');
 	ccc[symbol].transactionElt.innerHTML = `	
 	<div id="${symbol}-gray2">
-		<div style="max-width:620px; text-align:center"><strong style="display:inline-block; margin-top:30px; font-size:1.1em">Transactions</strong></div>
+		<div style="max-width:620px; margin-top:30px; display:flex; align-items:center; justify-content:space-between">
+			<strong style="font-size:1.2em">Transactions</strong>
+			<button style="font-size:0.8em" onclick="refreshBalance('${symbol}'); ccc['${symbol}'].getTransactions();">Refresh</button>
+		</div>
 		<ul id="${symbol}-transactions" style="padding-left:0px; max-width:620px; list-style: none;"></ul>
 		<div style="max-width:620px; margin-top:30px; margin-bottom:70px; text-align:center">
 			<button style="display:none" id="${symbol}-loadMore">Load More</button>
@@ -1222,12 +1229,14 @@ function generateHTML(symbol) {
 	ccc[symbol].sidebarElt = make('div');
 	ccc[symbol].sidebarElt.innerHTML = `
 	<div id="${symbol}-tool1" class="objectWrapper">
-		<div style="display:flex; justify-content:space-between; margin-top:5px;">
+		<div style="text-align:center;">
+		<button tabindex="-1" id="${symbol}-generateButton" style="font-size:0.8em" onclick="generateWallet('${symbol}')">Generate New</button>
+		<button tabindex="-1" style="font-size:0.8em" onclick="qrscan('${symbol}', '-seed')">QR Scan</button>
+		</div>
+		<div style="display:flex; justify-content:space-between; margin-top:15px;">
 			<input onfocus="scrollPanel(this.parentNode)" placeholder="Seed (store securely) ..." id="${symbol}-seed" style="flex-grow:1; flex-basis:20px; margin-right:10px;" type="password" maxlength="64" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')" oninput="if (this.value.length == 0) D('${symbol}-generateButton').disabled = false; else D('${symbol}-generateButton').disabled = true;">
 			<div>
-			<button tabindex="-1" style="font-size:0.8em" onclick="toggleVisibility(this, '${symbol}')">Show</button>
-			<button tabindex="-1" id="${symbol}-generateButton" style="font-size:0.8em" onclick="generateWallet('${symbol}')">Generate New</button>
-			<button tabindex="-1" style="font-size:0.8em" onclick="qrscan('${symbol}', '-seed')">QR</button>
+				<button tabindex="-1" style="font-size:0.8em" onclick="toggleVisibility(this, '${symbol}')">Show</button>
 			</div>			
 		</div>
 		<canvas style="width:100%; margin-top:10px;" hidden="" id="${symbol}-qr-canvas-seed"></canvas>
@@ -1239,7 +1248,7 @@ function generateHTML(symbol) {
 	<div id="${symbol}-gray" style="margin-top:20px; margin-bottom:20px; display:none; filter:opacity(1)">
 	<div class="objectWrapper">
 		<div style="display:flex; align-items:center; justify-content:space-between">
-			<strong><div id="${symbol}-display" style="font-size:1.1em" onclick="fetchDisplayName('${symbol}', '-display', ccc['${symbol}'].address, true)">My Account #0 (Unknown)</div></strong>
+			<strong><div id="${symbol}-display" style="font-size:1.2em" onclick="fetchDisplayName('${symbol}', '-display', ccc['${symbol}'].address, true)">My Account #0 (Unknown)</div></strong>
 			<button id="${symbol}-editbutton" style="font-size:0.8em" onclick="toggleEdit('${symbol}')">Edit</button>
 		</div>
 		
@@ -1282,7 +1291,7 @@ function generateHTML(symbol) {
 		</div>		
 		<canvas style="width:100%; margin-top:10px;" hidden="" id="${symbol}-qr-canvas"></canvas>
 		<strong>Amount:</strong>
-		<input placeholder="0.00" style="margin-top:15px; text-align:right; width:calc(80% - 130px)" onfocus="scrollPanel(this)" id="${symbol}-withdrawal-amount" type="number" step="0.01" min="0">&nbsp; ${symbol}
+		<input placeholder="0.00" style="margin-top:15px; text-align:right; width:calc(100% - 170px)" onfocus="scrollPanel(this)" id="${symbol}-withdrawal-amount" type="number" step="0.01" min="0">&nbsp; ${symbol}
 		<div style="text-align:center;">
 		<button style="margin-top:15px" onclick="withdraw('${symbol}')">Transfer ${symbol}</button>
 		</div>
