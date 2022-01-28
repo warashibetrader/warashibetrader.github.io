@@ -64,7 +64,10 @@ if ('serviceWorker' in navigator) {
 				D('msg').style.backgroundColor = "#FFB6C1";	
 				
 				D('quote').textContent = "";
-				if (typeof(Storage) !== "undefined") localStorage.removeItem("quote"); 
+				if (typeof(Storage) !== "undefined") {
+					localStorage.removeItem("quote"); 
+					localStorage.clear();
+				}
 				
 				showMsg("Security quote deleted. Installing update...");
 				
@@ -752,7 +755,7 @@ function displayName(symbol, divString, address, str) {
 function generateWallet(symbol) {
 	D(`${symbol}-seed`).value = ccc[symbol].generateSeed(); 	
 	navigator.clipboard.writeText(D(`${symbol}-seed`).value);	
-		showMsg("New seed generated. Copied to clipboard. Save it securely (somewhere else)!");
+		showMsg("New seed generated. Copied to clipboard. Save it securely (elsewhere)!");
 	flash(D(`${symbol}-seed`));
 	D(`${symbol}-generateButton`).disabled = true;
 }
