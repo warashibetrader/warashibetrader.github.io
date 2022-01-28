@@ -1015,8 +1015,13 @@ function qrscan(symbol, type) {
 			const canvas = qrScanning.getContext("2d");
 			tick();
 			scan();
-			qrScanning.parentNode.scrollIntoView({block:"start", behavior:"auto"});
-			setTimeout(function() {qrScanning.parentNode.scrollIntoView({block:"start", behavior:"auto"});}, 1000);
+			
+			if ((screen.width <= 550 || screen.height <= 550)) {
+				qrScanning.parentNode.scrollIntoView({block:"start", behavior:"auto"});
+				setTimeout(function() {qrScanning.parentNode.scrollIntoView({block:"start", behavior:"auto"});}, 200);
+				setTimeout(function() {qrScanning.parentNode.scrollIntoView({block:"start", behavior:"auto"});}, 400);
+				setTimeout(function() {qrScanning.parentNode.scrollIntoView({block:"start", behavior:"auto"});}, 600);
+			}
 			
 			function tick() {
 				if (qrScanning) {
