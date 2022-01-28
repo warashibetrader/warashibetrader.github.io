@@ -54,7 +54,6 @@ self.addEventListener('activate', (evt) => {
 });
 
 self.addEventListener('fetch', (evt) => {
-	console.log('[sw] Fetch', evt.request.url);	
 	if (evt.request.url.startsWith(self.location.origin)) evt.respondWith(
 		caches.open(CACHE_NAME).then((cache) => {
 		return cache.match(evt.request).then((response) => {
