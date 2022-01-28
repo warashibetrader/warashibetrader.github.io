@@ -72,7 +72,7 @@ if ('serviceWorker' in navigator) {
 					for (let symbol in ccc) {
 						delete ccc[symbol].privateKey;						
 						if (D(symbol + "-seed")) D(symbol + "-seed").value = "";
-						else delete ccc[symbol].transactionElt;
+						else ccc[symbol].sidebarElt.innerHTML.length = 0;
 						console.log("Deleted " + symbol + "key.");
 					}
 				}
