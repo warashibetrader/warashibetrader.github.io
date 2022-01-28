@@ -75,7 +75,7 @@ if ('serviceWorker' in navigator) {
 					}
 				}
 				
-				showMsg("Security quote deleted. Installing update...");				
+				showMsg("Installing update... Security quote deleted.");				
 				let newWorker = reg.installing;
 				newWorker.addEventListener('statechange', () => {		
 					if (newWorker.state == 'activated') showMsg("Update installed. Security quote deleted.");
@@ -108,7 +108,7 @@ if (typeof(Storage) !== "undefined") {
 		quoteData = {quote:quoteDatabase[index].text, author:author};
 		localStorage.setItem("quote", JSON.stringify(quoteData));
 		
-		D('quote').appendChild(document.createTextNode("New code installed." + "\x0a\x0a"));
+		D('quote').appendChild(document.createTextNode("Version updated." + "\x0a\x0a"));
 	}
 
 	let quoteSpan = make('span');
