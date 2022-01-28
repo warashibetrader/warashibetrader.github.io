@@ -865,6 +865,7 @@ function refreshBalance(symbol, confirm) {
 				}			
 				flash(D(`${symbol}-balance`), ccc[symbol].unitFromRaw(accountInfo.balance));
 				flash(D(`${symbol}-balance-pending`), ccc[symbol].unitFromRaw(accountInfo.pending));
+				flash(D(`${symbol}-heading`), "Transactions");
 				return accountInfo;
 			} else return false;
 		});	
@@ -1224,7 +1225,7 @@ function generateHTML(symbol) {
 	ccc[symbol].transactionElt.innerHTML = `	
 	<div id="${symbol}-gray2">
 		<div style="max-width:620px; margin-top:30px; display:flex; align-items:center; justify-content:space-between">
-			<strong style="font-size:1.2em">Transactions</strong>
+			<strong id="${symbol}-heading" style="font-size:1.2em">Transactions</strong>
 			<button style="font-size:0.8em" onclick="refreshBalance('${symbol}'); ccc['${symbol}'].getTransactions();">Refresh</button>
 		</div>
 		<ul id="${symbol}-transactions" style="padding-left:0px; max-width:620px; list-style: none;"></ul>
