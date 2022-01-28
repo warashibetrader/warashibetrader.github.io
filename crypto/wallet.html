@@ -1016,7 +1016,7 @@ function qrscan(symbol, type) {
 			tick();
 			scan();
 			
-			if ((screen.width <= 550 || screen.height <= 550)) {
+			if (screen.width <= 550 || screen.height <= 550) {
 				qrScanning.parentNode.scrollIntoView({block:"start", behavior:"auto"});
 				setTimeout(function() {qrScanning.parentNode.scrollIntoView({block:"start", behavior:"auto"});}, 200);
 				setTimeout(function() {qrScanning.parentNode.scrollIntoView({block:"start", behavior:"auto"});}, 400);
@@ -1086,14 +1086,14 @@ function toggleView(symbol) {
 var currentElt;
 
 function scrollPanel(elt) {
-	if ((screen.width <= 550 || screen.height <= 550)) {
+	if (screen.width <= 550 || screen.height <= 550) {
 		elt.parentNode.scrollIntoView({block:'start', behavior:'auto', inline: "nearest"});	
 		currentElt = elt;
 		setTimeout(function() {currentElt = null;}, 1000);
 	}
 }
 
-if ((screen.width <= 550 || screen.height <= 550)) {
+if (screen.width <= 550 || screen.height <= 550) {
 	window.addEventListener("resize", function() {
 		if (currentElt) currentElt.parentNode.scrollIntoView({block:'start', behavior:'auto', inline: "nearest"});	
 	});
