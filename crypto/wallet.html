@@ -1005,7 +1005,6 @@ function qrscan(symbol, type) {
 			
 			qrScanning.hidden = false;
 			qrScanning.id = "qr-canvas";
-			qrScanning.scrollIntoView({block:"center", behavior:"auto"});
 			
 			video.setAttribute("playsinline", true); // required to tell iOS safari we don't want fullscreen
 			video.srcObject = stream;
@@ -1014,6 +1013,7 @@ function qrscan(symbol, type) {
 			const canvas = qrScanning.getContext("2d");
 			tick();
 			scan();
+			qrScanning.scrollIntoView({block:"center", behavior:"auto"});
 			
 			function tick() {
 				if (qrScanning) {
