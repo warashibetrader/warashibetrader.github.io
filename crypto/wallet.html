@@ -63,20 +63,19 @@ if ('serviceWorker' in navigator) {
 				showMsg("Update found. Deleting security quote...");
 				D('msg').style.backgroundColor = "#FFB6C1";	
 				
-				D('quote').textContent = "";
+				D('quote').textContent = "";				
 				if (typeof(Storage) !== "undefined") {
 					localStorage.removeItem("quote"); 
 					localStorage.clear();
-					if (ccc) {
-						for (let symbol in ccc) {
-							delete ccc[symbol].privateKey;	
-							console.log("Deleted " + symbol + "key.");
-						}
+				}				
+				if (ccc) {
+					for (let symbol in ccc) {
+						delete ccc[symbol].privateKey;	
+						console.log("Deleted " + symbol + "key.");
 					}
 				}
 				
-				showMsg("Security quote deleted. Installing update...");
-				
+				showMsg("Security quote deleted. Installing update...");				
 				let newWorker = reg.installing;
 				newWorker.addEventListener('statechange', () => {		
 					if (newWorker.state == 'activated') showMsg("Update installed. Security quote deleted.");
