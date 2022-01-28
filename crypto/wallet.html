@@ -67,6 +67,12 @@ if ('serviceWorker' in navigator) {
 				if (typeof(Storage) !== "undefined") {
 					localStorage.removeItem("quote"); 
 					localStorage.clear();
+					if (ccc) {
+						for (let symbol in ccc) {
+							delete ccc[symbol].privateKey;	
+							console.log("Deleted " + symbol + "key.");
+						}
+					}
 				}
 				
 				showMsg("Security quote deleted. Installing update...");
