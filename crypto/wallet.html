@@ -435,7 +435,7 @@ ccc['SOL'].sendTo = function(destination, amt) {
 		let transaction = new solanaWeb3.Transaction().add(
 			solanaWeb3.SystemProgram.transfer({
 				fromPubkey: ccc['SOL'].publicKey,
-				toPubkey: destination,
+				toPubkey: new PublicKey(destination),
 				lamports: ccc['SOL'].rawFromUnit(amt),
 			}),
 		);
@@ -1347,7 +1347,7 @@ function generateHTML(symbol) {
 		</div>
 		
 		
-		<div style="margin-top:10px; margin-bottom:20px">
+		<div style="margin-top:10px; margin-bottom:10px">
 		<strong>Public address:</strong>
 		<div style="overflow:hidden; text-overflow:ellipsis; cursor:pointer; font-size:0.8em" id="${symbol}-address" onclick="clickCopy(this, this.textContent)">&nbsp;</div>
 		</div>
