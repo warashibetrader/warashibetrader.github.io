@@ -411,6 +411,7 @@ ccc['SOL'].getTransactions = async function(start) {
 					let li = D(symbol + '-' + historyDetails[i].slot).parentNode.parentNode;
 					console.log(historyDetails[i]);					
 					for (let j = 0; j < historyDetails[i].transaction.message.accountKeys.length; j++) {
+						console.log(historyDetails[i].transaction.message.accountKeys[j].signer);
 						if (historyDetails[i].transaction.message.accountKeys[j].signer == "true") {
 							let change = (historyDetails[i].meta.preBalances[j] - historyDetails[i].meta.postBalances[j]);
 							console.log(change);		
