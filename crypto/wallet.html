@@ -753,7 +753,7 @@ function selectPrimary(symbol) {
 		D(`${symbol}-index`).style.display = "none";
 		D(`${symbol}-tool2`).style.display = "none";
 		D(`${symbol}-arriving-balance-panel`).style.display = "none";
-	}
+	} else D(`${symbol}-seed`).maxLength = "54";
 	
 	if (!ccc[symbol].address) {
 		let seed = localStorage.getItem(`${symbol}-seed`);	
@@ -1318,7 +1318,7 @@ function generateHTML(symbol) {
 		<button tabindex="-1" style="font-size:0.8em" onclick="qrscan('${symbol}', '-seed')">Scan QR Code</button>
 		</div>
 		<div style="display:flex; justify-content:space-between; margin-top:15px;">
-			<input onfocus="scrollPanel(this.parentNode)" placeholder="Seed (store securely) ..." id="${symbol}-seed" style="flex-grow:1; flex-basis:20px; margin-right:10px;" type="password" maxlength="64" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')" oninput="if (this.value.length == 0) D('${symbol}-generateButton').disabled = false; else D('${symbol}-generateButton').disabled = true;">
+			<input onfocus="scrollPanel(this.parentNode)" placeholder="Seed (store securely) ..." id="${symbol}-seed" style="flex-grow:1; flex-basis:20px; margin-right:10px;" type="password" maxlength="128" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')" oninput="if (this.value.length == 0) D('${symbol}-generateButton').disabled = false; else D('${symbol}-generateButton').disabled = true;">
 			<div>
 				<button tabindex="-1" style="font-size:0.8em" onclick="toggleVisibility(this, '${symbol}')">Show</button>
 			</div>			
