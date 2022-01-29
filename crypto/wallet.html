@@ -364,23 +364,16 @@ ccc['BAN'].getTransactions = function(start) {nanoDisplayTransactions('BAN', sta
 ccc['XNO'].getTransactions = function(start) {nanoDisplayTransactions('XNO', start);};
 ccc['SOL'].getTransactions = async function(start) {
 	let symbol = 'SOL';
-	let history = await ccc[symbol].connection.getSignaturesForAddress(ccc[symbol].publicKey);
+	let history = await ccc[symbol].connection.getSignaturesForAddress(ccc[symbol].publicKey, {limit:10, before: start});
 	if (history && history.length > 0) {
-		if (history.previous) {
-			if (!D(symbol + '-' + history.history[history.history.length - 1].height)) {
-				D(symbol + '-loadMore').style.display = "";
-				D(symbol + '-gettingStarted').style.display = "none";
-				D(symbol + '-loadMore').onclick = function() {ccc[symbol].getTransactions(history.previous);};
-			}
-		} else {
-			D(symbol + '-loadMore').style.display = "none";				
-			D(symbol + '-gettingStarted').style.display = "";
-		}
+		D(symbol + '-loadMore').style.display = "";
+		D(symbol + '-gettingStarted').style.display = "none";
+		D(symbol + '-loadMore').onclick = function() {ccc[symbol].getTransactions(history[history.length - 1].signature);};
 		for (let i = 0; i < history.length; i++) {
 			if (!D(symbol + '-' + history[i].slot)) {
 				let li = make('li');
 				let sign = "+";
-				let color = "#097";	
+				let color = "#333";	
 				
 				let displayNameSpan = make('span');
 				displayNameSpan.id = `${symbol}-${history[i].slot}-display`;
@@ -409,6 +402,9 @@ ccc['SOL'].getTransactions = async function(start) {
 				flash(li);
 			}
 		}
+	} else {
+		D(symbol + '-loadMore').style.display = "none";				
+		D(symbol + '-gettingStarted').style.display = "";
 	}
 };
 
