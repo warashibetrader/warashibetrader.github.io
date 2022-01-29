@@ -356,7 +356,7 @@ async function nanoDisplayTransactions(symbol, start) {
 					}
 					
 					li.innerHTML = "<div style='display:flex; justify-content:space-between'><strong></strong>"
-					+ "<strong style='text-align:right; overflow:hidden; text-overflow:ellipsis; color:" + color + "'>" + sign + "<span></span> " + symbol + "</strong></div>"
+					+ "<strong style='text-align:right; overflow:hidden; text-overflow:ellipsis; color:" + color + "'>" + sign + "<span style='cursor:pointer;'></span> " + symbol + "</strong></div>"
 					+ "<div style='display:flex; justify-content:space-between'><span style='cursor:pointer; font-size:0.8em; width:calc(100% - 180px); overflow:hidden; text-overflow:ellipsis; margin-top:4px' onclick='clickCopy(this, this.textContent)'></span>"
 					+ "<span style='text-align:right;'></span></div>";
 					
@@ -1250,7 +1250,7 @@ function generateHTML(symbol) {
 	<div id="${symbol}-tool1" class="objectWrapper">
 		<div style="text-align:center;">
 		<button tabindex="-1" id="${symbol}-generateButton" style="font-size:0.8em" onclick="generateWallet('${symbol}')">Generate New</button>
-		<button tabindex="-1" style="font-size:0.8em" onclick="qrscan('${symbol}', '-seed')">QR Scan</button>
+		<button tabindex="-1" style="font-size:0.8em" onclick="qrscan('${symbol}', '-seed')">Scan QR Code</button>
 		</div>
 		<div style="display:flex; justify-content:space-between; margin-top:15px;">
 			<input onfocus="scrollPanel(this.parentNode)" placeholder="Seed (store securely) ..." id="${symbol}-seed" style="flex-grow:1; flex-basis:20px; margin-right:10px;" type="password" maxlength="64" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')" oninput="if (this.value.length == 0) D('${symbol}-generateButton').disabled = false; else D('${symbol}-generateButton').disabled = true;">
