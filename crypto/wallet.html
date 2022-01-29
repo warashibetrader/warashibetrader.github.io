@@ -342,8 +342,18 @@ ccc['BAN'].getAccountInfo = function() {return post(ccc['BAN'].server, {action: 
 ccc['XNO'].getAccountInfo = function() {return post(ccc['XNO'].server, {action: 'account_info', pending: true, representative: true, account: ccc['XNO'].address});};
 ccc['SOL'].getAccountInfo = async function() {
 	let accountInfo = await ccc['SOL'].connection.getAccountInfo(ccc['SOL'].publicKey);
-	if (accountInfo) accountInfo.frontier = true;
-	accountInfo.balance = accountInfo.lamports;
+	if (accountInfo) {
+		accountInfo.frontier = true;
+		accountInfo.balance = accountInfo.lamports;
+	} else {
+		const airdropSignature = await connection.requestAirdrop(ccc['SOL'].publicKey, solanaWeb3.LAMPORTS_PER_SOL);
+		await connection.confirmTransaction(airdropSignature);
+		accountInfo = await ccc['SOL'].connection.getAccountInfo(ccc['SOL'].publicKey);
+		if (accountInfo) {
+			accountInfo.frontier = true;
+			accountInfo.balance = accountInfo.lamports;
+		}
+	}
 	return accountInfo;
 };
 
