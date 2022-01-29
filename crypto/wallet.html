@@ -430,7 +430,7 @@ ccc['XNO'].receive = function(hash) { return enqueue('XNO', function() {return n
 ccc['BAN'].sendTo = function(destination, amt) { return enqueue('BAN', function() {return nanoSend('BAN', destination, amt);}); };
 ccc['XNO'].sendTo = function(destination, amt) { return enqueue('XNO', function() {return nanoSend('XNO', destination, amt);}); };
 ccc['SOL'].sendTo = function(destination, amt) { 
-	return enqueue('SOL', function() {
+	return enqueue('SOL', async function() {
     let transaction = new solanaWeb3.Transaction().add(
         solanaWeb3.SystemProgram.transfer({
             fromPubkey: ccc['SOL'].publicKey,
