@@ -441,7 +441,7 @@ ccc['SOL'].sendTo = function(destination, amt) {
 		);
 		// Sign transaction, broadcast, and confirm
 		let signature = await solanaWeb3.sendAndConfirmTransaction(
-			connection,
+			ccc['SOL'].connection,
 			transaction,
 			[ccc['SOL'].privateKey],
 		);
