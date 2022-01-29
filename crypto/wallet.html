@@ -363,7 +363,8 @@ ccc['BAN'].getPending = async function() {return (await post(ccc['BAN'].server, 
 ccc['BAN'].getTransactions = function(start) {nanoDisplayTransactions('BAN', start);};
 ccc['XNO'].getTransactions = function(start) {nanoDisplayTransactions('XNO', start);};
 ccc['SOL'].getTransactions = async function(start) {
-	let history = await ccc['SOL'].connection.getSignaturesForAddress(ccc['SOL'].publicKey);
+	let symbol = 'SOL';
+	let history = await ccc[symbol].connection.getSignaturesForAddress(ccc[symbol].publicKey);
 	if (history && history.length > 0) {
 		if (history.previous) {
 			if (!D(symbol + '-' + history.history[history.history.length - 1].height)) {
