@@ -369,6 +369,7 @@ ccc['SOL'].getTransactions = async function(start) {
 		D(symbol + '-loadMore').style.display = "";
 		D(symbol + '-gettingStarted').style.display = "none";
 		D(symbol + '-loadMore').onclick = function() {ccc[symbol].getTransactions(history[history.length - 1].signature);};
+		let details = [];
 		for (let i = 0; i < history.length; i++) {
 			if (!D(symbol + '-' + history[i].slot)) {
 				let li = make('li');
@@ -398,8 +399,18 @@ ccc['SOL'].getTransactions = async function(start) {
 				li.style.marginBottom = "15px";
 				li.title = history[i].slot;			
 				addOrdered(li, D(symbol + '-transactions'));
-				fetchDisplayName(symbol, "-" + history[i].slot + "-display", history[i].signature);
+				// fetchDisplayName(symbol, "-" + history[i].slot + "-display", history[i].signature);
 				flash(li);
+				details[i] = history[i].signature;  
+			}
+		}
+		let historyDetails = await ccc[symbol].connection.getParsedConfirmedTransactions(details);
+		if (historyDetails.length > 0) {
+			for (let i = 0; i < historyDetails.length; i++) {
+				if (D(symbol + '-' + historyDetails[i].slot)) {
+					let li = D(symbol + '-' + historyDetails[i].slot).parentNode.parentNode;
+					console.log(historyDetails[i]);
+				}
 			}
 		}
 	} else {
