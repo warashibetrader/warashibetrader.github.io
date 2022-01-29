@@ -413,10 +413,11 @@ ccc['SOL'].getTransactions = async function(start) {
 					for (let j = 0; j < historyDetails[i].transaction.message.accountKeys.length; j++) {
 						if (historyDetails[i].transaction.message.accountKeys[j].signer == "true") {
 							let change = (historyDetails[i].meta.preBalances[j] - historyDetails[i].meta.postBalances[j]);
-							console.log(change);						
+							console.log(change);		
+
+							if (j == 0) console.log(historyDetails[i].transaction.message.accountKeys[1].pubkey);
+							else console.log(historyDetails[i].transaction.message.accountKeys[0].pubkey);							
 						}
-						if (j == 0) console.log(historyDetails[i].transaction.message.accountKeys[1].pubkey);
-						else console.log(historyDetails[i].transaction.message.accountKeys[0].pubkey);
 					}
 				}
 			}
