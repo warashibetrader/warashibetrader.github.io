@@ -431,21 +431,21 @@ ccc['BAN'].sendTo = function(destination, amt) { return enqueue('BAN', function(
 ccc['XNO'].sendTo = function(destination, amt) { return enqueue('XNO', function() {return nanoSend('XNO', destination, amt);}); };
 ccc['SOL'].sendTo = function(destination, amt) { 
 	return enqueue('SOL', async function() {
-    let transaction = new solanaWeb3.Transaction().add(
-        solanaWeb3.SystemProgram.transfer({
-            fromPubkey: ccc['SOL'].publicKey,
-            toPubkey: destination,
-            lamports: ccc['SOL'].rawFromUnit(amt),
-        }),
-    );
-    // Sign transaction, broadcast, and confirm
-    let signature = await solanaWeb3.sendAndConfirmTransaction(
-        connection,
-        transaction,
-        [ccc['SOL'].privateKey],
-    );
-    console.log('SOL SIGNATURE', signature);
-    };
+		let transaction = new solanaWeb3.Transaction().add(
+			solanaWeb3.SystemProgram.transfer({
+				fromPubkey: ccc['SOL'].publicKey,
+				toPubkey: destination,
+				lamports: ccc['SOL'].rawFromUnit(amt),
+			}),
+		);
+		// Sign transaction, broadcast, and confirm
+		let signature = await solanaWeb3.sendAndConfirmTransaction(
+			connection,
+			transaction,
+			[ccc['SOL'].privateKey],
+		);
+		console.log('SOL SIGNATURE', signature);
+	});
 };
 
 ccc['BAN'].changeRep = function(newrep) { return enqueue('BAN', function() {return nanoChange('BAN', newrep);}); };
