@@ -362,8 +362,56 @@ ccc['BAN'].getPending = async function() {return (await post(ccc['BAN'].server, 
 
 ccc['BAN'].getTransactions = function(start) {nanoDisplayTransactions('BAN', start);};
 ccc['XNO'].getTransactions = function(start) {nanoDisplayTransactions('XNO', start);};
+ccc['SOL'].getTransactions = async function(start) {
+	let history = await ccc['SOL'].connection.getSignaturesForAddress(ccc['SOL'].publicKey);
+	if (history && history.length > 0) {
+		if (history.previous) {
+			if (!D(symbol + '-' + history.history[history.history.length - 1].height)) {
+				D(symbol + '-loadMore').style.display = "";
+				D(symbol + '-gettingStarted').style.display = "none";
+				D(symbol + '-loadMore').onclick = function() {ccc[symbol].getTransactions(history.previous);};
+			}
+		} else {
+			D(symbol + '-loadMore').style.display = "none";				
+			D(symbol + '-gettingStarted').style.display = "";
+		}
+		for (let i = 0; i < history.length; i++) {
+			if (!D(symbol + '-' + history[i].slot)) {
+				let li = make('li');
+				let sign = "+";
+				let color = "#097";	
+				
+				let displayNameSpan = make('span');
+				displayNameSpan.id = `${symbol}-${history[i].slot}-display`;
+				displayNameSpan.textContent = "Unknown";
+				
+				li.innerHTML = "<div style='display:flex; justify-content:space-between'><strong></strong>"
+				+ "<strong style='text-align:right; overflow:hidden; text-overflow:ellipsis; color:" + color + "'>" + sign + "<span style='cursor:pointer;'></span> " + symbol + "</strong></div>"
+				+ "<div style='display:flex; justify-content:space-between'><span style='cursor:pointer; font-size:0.8em; width:calc(100% - 180px); overflow:hidden; text-overflow:ellipsis; margin-top:4px' onclick='clickCopy(this, this.textContent)'></span>"
+				+ "<span style='text-align:right;'></span></div>";
+				
+				li.firstChild.firstChild.textContent = history[i].slot + ": ";
+				li.firstChild.firstChild.appendChild(displayNameSpan);
+				li.firstChild.firstChild.nextSibling.firstElementChild.textContent = "0.00";
+				li.firstChild.firstChild.nextSibling.firstElementChild.onclick = function() {
+					clickCopy(li.firstChild.firstChild.nextSibling.firstElementChild, li.firstChild.firstChild.nextSibling.firstElementChild.textContent);
+				};
+				
+				li.firstChild.nextSibling.firstChild.textContent = history[i].signature;
+				li.firstChild.nextSibling.firstChild.id = symbol + '-' + history[i].slot;
+				li.firstChild.nextSibling.firstChild.nextSibling.textContent = convertTimestamp(history[i].blockTime);
+				
+				li.style.marginBottom = "15px";
+				li.title = history[i].slot;			
+				addOrdered(li, D(symbol + '-transactions'));
+				fetchDisplayName(symbol, "-" + history[i].slot + "-display", history[i].signature);
+				flash(li);
+			}
+		}
+	}
+};
 
-async function nanoDisplayTransactions(symbol, start) {
+function nanoDisplayTransactions(symbol, start) {
 	post(ccc[symbol].server, { action: 'account_history', head:start, account: ccc[symbol].address, count:10 }).then(function(history) {
 		if (history && history.history) {
 			if (history.previous) {
@@ -857,7 +905,7 @@ function importWallet(symbol) {
 		
 		fetchDisplayName(symbol, "-display", ccc[symbol].address);
 		refreshBalance(symbol, true);
-	//	ccc[symbol].getTransactions();	
+		ccc[symbol].getTransactions();	
 	}
 }
 
