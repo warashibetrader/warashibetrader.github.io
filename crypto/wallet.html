@@ -309,7 +309,7 @@ ccc['SOL'].unpackSeed = function(seed, index) {
 
 ccc['BAN'].unitFromRaw = function(bal) {return shiftDecimalLeft(bal, 29);};
 ccc['XNO'].unitFromRaw = function(bal) {return shiftDecimalLeft(bal, 30);};
-ccc['SOL'].unitFromRaw = function(bal) {return shiftDecimalLeft(bal, 13);};
+ccc['SOL'].unitFromRaw = function(bal) {return shiftDecimalLeft(bal, 9);};
 function shiftDecimalLeft(str, shift) {
 	let n = str.toString();	
 	while (n.length < shift + 1) {
@@ -324,7 +324,7 @@ function shiftDecimalLeft(str, shift) {
 
 ccc['BAN'].rawFromUnit = function(bal) { return shiftDecimalRight(bal, 29);};
 ccc['XNO'].rawFromUnit = function(bal) { return shiftDecimalRight(bal, 30);};
-ccc['SOL'].rawFromUnit = function(bal) { return shiftDecimalRight(bal, 13);};
+ccc['SOL'].rawFromUnit = function(bal) { return shiftDecimalRight(bal, 9);};
 function shiftDecimalRight(str, shift) {	
 	let parts = str.toString().split(".");	
 	let whole = parts[0];
@@ -915,7 +915,7 @@ function refreshBalance(symbol, confirm) {
 					fetchDisplayName(symbol, "-rep-display", accountInfo.representative);
 				}
 				flash(D(`${symbol}-balance`), ccc[symbol].unitFromRaw(accountInfo.balance));
-				flash(D(`${symbol}-balance-pending`), ccc[symbol].unitFromRaw(accountInfo.pending));
+				if (accountInfo.pending !== undefined) flash(D(`${symbol}-balance-pending`), ccc[symbol].unitFromRaw(accountInfo.pending));
 				flash(D(`${symbol}-heading`), "Transactions");
 				return accountInfo;
 			} else return false;
