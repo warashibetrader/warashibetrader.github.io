@@ -435,7 +435,7 @@ ccc['SOL'].sendTo = function(destination, amt) {
 		let transaction = new solanaWeb3.Transaction().add(
 			solanaWeb3.SystemProgram.transfer({
 				fromPubkey: ccc['SOL'].publicKey,
-				toPubkey: new PublicKey(destination),
+				toPubkey: new solanaWeb3.PublicKey(destination),
 				lamports: ccc['SOL'].rawFromUnit(amt),
 			}),
 		);
