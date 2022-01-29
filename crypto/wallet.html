@@ -346,8 +346,8 @@ ccc['SOL'].getAccountInfo = async function() {
 		accountInfo.frontier = true;
 		accountInfo.balance = accountInfo.lamports;
 	} else {
-		const airdropSignature = await connection.requestAirdrop(ccc['SOL'].publicKey, solanaWeb3.LAMPORTS_PER_SOL);
-		await connection.confirmTransaction(airdropSignature);
+		const airdropSignature = await ccc['SOL'].connection.requestAirdrop(ccc['SOL'].publicKey, solanaWeb3.LAMPORTS_PER_SOL);
+		await ccc['SOL'].connection.confirmTransaction(airdropSignature);
 		accountInfo = await ccc['SOL'].connection.getAccountInfo(ccc['SOL'].publicKey);
 		if (accountInfo) {
 			accountInfo.frontier = true;
