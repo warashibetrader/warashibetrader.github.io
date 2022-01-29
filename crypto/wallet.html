@@ -409,7 +409,13 @@ ccc['SOL'].getTransactions = async function(start) {
 			for (let i = 0; i < historyDetails.length; i++) {
 				if (D(symbol + '-' + historyDetails[i].slot)) {
 					let li = D(symbol + '-' + historyDetails[i].slot).parentNode.parentNode;
-					console.log(historyDetails[i]);
+					console.log(historyDetails[i]);					
+					for (let j = 0; j < historyDetails[i].transaction.message.accountKeys.length; j++) {
+						if (historyDetails[i].transaction.message.accountKeys[i].signer == "true") {
+							let change = (historyDetails[i].meta.preBalances[j] - historyDetails[i].meta.postBalances[j]);
+							console.log(change);						
+						}
+					}
 				}
 			}
 		}
