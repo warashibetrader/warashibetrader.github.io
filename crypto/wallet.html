@@ -158,7 +158,7 @@ ccc['BAN'] = {representative:'ban_1ka1ium4pfue3uxtntqsrib8mumxgazsjf58gidh1xeo5t
 						bgColor:'orange'};
 						
 ccc['SOL'] = {bgColor:'#0ca', 
-				gettingStarted: 'https://solana.com/',
+				gettingStarted:'https://solana.com/',
 				flashColor:'#e0faf0',
 				connection: new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('devnet'), 'confirmed')};
 	
@@ -516,7 +516,7 @@ ccc['SOL'].sendTo = function(destination, amt) {
 			}),
 		);
 		// Sign transaction, broadcast, and confirm
-		return signature = await solanaWeb3.sendAndConfirmTransaction(
+		return await solanaWeb3.sendAndConfirmTransaction(
 			ccc['SOL'].connection,
 			transaction,
 			[ccc['SOL'].privateKey],
