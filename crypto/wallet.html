@@ -1512,7 +1512,7 @@ function generateHTML(symbol) {
 		<button style="font-size:0.8em; margin-right:15px;" onclick="donate('${symbol}')">Donate!</button>	
 		<button id="${symbol}-view" style="font-size:0.8em" onclick="toggleView('${symbol}')">Simple View</button>	
 		<button style="font-size:0.8em" onclick="if (confirm('Clear all data for ${symbol} including the wallet seed?')) {
-													mainClearWallet('${symbol}'); showMsg(`${symbol} wallet cleared.`); }">Clear ${symbol} Wallet</button>
+													mainClearWallet('${symbol}'); showMsg('${symbol} wallet cleared.'); }">Clear ${symbol} Wallet</button>
 	</div>
 	
 	</div>`;
