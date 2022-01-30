@@ -409,16 +409,13 @@ ccc['SOL'].getTransactions = async function(start) {
 			for (let i = 0; i < historyDetails.length; i++) {
 				if (D(symbol + '-' + historyDetails[i].slot)) {
 					let li = D(symbol + '-' + historyDetails[i].slot).parentNode.parentNode;
-					console.log(historyDetails[i]);					
+					console.log(historyDetails[i]);	
 					for (let j = 0; j < historyDetails[i].transaction.message.accountKeys.length; j++) {
-						console.log(historyDetails[i].transaction.message.accountKeys[j].signer);
-						if (historyDetails[i].transaction.message.accountKeys[j].signer) {
-							let change = (historyDetails[i].meta.preBalances[j] - historyDetails[i].meta.postBalances[j]);
-							console.log(change);		
-
-							if (j == 0) console.log(historyDetails[i].transaction.message.accountKeys[1].pubkey);
-							else console.log(historyDetails[i].transaction.message.accountKeys[0].pubkey);							
-						}
+						if (historyDetails[i].transaction.message.accountKeys[j].pubkey.toBase58() == ccc[symbol].address) {
+							let change = historyDetails[i].meta.postBalances[j] - historyDetails[i].meta.preBalances[j];
+							if (historyDetails[i].transaction.message.accountKeys[j].signer) change = -change;
+							li.firstChild.firstChild.nextSibling.firstElementChild.textContent = ccc[symbol].unitFromRaw(change);
+						} else if (j < 2) li.firstChild.nextSibling.firstChild.textContent = historyDetails[i].transaction.message.accountKeys[j].pubkey.toBase58();
 					}
 				}
 			}
