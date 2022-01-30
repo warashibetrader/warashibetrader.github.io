@@ -1043,8 +1043,9 @@ function refreshBalance(symbol, confirm) {
 				flash(D(`${symbol}-balance`), ccc[symbol].unitFromRaw(accountInfo.balance));
 				if (accountInfo.pending !== undefined) flash(D(`${symbol}-balance-pending`), ccc[symbol].unitFromRaw(accountInfo.pending));
 				flash(D(`${symbol}-heading`), "Transactions");
-				return accountInfo;
-			} else return false;
+			}
+			
+			return accountInfo;
 		});	
 	} else return false;
 }
