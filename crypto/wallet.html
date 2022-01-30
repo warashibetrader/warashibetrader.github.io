@@ -1029,7 +1029,7 @@ function refreshBalance(symbol, confirm) {
 			if (accountInfo) {
 				if (confirm) showMsg(`${symbol} account loaded.`);
 				else if (D('msg').textContent.indexOf('Unable to connect to network.') != -1) showMsg(`Connected.`);
-				if (accountInfo.frontier) localStorage.setItem(`${symbol}-info`, JSON.stringify(accountInfo));	
+				localStorage.setItem(`${symbol}-info`, JSON.stringify(accountInfo));	
 			} else {
 				if (ccc[symbol].address == localStorage.getItem(`${symbol}-address`)) accountInfo = localStorage.getItem(`${symbol}-info`);
 				if (accountInfo) accountInfo = JSON.parse(accountInfo);
