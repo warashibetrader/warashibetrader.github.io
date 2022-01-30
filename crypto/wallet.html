@@ -958,10 +958,12 @@ function importWallet(symbol) {
 		D(symbol + "-gray").style.display = ""; 	//D(symbol + "-gray").style.filter = "opacity(1)";
 		
 		fetchDisplayName(symbol, "-display", ccc[symbol].address);
-		if (refreshBalance(symbol, true)) {
-			localStorage.setItem(`${symbol}-seed`, seed);
-			localStorage.setItem(`${symbol}-index`, index);
-		}
+		refreshBalance(symbol, true).then(function(accountInfo) {
+			if (accountInfo) {
+				localStorage.setItem(`${symbol}-seed`, seed);
+				localStorage.setItem(`${symbol}-index`, index);
+			}
+		});
 		ccc[symbol].getTransactions();	
 	}
 }
