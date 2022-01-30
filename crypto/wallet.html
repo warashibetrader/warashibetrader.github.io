@@ -1499,7 +1499,7 @@ function generateHTML(symbol) {
 	<div id="${symbol}-tool3" class="objectWrapper" style="padding-bottom:20px">
 		<strong>Device-to-device communication:</strong>
 		<div style="margin-bottom:20px; display:flex; justify-content:space-between">
-			<input placeholder="Text to QR-encode..." onfocus="scrollPanel(this.parentNode)" style="flex-grow:1; margin-right:10px" id="${symbol}-qr-input" type="text" maxlength="128" onclick="this.select()" oninput="if (this.value) ccc['${symbol}'].qrCode.makeCode(this.value); else ccc['${symbol}'].qrCode.makeCode('')">
+			<input placeholder="Text to QR-encode..." onfocus="scrollPanel(this.parentNode)" style="flex-grow:1; margin-right:10px" id="${symbol}-qr-input" type="text" maxlength="512" onclick="this.select()" oninput="if (this.value) ccc['${symbol}'].qrCode.makeCode(this.value); else ccc['${symbol}'].qrCode.makeCode('')">
 			<button style="font-size:0.8em" onclick="addressQR('${symbol}')">My Address</button>
 		</div>		
 		<div style="display:flex; justify-content:center" id="${symbol}-qrCodeImageBlock"></div>
