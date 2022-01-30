@@ -836,7 +836,7 @@ function selectPrimary(symbol) {
 		D(`${symbol}-index`).style.display = "none";
 		D(`${symbol}-tool2`).style.display = "none";
 		D(`${symbol}-arriving-balance-panel`).style.display = "none";
-	} else D(`${symbol}-seed`).maxLength = "54";
+	} else D(`${symbol}-seed`).maxLength = "64";
 	
 	if (!ccc[symbol].address) {
 		let seed = localStorage.getItem(`${symbol}-seed`);	
