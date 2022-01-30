@@ -34,12 +34,12 @@
 								  pointer-events: none; opacity: 0.9;">Welcome.</strong>
 		
 		<div style="margin-top:15px; display:flex; align-items:center; justify-content:center">		
-			<button id="installButton" style="display:none; margin-right:15px;">Native App</button>
 			<select name="primary" id="primary" onchange="selectPrimary(event.target.value)">
 				<option style="background-color:#f1f4f4" value="XNO">Nano (XNO)</option>
 				<option style="background-color:#f1f4f4" value="BAN">Banano (BAN)</option>
 				<option style="background-color:#f1f4f4" value="SOL">Solana (SOL)</option>
 			</select>
+			<button id="view" style="margin-left:5px" onclick="toggleView()">Clean View</button>
 		</div>
 	</div>
 	</div>
@@ -932,7 +932,7 @@ function displayName(symbol, divString, address, str) {
 function generateWallet(symbol) {
 	D(`${symbol}-seed`).value = ccc[symbol].generateSeed(); 	
 	navigator.clipboard.writeText(D(`${symbol}-seed`).value);	
-		showMsg("New seed generated. Copied to clipboard. Save it securely (elsewhere)!");
+		showMsg("New seed copied to clipboard. Save it securely (elsewhere and NOW).");
 	flash(D(`${symbol}-seed`));
 	D(`${symbol}-generateButton`).disabled = true;
 }
@@ -1228,18 +1228,19 @@ function donate(symbol) {
 	fetchDisplayName(symbol, '-dest-display', D(symbol + "-dest").value);
 }
 
-function updateView(symbol) {
+function updateView() {
+	let symbol = D('primary').value;
 	if (fullView) {
 		D(symbol + "-tool1").style.display = "";
 		if (symbol == "XNO" || symbol == "BAN") D(symbol + "-tool2").style.display = "";
 		D(symbol + "-tool3").style.display = "";
-		D(symbol + "-view").textContent = "Simple View";
+		D("view").textContent = "Clean View";
 	} else {
 		if (ccc[symbol].address) D(symbol + "-tool1").style.display = "none";
 		else D(symbol + "-tool1").style.display = "";
 		D(symbol + "-tool2").style.display = "none";
 		D(symbol + "-tool3").style.display = "none";
-		D(symbol + "-view").textContent = "Show All Tools";
+		D("view").textContent = "View All Tools";
 	}
 }
 
@@ -1430,7 +1431,7 @@ function generateHTML(symbol) {
 			</div>			
 		</div>
 		<canvas style="width:100%; margin-top:10px;" hidden="" id="${symbol}-qr-canvas-seed"></canvas>
-		<input onfocus="scrollPanel(this)" placeholder="Account index (default 0; or 1, 2, etc) ..." id="${symbol}-index" type="number" style="margin-top:15px; width:calc(100% - 70px)" min="0" maxlength="64" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')">	
+		<input onfocus="scrollPanel(this)" placeholder="Account index (default 0; or 1, 2, 3, etc) ..." id="${symbol}-index" type="number" style="margin-top:15px; width:calc(100% - 70px)" min="0" maxlength="64" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')">	
 		<div style="text-align:center;">
 		<button style="margin-top:15px;" onclick="importWallet('${symbol}')">Load Account</button>
 		</div>
@@ -1512,9 +1513,9 @@ function generateHTML(symbol) {
 		<div style="display:flex; justify-content:center" id="${symbol}-qrCodeImageBlock"></div>
 	</div>
 		
-	<div style="text-align:center; margin-top:30px; margin-bottom:120px;">
-		<button style="font-size:0.8em; margin-right:15px;" onclick="donate('${symbol}')">Donate!</button>	
-		<button id="${symbol}-view" style="font-size:0.8em" onclick="toggleView('${symbol}')">Simple View</button>	
+	<div style="text-align:center; margin-top:30px; margin-bottom:120px;">		
+			<button id="installButton" style="font-size:0.8em; display:none; margin-right:15px;">Native App</button>
+		<button style="font-size:0.8em;" onclick="donate('${symbol}')">Donate!</button>
 		<button style="font-size:0.8em" onclick="if (confirm('Clear all data for ${symbol} including the wallet seed?')) {
 													mainClearWallet('${symbol}'); showMsg('${symbol} wallet cleared.'); }">Clear ${symbol} Wallet</button>
 	</div>
