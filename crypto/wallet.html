@@ -1028,7 +1028,7 @@ function refreshBalance(symbol, confirm) {
 				else if (D('msg').textContent.indexOf('Unable to connect to network.') != -1) showMsg(`Connected.`);
 				if (accountInfo.frontier) localStorage.setItem(`${symbol}-info`, JSON.stringify(accountInfo));	
 			} else {
-				if (ccc[symbol].seed == localStorage.getItem(`${symbol}-seed`) && ccc[symbol].index == localStorage.getItem(`${symbol}-index`)
+				if (ccc[symbol].seed == localStorage.getItem(`${symbol}-seed`) && ccc[symbol].index == localStorage.getItem(`${symbol}-index`))
 					accountInfo = localStorage.getItem(`${symbol}-info`);
 				if (accountInfo) accountInfo = JSON.parse(accountInfo);
 			}
