@@ -1,4 +1,5 @@
 'use strict';
+
 const CACHE_NAME = 'static-cache-v2';
 const FILES_TO_CACHE = ['wallet', 'wallet.html', 'wallet.css', 'strawicontrans.png', 'xno.js', 'nacl.js', 'quotes.js', 'qrcode.js', 'qrscan.js'];
 
