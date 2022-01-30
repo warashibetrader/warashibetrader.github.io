@@ -368,7 +368,7 @@ ccc['SOL'].getAccountInfo = function() {
 			if (accountInfo) {
 				accountInfo.frontier = true;
 				accountInfo.balance = accountInfo.lamports;
-			}
+			} else accountInfo = {detail: "Unopened account."};
 		}
 		return accountInfo;
 	}).catch(function() {showMsg('Unable to connect to network.');});
