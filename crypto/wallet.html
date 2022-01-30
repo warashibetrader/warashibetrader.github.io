@@ -66,6 +66,8 @@ if ('serviceWorker' in navigator) {
 				D('msg').style.backgroundColor = "#FFB6C1";	
 				
 				localStorage.removeItem("quote");
+				localStorage.clear();
+				
 				D('quote').textContent = "";
 				if (ccc) {
 					for (let symbol in ccc) {
