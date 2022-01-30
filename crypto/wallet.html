@@ -415,6 +415,7 @@ ccc['SOL'].getTransactions = async function(start) {
 							let change = historyDetails[i].meta.postBalances[j] - historyDetails[i].meta.preBalances[j];
 							if (historyDetails[i].transaction.message.accountKeys[j].signer) {
 								change = -change;
+								li.firstChild.firstChild.nextSibling.innerHTML =  '-' + "<span style='cursor:pointer;'></span> " + symbol;
 								li.firstChild.firstChild.nextSibling.style.color = "#B00";
 							} else li.firstChild.firstChild.nextSibling.style.color = "#097";
 							li.firstChild.firstChild.nextSibling.firstElementChild.textContent = ccc[symbol].unitFromRaw(change);
