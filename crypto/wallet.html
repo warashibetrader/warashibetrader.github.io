@@ -421,6 +421,9 @@ ccc['SOL'].getTransactions = async function(start) {
 						} else if (j < 2) {
 							li.firstChild.nextSibling.firstChild.textContent = historyDetails[i].transaction.message.accountKeys[j].pubkey.toBase58();
 							fetchDisplayName(symbol, "-" + historyDetails[i].slot + "-display", li.firstChild.nextSibling.firstChild.textContent);
+							li.firstChild.firstChild.firstElementChild.onclick = function() {
+								fetchDisplayName(symbol, "-" + historyDetails[i].slot + "-display", li.firstChild.nextSibling.firstChild.textContent, true);
+							}
 						}
 					}
 				}
