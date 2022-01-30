@@ -65,11 +65,8 @@ if ('serviceWorker' in navigator) {
 				showMsg("Update found. Deleting security quote...");
 				D('msg').style.backgroundColor = "#FFB6C1";	
 				
-				D('quote').textContent = "";				
-				if (typeof(Storage) !== "undefined") {
-					localStorage.removeItem("quote"); 
-					localStorage.clear();
-				}				
+				localStorage.removeItem("quote");
+				D('quote').textContent = "";
 				if (ccc) {
 					for (let symbol in ccc) {
 						mainClearWallet(symbol);
