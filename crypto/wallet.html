@@ -161,7 +161,7 @@ ccc['SOL'] = {bgColor:'#0ca',
 				flashColor:'#e0faf0',
 				gettingStarted:'https://solana.com/',
 				donation:'9uugZyizr3QCrTcCgDGHpYwik636GGJVQTYBFRtd2rvG',
-				connection: new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('devnet'), 'confirmed')};
+				connection: new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'), 'confirmed')};
 	
 ccc['XNO'].queue = new Promise(function(resolve, reject) { resolve(true); });
 ccc['BAN'].queue = new Promise(function(resolve, reject) { resolve(true); });
@@ -180,12 +180,20 @@ ccc['XNO'].generateSeed = function() {
 	return Array.prototype.map.call(seed, (x) => ('00' + x.toString(16)).slice(-2)).join('').toUpperCase();
 };
 ccc['SOL'].generateSeed = function() {
-	return byteArrayToHex(solanaWeb3.Keypair.generate().secretKey);
+	return "[" + solanaWeb3.Keypair.generate().secretKey.toString() + "]";
 };
 
 ccc['BAN'].checkSeed = function(seed) { return typeof seed === "string" && /^[0-9a-fA-F]{64}$/.test(seed);};
 ccc['XNO'].checkSeed = function(seed) {	return typeof seed === "string" && /^[0-9a-fA-F]{64}$/.test(seed);};
-ccc['SOL'].checkSeed = function(seed) {	return typeof seed === "string" && /^[0-9a-fA-F]/.test(seed);};
+ccc['SOL'].checkSeed = function(seed) {	
+	let arrSeed = seed.split(',');
+	for (let i = 0; i < arrSeed.length; i++) {
+		arrSeed[i] = parseInt(arrSeed[i].replace(/\D/g,''));
+		if (arrSeed[i] > 255 || arrSeed[i] < 0) return false;
+	}
+	if (arrSeed.length != 64) return false;
+	return true;
+};
 
 ccc['XNO'].checkAddress = function(address) { 
 	if (!(typeof address === "string") || !/^(xrb_|nano_)[13][13-9a-km-uw-z]{59}$/.test(address)) return false;
@@ -304,7 +312,12 @@ ccc['XNO'].unpackSeed = function(seed, index) {
 	ccc['XNO'].index = parseInt(index);
 }
 ccc['SOL'].unpackSeed = function(seed, index) {
-	ccc['SOL'].privateKey = solanaWeb3.Keypair.fromSecretKey(hexToByteArray(seed));
+	let arrSeed = seed.split(',');
+	for (let i = 0; i < arrSeed.length; i++) {
+		arrSeed[i] = parseInt(arrSeed[i].replace(/\D/g,''));
+	}
+	console.log(arrSeed);
+	ccc['SOL'].privateKey = solanaWeb3.Keypair.fromSecretKey(new Uint8Array(arrSeed));
 	ccc['SOL'].publicKey = ccc['SOL'].privateKey.publicKey;
 	ccc['SOL'].address = ccc['SOL'].privateKey.publicKey.toBase58();
 }
@@ -841,6 +854,7 @@ function selectPrimary(symbol) {
 		D(`${symbol}-index`).style.display = "none";
 		D(`${symbol}-tool2`).style.display = "none";
 		D(`${symbol}-arriving-balance-panel`).style.display = "none";
+		D(`${symbol}-seed`).placeholder = "Private key (store securely) ...";
 	} else D(`${symbol}-seed`).maxLength = "64";
 	
 	if (!ccc[symbol].address) {
@@ -1406,7 +1420,7 @@ function generateHTML(symbol) {
 		<button tabindex="-1" style="font-size:0.8em" onclick="qrscan('${symbol}', '-seed')">Scan QR Code</button>
 		</div>
 		<div style="display:flex; justify-content:space-between; margin-top:15px;">
-			<input onfocus="scrollPanel(this.parentNode)" placeholder="Seed (store securely) ..." id="${symbol}-seed" style="flex-grow:1; flex-basis:20px; margin-right:10px;" type="password" maxlength="128" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')" oninput="if (this.value.length == 0) D('${symbol}-generateButton').disabled = false; else D('${symbol}-generateButton').disabled = true;">
+			<input onfocus="scrollPanel(this.parentNode)" placeholder="Seed (store securely) ..." id="${symbol}-seed" style="flex-grow:1; flex-basis:20px; margin-right:10px;" type="password" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')" oninput="if (this.value.length == 0) D('${symbol}-generateButton').disabled = false; else D('${symbol}-generateButton').disabled = true;">
 			<div>
 				<button tabindex="-1" style="font-size:0.8em" onclick="toggleVisibility(this, '${symbol}')">Show</button>
 			</div>			
