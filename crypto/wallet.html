@@ -72,9 +72,7 @@ if ('serviceWorker' in navigator) {
 				}				
 				if (ccc) {
 					for (let symbol in ccc) {
-						delete ccc[symbol].privateKey;						
-						if (D(symbol + "-seed")) D(symbol + "-seed").value = "";
-						else ccc[symbol].sidebarElt.innerHTML = "";
+						mainClearWallet(symbol);
 						console.log("Deleted " + symbol + "key.");
 					}
 				}
@@ -970,27 +968,25 @@ function importWallet(symbol) {
 }
 
 function mainClearWallet(symbol) {
-	if (confirm("Clear all data for " + symbol + ", including the wallet seed?")) {
-		clearWallet(symbol);
-		
-		D(`${symbol}-seed`).value = ""; 
-		D(`${symbol}-generateButton`).disabled = false;
-		D(`${symbol}-index`).value = ""; 	
-		
-		localStorage.removeItem(`${symbol}-seed`); 
-		localStorage.removeItem(`${symbol}-index`); 
-		localStorage.removeItem(`${symbol}-display`); 
-		localStorage.removeItem(`${symbol}-rep-display`); 
-		localStorage.removeItem(`${symbol}-info`);
-		
-		flash(D(`${symbol}-dest-display`), "");
-		D(symbol + "-dest").value = "";	
-		D(`${symbol}-withdrawal-amount`).value = "";
-		
-		updateView(symbol);
-		showMsg(`${symbol} wallet cleared.`);
-		D('firstDiv').scrollTo(0, 0); 
-	}
+	clearWallet(symbol);
+	
+	D(`${symbol}-seed`).value = ""; 
+	D(`${symbol}-generateButton`).disabled = false;
+	D(`${symbol}-index`).value = ""; 	
+	
+	localStorage.removeItem(`${symbol}-seed`); 
+	localStorage.removeItem(`${symbol}-index`); 
+	localStorage.removeItem(`${symbol}-display`); 
+	localStorage.removeItem(`${symbol}-rep-display`); 
+	localStorage.removeItem(`${symbol}-info`);
+	
+	flash(D(`${symbol}-dest-display`), "");
+	D(symbol + "-dest").value = "";	
+	D(`${symbol}-withdrawal-amount`).value = "";
+	
+	updateView(symbol);
+	showMsg(`${symbol} wallet cleared.`);
+	D('firstDiv').scrollTo(0, 0); 
 }
 
 function clearWallet(symbol) {
@@ -1519,7 +1515,8 @@ function generateHTML(symbol) {
 	<div style="text-align:center; margin-top:30px; margin-bottom:120px;">
 		<button style="font-size:0.8em; margin-right:15px;" onclick="donate('${symbol}')">Donate!</button>	
 		<button id="${symbol}-view" style="font-size:0.8em" onclick="toggleView('${symbol}')">Simple View</button>	
-		<button style="font-size:0.8em" onclick="mainClearWallet('${symbol}')">Clear ${symbol} Wallet</button>
+		<button style="font-size:0.8em" onclick="if (confirm('Clear all data for ${symbol} including the wallet seed?'))
+														mainClearWallet('${symbol}')">Clear ${symbol} Wallet</button>
 	</div>
 	
 	</div>`;
