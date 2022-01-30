@@ -806,9 +806,11 @@ function setupWebsocket() {
 	
 	ws.on('setNameCompletedCue', async function(data) {	
 		if (changeNameFlag) {
-			showMsg("Restoring representative...");	
 			displayName(data.currency, "-display", data.address, data.display);
-			await ccc[data.currency].changeRep(changeNameFlag);
+			if (ccc[data.currency].representative ) {
+				showMsg("Restoring representative...");	
+				await ccc[data.currency].changeRep(changeNameFlag);
+			}
 			showMsg("Display name updated.");	
 			nameCache[data.address] = data.display;
 			backupCache[data.address] = data.display;
