@@ -413,9 +413,15 @@ ccc['SOL'].getTransactions = async function(start) {
 					for (let j = 0; j < historyDetails[i].transaction.message.accountKeys.length; j++) {
 						if (historyDetails[i].transaction.message.accountKeys[j].pubkey.toBase58() == ccc[symbol].address) {
 							let change = historyDetails[i].meta.postBalances[j] - historyDetails[i].meta.preBalances[j];
-							if (historyDetails[i].transaction.message.accountKeys[j].signer) change = -change;
+							if (historyDetails[i].transaction.message.accountKeys[j].signer) {
+								change = -change;
+								li.firstChild.firstChild.nextSibling.style.color = "#097";
+							} else li.firstChild.firstChild.nextSibling.style.color = "#B00";
 							li.firstChild.firstChild.nextSibling.firstElementChild.textContent = ccc[symbol].unitFromRaw(change);
-						} else if (j < 2) li.firstChild.nextSibling.firstChild.textContent = historyDetails[i].transaction.message.accountKeys[j].pubkey.toBase58();
+						} else if (j < 2) {
+							li.firstChild.nextSibling.firstChild.textContent = historyDetails[i].transaction.message.accountKeys[j].pubkey.toBase58();
+							fetchDisplayName(symbol, "-" + historyDetails[i].slot + "-display", li.firstChild.nextSibling.firstChild.textContent);
+						}
 					}
 				}
 			}
