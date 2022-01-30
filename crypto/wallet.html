@@ -67,16 +67,18 @@ if ('serviceWorker' in navigator) {
 				
 				localStorage.removeItem("quote");
 				localStorage.clear();
-				
 				D('quote').textContent = "";
+				
+				showMsg("Installing update... Security quote deleted. Clearing DOM...");	
+				
 				if (ccc) {
 					for (let symbol in ccc) {
 						mainClearWallet(symbol);
 						console.log("Deleted " + symbol + "key.");
 					}
-				}
+				}				
 				
-				showMsg("Installing update... Security quote deleted.");				
+				showMsg("Installing update... Security quote deleted.");
 				let newWorker = reg.installing;
 				newWorker.addEventListener('statechange', () => {		
 					if (newWorker.state == 'activated') showMsg("Update installed. Security quote deleted.");
