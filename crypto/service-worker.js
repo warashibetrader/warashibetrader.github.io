@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_NAME = 'static-cache-v3';
+const CACHE_NAME = 'static-cache-v1';
 const FILES_TO_CACHE = ['wallet', 'wallet.html', 'wallet.css', 'strawicontrans.png', 'xno.js', 'nacl.js', 'quotes.js', 'qrcode.js', 'qrscan.js'];
 
 //console.log("trying to refresh pages automatically at start");
@@ -31,13 +31,13 @@ self.addEventListener('install', (evt) => {
 });
 
 self.addEventListener('activate', (evt) => {
-//	console.log("trying to refresh pages automatically at activate");
-//	self.clients.matchAll({type: 'window'}).then(function(tabs) {
-//		tabs.forEach((tab) => {
-//			console.log("Refreshing a page at activate");
-//			tab.navigate(tab.url);
-//		});
-//	});
+	console.log("trying to refresh pages automatically at activate");
+	self.clients.matchAll({type: 'window'}).then(function(tabs) {
+		tabs.forEach((tab) => {
+			console.log("Refreshing a page at activate");
+			tab.navigate(tab.url);
+		});
+	});
 	
 	self.clients.claim();
 	console.log('[sw] Activate');	
