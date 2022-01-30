@@ -982,8 +982,7 @@ function mainClearWallet(symbol) {
 	D(`${symbol}-withdrawal-amount`).value = "";
 	
 	updateView(symbol);
-	showMsg(`${symbol} wallet cleared.`);
-	D('firstDiv').scrollTo(0, 0); 
+	D('firstDiv').scrollTo(0, 0);
 }
 
 function clearWallet(symbol) {
@@ -1512,8 +1511,8 @@ function generateHTML(symbol) {
 	<div style="text-align:center; margin-top:30px; margin-bottom:120px;">
 		<button style="font-size:0.8em; margin-right:15px;" onclick="donate('${symbol}')">Donate!</button>	
 		<button id="${symbol}-view" style="font-size:0.8em" onclick="toggleView('${symbol}')">Simple View</button>	
-		<button style="font-size:0.8em" onclick="if (confirm('Clear all data for ${symbol} including the wallet seed?'))
-														mainClearWallet('${symbol}')">Clear ${symbol} Wallet</button>
+		<button style="font-size:0.8em" onclick="if (confirm('Clear all data for ${symbol} including the wallet seed?')) {
+													mainClearWallet('${symbol}'); showMsg(`${symbol} wallet cleared.`); }">Clear ${symbol} Wallet</button>
 	</div>
 	
 	</div>`;
