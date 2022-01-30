@@ -129,9 +129,11 @@ if (typeof(Storage) !== "undefined") {
 //////////////////////////////////////////////////////// global data
 
 var fullView = localStorage.getItem("view");
+
 var changeNameFlag = false;
 var nameCache = {};
 var backupCache = {};
+
 const video = document.createElement("video");
 var qrScanning = false;
 var qrScanningSymbol = D('primary').value;
@@ -230,7 +232,6 @@ ccc['XNO'].derivePrivateKey = function(seed, index) {
   return byteArrayToHex(blake2bFinal(context))
 }
 ccc['BAN'].derivePrivateKey = ccc['XNO'].derivePrivateKey;
-
 
 ccc['XNO'].derivePublicKey = function(secretKeyOrAddress) {
 	let publicKeyBytes;
@@ -1039,6 +1040,8 @@ function refreshBalance(symbol, confirm) {
 				flash(D(`${symbol}-balance`), ccc[symbol].unitFromRaw(accountInfo.balance));
 				if (accountInfo.pending !== undefined) flash(D(`${symbol}-balance-pending`), ccc[symbol].unitFromRaw(accountInfo.pending));
 				flash(D(`${symbol}-heading`), "Transactions");
+				console.log("here is accountInfo: ");
+				console.log(accountInfo);
 				return accountInfo;
 			} else return false;
 		});	
