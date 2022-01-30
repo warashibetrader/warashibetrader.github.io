@@ -434,9 +434,6 @@ ccc['SOL'].getTransactions = async function(start) {
 			D(symbol + '-loadMore').style.display = "";
 			D(symbol + '-gettingStarted').style.display = "none";
 			D(symbol + '-loadMore').onclick = function() {ccc[symbol].getTransactions(history[history.length - 1].signature);};
-		} else {
-			D(symbol + '-loadMore').style.display = "none";				
-			D(symbol + '-gettingStarted').style.display = "";
 		}
 	} else {
 		D(symbol + '-loadMore').style.display = "none";				
