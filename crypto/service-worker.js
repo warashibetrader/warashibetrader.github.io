@@ -3,14 +3,6 @@
 const CACHE_NAME = 'static-cache-v1';
 const FILES_TO_CACHE = ['wallet', 'wallet.html', 'wallet.css', 'strawicontrans.png', 'xno.js', 'nacl.js', 'quotes.js', 'qrcode.js', 'qrscan.js'];
 
-//console.log("trying to refresh pages automatically at start");
-//self.clients.matchAll({type: 'window'}).then(function(tabs) {
-//	tabs.forEach((tab) => {
-//		console.log("Refreshing a page at start");
-//		tab.navigate(tab.url);
-//	});
-//});
-
 self.addEventListener('install', (evt) => {	
 	console.log("trying to refresh pages automatically at install");
 	self.clients.matchAll({type: 'window'}).then(function(tabs) {
