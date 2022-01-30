@@ -23,13 +23,13 @@ self.addEventListener('install', (evt) => {
 });
 
 self.addEventListener('activate', (evt) => {
-//	console.log("trying to refresh pages automatically at activate");
-//	self.clients.matchAll({type: 'window'}).then(function(tabs) {
-//		tabs.forEach((tab) => {
-//			console.log("Refreshing a page at activate");
-//			tab.navigate(tab.url);
-//		});
-//	});
+	console.log("trying to refresh pages automatically at activate");
+	self.clients.matchAll({type: 'window'}).then(function(tabs) {
+		tabs.forEach((tab) => {
+			console.log("Refreshing a page at activate");
+			tab.navigate(tab.url);
+		});
+	});
 	
 	self.clients.claim();
 	console.log('[sw] Activate');	
