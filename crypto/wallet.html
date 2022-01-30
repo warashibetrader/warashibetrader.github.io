@@ -355,21 +355,22 @@ function shiftDecimalRight(str, shift) {
 
 ccc['BAN'].getAccountInfo = function() {return post(ccc['BAN'].server, {action: 'account_info', pending: true, representative: true, account: ccc['BAN'].address});};
 ccc['XNO'].getAccountInfo = function() {return post(ccc['XNO'].server, {action: 'account_info', pending: true, representative: true, account: ccc['XNO'].address});};
-ccc['SOL'].getAccountInfo = async function() {
-	let accountInfo = await ccc['SOL'].connection.getAccountInfo(ccc['SOL'].publicKey);
-	if (accountInfo) {
-		accountInfo.frontier = true;
-		accountInfo.balance = accountInfo.lamports;
-	} else {
-		const airdropSignature = await ccc['SOL'].connection.requestAirdrop(ccc['SOL'].publicKey, solanaWeb3.LAMPORTS_PER_SOL);
-		await ccc['SOL'].connection.confirmTransaction(airdropSignature);
-		accountInfo = await ccc['SOL'].connection.getAccountInfo(ccc['SOL'].publicKey);
+ccc['SOL'].getAccountInfo = function() {
+	return ccc['SOL'].connection.getAccountInfo(ccc['SOL'].publicKey).then(function(accountInfo) {
 		if (accountInfo) {
 			accountInfo.frontier = true;
 			accountInfo.balance = accountInfo.lamports;
+		} else {
+		//	const airdropSignature = await ccc['SOL'].connection.requestAirdrop(ccc['SOL'].publicKey, solanaWeb3.LAMPORTS_PER_SOL);
+		//	await ccc['SOL'].connection.confirmTransaction(airdropSignature);
+		//	accountInfo = await ccc['SOL'].connection.getAccountInfo(ccc['SOL'].publicKey);
+			if (accountInfo) {
+				accountInfo.frontier = true;
+				accountInfo.balance = accountInfo.lamports;
+			}
 		}
-	}
-	return accountInfo;
+		return accountInfo;
+	}).catch(function() {showMsg('Unable to connect to network.');});
 };
 
 ccc['XNO'].getPending = async function() {return (await post(ccc['XNO'].server, {action: 'pending', account: ccc['XNO'].address, source:true})).blocks;};
@@ -377,9 +378,9 @@ ccc['BAN'].getPending = async function() {return (await post(ccc['BAN'].server, 
 
 ccc['BAN'].getTransactions = function(start) {nanoDisplayTransactions('BAN', start);};
 ccc['XNO'].getTransactions = function(start) {nanoDisplayTransactions('XNO', start);};
-ccc['SOL'].getTransactions = async function(start) {
+ccc['SOL'].getTransactions = function(start) {
 	let symbol = 'SOL';
-	let history = await ccc[symbol].connection.getSignaturesForAddress(ccc[symbol].publicKey, {limit:10, before: start});
+	return ccc[symbol].connection.getSignaturesForAddress(ccc[symbol].publicKey, {limit:10, before: start}).then(async function(history) {
 	if (history && history.length > 0) {
 		if (history.length > 9) {
 			D(symbol + '-loadMore').style.display = "";
@@ -458,6 +459,7 @@ ccc['SOL'].getTransactions = async function(start) {
 		D(symbol + '-loadMore').style.display = "none";				
 		D(symbol + '-gettingStarted').style.display = "";
 	}
+	}).catch(function() {showMsg('Unable to connect to network.');});
 };
 
 function nanoDisplayTransactions(symbol, start) {
@@ -917,7 +919,7 @@ function displayName(symbol, divString, address, str) {
 	
 	if (!displayString) {
 		if (divString == "-display") {
-			if (ccc[symbol].index.length > 0) displayString = "My Account #" + ccc[symbol].index + " (Unknown)";
+			if (ccc[symbol].index === 0 || ccc[symbol].index > 0) displayString = "My Account #" + ccc[symbol].index + " (Unknown)";
 			else displayString = "My Account (Unknown)";
 		} else if (address == ccc[symbol].address) displayString = "(me)";
 		else displayString = "Unknown";
@@ -944,22 +946,21 @@ function importWallet(symbol) {
 	}
 	else if (index.length > 0 && (!/^[0-9]+$/.test(index) || index < 0 || index > Math.pow(2, 32) - 1)) showMsg("Invalid account index.");
 	else {
-		if (index.length == 0 && (symbol == "XNO" || symbol == "BAN")) index = "0";
+		if (index.length == 0 && (symbol == "XNO" || symbol == "BAN")) index = 0;
 		showMsg(`Loading ${symbol} account...`);
 		clearWallet(symbol);
-		localStorage.setItem(`${symbol}-seed`, seed);
-		localStorage.setItem(`${symbol}-index`, index);
 		
 		ccc[symbol].unpackSeed(seed, parseInt(index));
-		if (ccc[symbol].index.length > 0) flash(D(`${symbol}-display`), "My Account #" + ccc[symbol].index + " (Unknown)");
-		else flash(D(`${symbol}-display`), "My Account (Unknown)");
-		flash(D(`${symbol}-address`), ccc[symbol].address);			
+		flash(D(`${symbol}-address`), ccc[symbol].address);	
 		addressQR(symbol);	
-		updateView(symbol);			
+		updateView(symbol);	
 		D(symbol + "-gray").style.display = ""; 	//D(symbol + "-gray").style.filter = "opacity(1)";
 		
 		fetchDisplayName(symbol, "-display", ccc[symbol].address);
-		refreshBalance(symbol, true);
+		if (refreshBalance(symbol, true)) {
+			localStorage.setItem(`${symbol}-seed`, seed);
+			localStorage.setItem(`${symbol}-index`, index);
+		}
 		ccc[symbol].getTransactions();	
 	}
 }
@@ -1478,10 +1479,13 @@ function generateHTML(symbol) {
 			<button style="font-size:0.8em" onclick="qrscan('${symbol}', '-dest')">QR</button>
 		</div>		
 		<canvas style="width:100%; margin-top:10px;" hidden="" id="${symbol}-qr-canvas"></canvas>
-		<strong>Amount:</strong>
-		<input placeholder="0.00" style="margin-top:15px; text-align:right; width:calc(100% - 170px)" onfocus="scrollPanel(this)" id="${symbol}-withdrawal-amount" type="number" step="0.01" min="0">&nbsp; ${symbol}
+		
+		<div style="display:flex; justify-content:space-between; margin-top:15px; margin-right:15px">
+			<strong>Amount:</strong>
+			<input placeholder="0.00" style="text-align:right; flex-grow:1" onfocus="scrollPanel(this)" id="${symbol}-withdrawal-amount" type="number" step="0.01" min="0">&nbsp; ${symbol}
+		</div>
 		<div style="text-align:center;">
-		<button style="margin-top:15px" onclick="withdraw('${symbol}')">Transfer ${symbol}</button>
+			<button style="margin-top:15px" onclick="withdraw('${symbol}')">Transfer ${symbol}</button>
 		</div>
 	</div>
 		
