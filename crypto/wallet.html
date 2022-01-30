@@ -158,8 +158,9 @@ ccc['BAN'] = {representative:'ban_1ka1ium4pfue3uxtntqsrib8mumxgazsjf58gidh1xeo5t
 						bgColor:'orange'};
 						
 ccc['SOL'] = {bgColor:'#0ca', 
-				gettingStarted:'https://solana.com/',
 				flashColor:'#e0faf0',
+				gettingStarted:'https://solana.com/',
+				donation:'9uugZyizr3QCrTcCgDGHpYwik636GGJVQTYBFRtd2rvG',
 				connection: new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('devnet'), 'confirmed')};
 	
 ccc['XNO'].queue = new Promise(function(resolve, reject) { resolve(true); });
@@ -523,11 +524,13 @@ ccc['SOL'].sendTo = function(destination, amt) {
 			}),
 		);
 		// Sign transaction, broadcast, and confirm
-		let signature = await solanaWeb3.sendAndConfirmTransaction(
-			ccc['SOL'].connection,
-			transaction,
-			[ccc['SOL'].privateKey],
-		);
+		try {
+			let signature = await solanaWeb3.sendAndConfirmTransaction(
+				ccc['SOL'].connection,
+				transaction,
+				[ccc['SOL'].privateKey],
+			);
+		} catch { return false; }
 		refreshBalance('SOL');
 		return signature;
 	});
@@ -1044,10 +1047,10 @@ async function withdraw(symbol) {
 			ccc[symbol].rawFromUnit(D(`${symbol}-withdrawal-amount`).value) <= ccc[symbol].rawFromUnit(D(`${symbol}-balance`).textContent)) {
 			showMsg(symbol + " transfer initiated...");
 			if (await ccc[symbol].sendTo(D(`${symbol}-dest`).value, D(`${symbol}-withdrawal-amount`).value)) {
-				ccc[symbol].getTransactions();
 				D(`${symbol}-withdrawal-amount`).value = "";
+				ccc[symbol].getTransactions();
 				showMsg(D(`${symbol}-withdrawal-amount`).value + " " + symbol + " transferred.");
-			}
+			} else showMsg("Transfer seems to have failed.");
 		} else showMsg("Insufficient funds.");
 	} else showMsg("Invalid address.");
 }
