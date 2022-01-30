@@ -962,6 +962,7 @@ function importWallet(symbol) {
 			if (accountInfo) {
 				localStorage.setItem(`${symbol}-seed`, seed);
 				localStorage.setItem(`${symbol}-index`, index);
+				localStorage.setItem(`${symbol}-address`, ccc[symbol].address);
 			}
 		});
 		ccc[symbol].getTransactions();	
@@ -1030,12 +1031,7 @@ function refreshBalance(symbol, confirm) {
 				else if (D('msg').textContent.indexOf('Unable to connect to network.') != -1) showMsg(`Connected.`);
 				if (accountInfo.frontier) localStorage.setItem(`${symbol}-info`, JSON.stringify(accountInfo));	
 			} else {
-				console.log(ccc[symbol].seed )
-				console.log(localStorage.getItem(`${symbol}-seed`))
-				console.log(ccc[symbol].index)
-				console.log(localStorage.getItem(`${symbol}-index`))
-				if (ccc[symbol].seed == localStorage.getItem(`${symbol}-seed`) && ccc[symbol].index == localStorage.getItem(`${symbol}-index`))
-					accountInfo = localStorage.getItem(`${symbol}-info`);
+				if (ccc[symbol].address == localStorage.getItem(`${symbol}-address`)) accountInfo = localStorage.getItem(`${symbol}-info`);
 				if (accountInfo) accountInfo = JSON.parse(accountInfo);
 			}
 			
@@ -1047,8 +1043,6 @@ function refreshBalance(symbol, confirm) {
 				flash(D(`${symbol}-balance`), ccc[symbol].unitFromRaw(accountInfo.balance));
 				if (accountInfo.pending !== undefined) flash(D(`${symbol}-balance-pending`), ccc[symbol].unitFromRaw(accountInfo.pending));
 				flash(D(`${symbol}-heading`), "Transactions");
-				console.log("here is accountInfo: ");
-				console.log(accountInfo);
 				return accountInfo;
 			} else return false;
 		});	
