@@ -516,11 +516,13 @@ ccc['SOL'].sendTo = function(destination, amt) {
 			}),
 		);
 		// Sign transaction, broadcast, and confirm
-		return await solanaWeb3.sendAndConfirmTransaction(
+		let signature = await solanaWeb3.sendAndConfirmTransaction(
 			ccc['SOL'].connection,
 			transaction,
 			[ccc['SOL'].privateKey],
 		);
+		refreshBalance('SOL');
+		return signature;
 	});
 };
 
