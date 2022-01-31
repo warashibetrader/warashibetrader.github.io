@@ -955,14 +955,15 @@ function importWallet(symbol) {
 		addressQR(symbol);	
 		updateView(symbol);	
 		D(symbol + "-gray").style.display = ""; 	//D(symbol + "-gray").style.filter = "opacity(1)";
+		D(symbol + "-load").textContent = "Switch Account";
 		
 		fetchDisplayName(symbol, "-display", ccc[symbol].address);
 		refreshBalance(symbol, true).then(function(accountInfo) {
-			if (accountInfo) {
-				localStorage.setItem(`${symbol}-seed`, seed);
-				localStorage.setItem(`${symbol}-index`, index);
-				localStorage.setItem(`${symbol}-address`, ccc[symbol].address);
-			}
+			localStorage.setItem(`${symbol}-seed`, seed);
+			localStorage.setItem(`${symbol}-index`, index);
+			localStorage.setItem(`${symbol}-address`, ccc[symbol].address);
+			if (accountInfo) localStorage.setItem(`${symbol}-info`, JSON.stringify(accountInfo));
+			else localStorage.setItem(`${symbol}-info`, "");
 		});
 		ccc[symbol].getTransactions();	
 	}
@@ -1017,6 +1018,7 @@ function clearWallet(symbol) {
 	
 	//D(symbol + "-gray").style.filter = "opacity(0.5)";
 	D(symbol + "-gray").style.display = "none";
+	D(symbol + "-load").textContent = "Load Account";
 }
 
 function refreshBalance(symbol, confirm) {
@@ -1124,6 +1126,44 @@ function toggleEdit(symbol) {
 	}
 }
 
+function donate(symbol) {
+	D(symbol + "-dest").parentNode.scrollIntoView({block:"center", behavior:"auto"});
+	D(symbol + "-dest").value = ccc[symbol].donation;
+	flash(D(symbol + "-dest"));
+	fetchDisplayName(symbol, '-dest-display', D(symbol + "-dest").value);
+}
+
+function toggleView(symbol) {
+	if (fullView) {
+		fullView = false;
+		localStorage.removeItem("view");
+	} else {
+		fullView = true;
+		localStorage.setItem("view", "true");
+	}
+	updateView(symbol);
+}
+
+var currentElt;
+
+function scrollPanel(elt) {
+	if (screen.width <= 550 || screen.height <= 550 && ccc[D('primary').value].address) {
+		elt.parentNode.scrollIntoView({block:'start', behavior:'auto', inline: "nearest"});	
+		currentElt = elt;
+		setTimeout(function() {currentElt = null;}, 1000);
+	}
+}
+
+if (screen.width <= 550 || screen.height <= 550) {
+	window.addEventListener("resize", function() {
+		if (currentElt) currentElt.parentNode.scrollIntoView({block:'start', behavior:'auto', inline: "nearest"});	
+	});
+}
+
+
+
+//////////////////////////////////////////////////////// QR helper functions
+
 function qrclose() {
 	if (qrScanning) {
 		qrScanning.hidden = true;
@@ -1221,12 +1261,7 @@ function addressQR(symbol) {
 	}
 }
 
-function donate(symbol) {
-	D(symbol + "-dest").parentNode.scrollIntoView({block:"center", behavior:"auto"});
-	D(symbol + "-dest").value = ccc[symbol].donation;
-	flash(D(symbol + "-dest"));
-	fetchDisplayName(symbol, '-dest-display', D(symbol + "-dest").value);
-}
+//////////////////////////////////////////////////////// General helper functions
 
 function updateView() {
 	let symbol = D('primary').value;
@@ -1243,35 +1278,6 @@ function updateView() {
 		D("view").textContent = "View All Tools";
 	}
 }
-
-function toggleView(symbol) {
-	if (fullView) {
-		fullView = false;
-		localStorage.removeItem("view");
-	} else {
-		fullView = true;
-		localStorage.setItem("view", "true");
-	}
-	updateView(symbol);
-}
-
-var currentElt;
-
-function scrollPanel(elt) {
-	if (screen.width <= 550 || screen.height <= 550 && ccc[D('primary').value].address) {
-		elt.parentNode.scrollIntoView({block:'start', behavior:'auto', inline: "nearest"});	
-		currentElt = elt;
-		setTimeout(function() {currentElt = null;}, 1000);
-	}
-}
-
-if (screen.width <= 550 || screen.height <= 550) {
-	window.addEventListener("resize", function() {
-		if (currentElt) currentElt.parentNode.scrollIntoView({block:'start', behavior:'auto', inline: "nearest"});	
-	});
-}
-
-//////////////////////////////////////////////////////// General helper functions
 
 function enqueue(symbol, func) {
 	ccc[symbol].queue = ccc[symbol].queue.then(func);
@@ -1433,7 +1439,7 @@ function generateHTML(symbol) {
 		<canvas style="width:100%; margin-top:10px;" hidden="" id="${symbol}-qr-canvas-seed"></canvas>
 		<input onfocus="scrollPanel(this)" placeholder="Account index (default 0; or 1, 2, 3, etc) ..." id="${symbol}-index" type="number" style="margin-top:15px; width:calc(100% - 70px)" min="0" maxlength="64" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')">	
 		<div style="text-align:center;">
-		<button style="margin-top:15px;" onclick="importWallet('${symbol}')">Load Account</button>
+		<button style="margin-top:15px;" id="${symbol}-load" onclick="importWallet('${symbol}')">Load Account</button>
 		</div>
 	</div>
 	<div id="${symbol}-gray" style="margin-top:20px; margin-bottom:20px; display:none; filter:opacity(1)">
