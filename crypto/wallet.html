@@ -152,7 +152,8 @@ ccc['XNO'] = {representative:'nano_1natrium1o3z5519ifou7xii8crpxpk8y65qmkih8e8bp
 						repRec:'https://mynano.ninja/api/accounts/verified',
 						donation:'nano_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7',
 						flashColor:'#def',
-						bgColor:'steelblue'};
+						bgColor:'steelblue',
+						keyType:'seed'};
 						
 						
 ccc['BAN'] = {representative:'ban_1ka1ium4pfue3uxtntqsrib8mumxgazsjf58gidh1xeo5te3whsq8z476goo',
@@ -161,10 +162,12 @@ ccc['BAN'] = {representative:'ban_1ka1ium4pfue3uxtntqsrib8mumxgazsjf58gidh1xeo5t
 						repRec:'https://api.spyglass.pw/banano/v1/representatives/scores',
 						donation:'ban_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7',
 						flashColor:'#ffc',
-						bgColor:'orange'};
+						bgColor:'orange',
+						keyType:'seed'};
 						
 ccc['SOL'] = {bgColor:'#0ca', 
 				flashColor:'#e0faf0',
+				keyType:'private key',
 				gettingStarted:'https://solana.com/',
 				donation:'9uugZyizr3QCrTcCgDGHpYwik636GGJVQTYBFRtd2rvG',
 				connection: new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'), 'confirmed')};
@@ -195,9 +198,12 @@ ccc['SOL'].checkSeed = function(seed) {
 	let arrSeed = seed.split(',');
 	for (let i = 0; i < arrSeed.length; i++) {
 		arrSeed[i] = parseInt(arrSeed[i].replace(/\D/g,''));
-		if (arrSeed[i] > 255 || arrSeed[i] < 0) return false;
+		if (!(arrSeed[i] <= 255 && arrSeed[i] >= 0)) return false;
 	}
 	if (arrSeed.length != 64) return false;
+	
+	try { solanaWeb3.Keypair.fromSecretKey(new Uint8Array(arrSeed)); }
+	catch { return false; }
 	return true;
 };
 
@@ -944,7 +950,7 @@ function displayName(symbol, divString, address, str) {
 function generateWallet(symbol) {
 	D(`${symbol}-seed`).value = ccc[symbol].generateSeed(); 	
 	navigator.clipboard.writeText(D(`${symbol}-seed`).value);	
-		showMsg("New seed copied to clipboard. Save it securely (elsewhere and NOW).");
+		showMsg("New " + ccc[symbol].keyType + " copied to clipboard. Save it securely (elsewhere and NOW).");
 	flash(D(`${symbol}-seed`));
 	D(`${symbol}-generateButton`).disabled = true;
 }
@@ -953,8 +959,8 @@ function importWallet(symbol) {
 	let seed = D(`${symbol}-seed`).value;
 	let index = D(`${symbol}-index`).value;
 	if (!ccc[symbol].checkSeed(seed)) {
-		if (!ccc[symbol].checkAddress(seed)) showMsg("Invalid seed.");
-		else showMsg("Submit a seed, not an address.");
+		if (!ccc[symbol].checkAddress(seed)) showMsg("Invalid " + ccc[symbol].keyType  +".");
+		else showMsg("Submit a " + ccc[symbol].keyType  + ", not an address.");
 	}
 	else if (index.length > 0 && (!/^[0-9]+$/.test(index) || index < 0 || index > Math.pow(2, 32) - 1)) showMsg("Invalid account index.");
 	else {
@@ -1032,7 +1038,6 @@ function clearWallet(symbol) {
 	//D(symbol + "-gray").style.filter = "opacity(0.5)";
 	D(symbol + "-gray").style.display = "none";
 	D(symbol + "-load").textContent = "Load Account";
-	D("view").style.display = "none";
 }
 
 function refreshBalance(symbol, confirm) {
@@ -1199,7 +1204,7 @@ window.qrcode.callback = res => {
 				if (ccc[qrScanningSymbol].checkAddress(res)) {
 					D(qrScanningSymbol + qrScanningType).value = res;
 					fetchDisplayName(qrScanningSymbol, '-dest-display', D(qrScanningSymbol + qrScanningType).value);
-					showMsg("Address scanned.");
+					showMsg("Destination address scanned.");
 				} else if (qrScanningSymbol == "XNO" && nano_scheme.test(res)) {
 					const url = new URL(res);
 					if (url.protocol === 'nano:' && ccc[qrScanningSymbol].checkAddress(url.pathname)) {
@@ -1214,8 +1219,8 @@ window.qrcode.callback = res => {
 			if (qrScanningType == "-seed") {
 				if (ccc[qrScanningSymbol].checkSeed(res)) {
 					D(qrScanningSymbol + qrScanningType).value = res;
-					showMsg("Seed scanned.");
-				} else showMsg("Not a valid seed: " + res);
+					showMsg("Scanned a " + ccc[qrScanningSymbol].keyType + ".");
+				} else showMsg("Not a valid " + ccc[qrScanningSymbol].keyType + ": " + res);
 			}
 		}
 		qrclose();
@@ -1542,7 +1547,7 @@ function generateHTML(symbol) {
 	<div style="text-align:center; margin-top:30px; margin-bottom:120px;">		
 			<button id="installButton" style="font-size:0.8em; display:none; margin-right:15px;">Native App</button>
 		<button style="font-size:0.8em;" onclick="donate('${symbol}')">Donate!</button>
-		<button style="font-size:0.8em" onclick="if (confirm('Clear all data for ${symbol} including the wallet seed?')) {
+		<button style="font-size:0.8em" onclick="if (confirm('Clear all data for ${symbol} including the wallet seed and private keys?')) {
 													mainClearWallet('${symbol}'); showMsg('${symbol} wallet cleared.'); }">Clear ${symbol} Wallet</button>
 	</div>
 	
