@@ -34,7 +34,7 @@
 				<option style="background-color:#f1f4f4" value="BAN">Banano (BAN)</option>
 				<option style="background-color:#f1f4f4" value="SOL">Solana (SOL)</option>
 			</select>
-			<button id="view" style="display:none; margin-left:5px" onclick="toggleView()">Clean View</button>
+			<button id="view" style="display:none; margin-left:5px" onclick="toggleView()">All Tools</button>
 		</div>
 	</div>
 	</div>
@@ -1098,21 +1098,21 @@ function toggleVisibility(caller, symbol) {
 	let x = D(`${symbol}-seed`);
 	if (x.type === "password") {
 		x.type = "text";
-		caller.textContent = 'Hide';
+		caller.classList.add('active');
 	} else {
 		x.type = "password";		
-		caller.textContent = 'Show';
+		caller.classList.remove('active');
 	}
 }
 
 function toggleEdit(symbol) {
 	if (D(symbol + "-editpanel").style.display == "none") {
 		D(symbol + "-editpanel").style.display = "";
-		D(symbol + "-editbutton").textContent = "Cancel";
+		D(symbol + "-editbutton").classList.add('active');
 	} else {
 		D(symbol + "-editpanel").style.display = "none";
 		D(symbol + "-set-display").value = "";
-		D(symbol + "-editbutton").textContent = "Edit";
+		D(symbol + "-editbutton").classList.remove('active');
 	}
 }
 
@@ -1156,6 +1156,9 @@ if (screen.width <= 550 || screen.height <= 550) {
 
 function qrclose() {
 	if (qrScanning) {
+		D(qrScanningSymbol + "-qrButton1").classList.remove('active');
+		D(qrScanningSymbol + "-qrButton2").classList.remove('active');
+		
 		qrScanning.hidden = true;
 		if (qrScanningType == "-dest") qrScanning.id = qrScanningSymbol + "-qr-canvas";
 		else if (qrScanningType == "-seed") qrScanning.id = qrScanningSymbol + "-qr-canvas-seed";
@@ -1201,6 +1204,9 @@ window.qrcode.callback = res => {
 function qrscan(symbol, type) {
 	if (!qrScanning) {
 		navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(function(stream) {
+			D(symbol + "-qrButton1").classList.add('active');
+			D(symbol + "-qrButton2").classList.add('active');
+			
 			if (type == "-dest") qrScanning = D(symbol + "-qr-canvas");
 			if (type == "-seed") qrScanning = D(symbol + "-qr-canvas-seed");
 			qrScanningType = type;
@@ -1265,13 +1271,13 @@ function updateView() {
 		D(symbol + "-tool1").style.display = "";
 		if (symbol == "XNO" || symbol == "BAN") D(symbol + "-tool2").style.display = "";
 		D(symbol + "-tool3").style.display = "";
-		D("view").textContent = "Clean View";
+		D("view").classList.add('active');
 	} else {
 		if (ccc[symbol].address) D(symbol + "-tool1").style.display = "none";
 		else D(symbol + "-tool1").style.display = "";
 		D(symbol + "-tool2").style.display = "none";
 		D(symbol + "-tool3").style.display = "none";
-		D("view").textContent = "View All Tools";
+		D("view").classList.remove('active');
 	}
 }
 
@@ -1424,7 +1430,7 @@ function generateHTML(symbol) {
 	<div id="${symbol}-tool1" class="objectWrapper">
 		<div style="text-align:center;">
 		<button tabindex="-1" id="${symbol}-generateButton" style="font-size:0.8em" onclick="generateWallet('${symbol}')">Generate New</button>
-		<button tabindex="-1" style="font-size:0.8em" onclick="qrscan('${symbol}', '-seed')">Scan QR Code</button>
+		<button tabindex="-1" id="${symbol}-qrButton1" style="font-size:0.8em" onclick="qrscan('${symbol}', '-seed')">Scan QR Code</button>
 		</div>
 		<div style="display:flex; justify-content:space-between; margin-top:15px;">
 			<input onfocus="scrollPanel(this.parentNode)" placeholder="Private key (store securely) ..." id="${symbol}-seed" style="flex-grow:1; flex-basis:20px; margin-right:10px;" type="password" autocomplete="off" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')" oninput="if (this.value.length == 0) D('${symbol}-generateButton').disabled = false; else D('${symbol}-generateButton').disabled = true;">
@@ -1480,7 +1486,7 @@ function generateHTML(symbol) {
 		<strong>Destination: </strong><span id="${symbol}-dest-display"></span>
 		<div style="display:flex; justify-content:space-between">
 			<input placeholder="Destination address..." onfocus="scrollPanel(this.parentNode)" style="flex-grow:1; margin-right:10px" id="${symbol}-dest" type="text" maxlength="128" onclick="this.select()" oninput="fetchDisplayName('${symbol}', '-dest-display', this.value)">
-			<button style="font-size:0.8em" onclick="qrscan('${symbol}', '-dest')">QR</button>
+			<button id="${symbol}-qrButton2" style="font-size:0.8em" onclick="qrscan('${symbol}', '-dest')">QR</button>
 		</div>		
 		<canvas style="width:100%; margin-top:10px;" hidden="" id="${symbol}-qr-canvas"></canvas>
 		
