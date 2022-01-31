@@ -821,9 +821,11 @@ generateHTML('XNO');
 generateHTML('BAN');
 generateHTML('SOL');
 
+if (localStorage.getItem('symbol')) D('primary').value = localStorage.getItem('symbol');
 selectPrimary(D('primary').value);
 
 function selectPrimary(symbol) {
+	localStorage.setItem('symbol', symbol);
 	qrclose();
 	
 	D('firstDiv').removeChild(D('firstDiv').lastChild);
