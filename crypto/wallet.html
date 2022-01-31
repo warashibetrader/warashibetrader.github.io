@@ -82,6 +82,17 @@ if ('serviceWorker' in navigator) {
 		});
 	});
 }
+</script>
+	
+<script src="quotes.js"></script>
+<script src="qrcode.js"></script>
+<script src="qrscan.js"></script>
+<script src="xno.js"></script>
+<script src="sol.js"></script>
+<script src="nacl.js"></script>
+
+<script>
+'use strict';
 
 if (typeof(Storage) !== "undefined") {
 	let quoteData = localStorage.getItem("quote");	
@@ -119,24 +130,6 @@ if (typeof(Storage) !== "undefined") {
 	D('quote').appendChild(authorSpan);
 }
 
-function make(string, myClass) { 
-	let myObj = document.createElement(string);
-	if (myClass) myObj.classList.add(myClass);
-	return myObj;
-}
-
-function D(string) { return document.getElementById(string); }	
-</script>
-	
-<script src="quotes.js"></script>
-<script src="qrcode.js"></script>
-<script src="qrscan.js"></script>
-<script src="xno.js"></script>
-<script src="sol.js"></script>
-<script src="nacl.js"></script>
-
-<script>
-'use strict';
 //////////////////////////////////////////////////////// global data
 
 var fullView = localStorage.getItem("view");
@@ -1329,6 +1322,12 @@ function clearDOM(myNode) {
 	}
 }
 
+function make(string, myClass) { 
+	let myObj = document.createElement(string);
+	if (myClass) myObj.classList.add(myClass);
+	return myObj;
+}
+
 function clickCopy(elt, str) {
 	if (str.length > 1) {
 		/* Copy the text inside the text field */
@@ -1399,6 +1398,9 @@ function post(url, params) {
         xhttp.send(JSON.stringify(params));
     });
 }
+
+
+function D(string) { return document.getElementById(string); }	
 
 let deferredInstallPrompt = null;
 D('installButton').addEventListener('click', function(event) {
