@@ -28,6 +28,8 @@
 	<div class="containerdiv">
 	<div id="firstDiv" class="firstDiv">
 	<div class="objectWrapper" style="margin-top:50px">
+		<div id="serverMsg" style="white-space:pre-wrap; color:red; font-style:italic; font-size:0.9em" ></div>
+		<div id="serverMsgButton" style="display:none; text-align:center; margin-top:10px; margin-bottom:15px; font-size:0.8em"><button onclick="hideServerMsg()">Hide Message</button></div>
 		<div id="quote" style="white-space:pre-wrap; font-style:italic; font-size:0.9em" ></div>
 		<strong id="msg" style="padding:5px; z-index: 4; box-shadow: #ccc 2px 2px 2px; background-color: #fff;
 								  position: fixed; left: 0px; top: 0px; border-radius: 5px;
@@ -39,7 +41,7 @@
 				<option style="background-color:#f1f4f4" value="BAN">Banano (BAN)</option>
 				<option style="background-color:#f1f4f4" value="SOL">Solana (SOL)</option>
 			</select>
-			<button id="view" style="margin-left:5px" onclick="toggleView()">Clean View</button>
+			<button id="view" style="display:none; margin-left:5px" onclick="toggleView()">Clean View</button>
 		</div>
 	</div>
 	</div>
@@ -797,6 +799,14 @@ function setupWebsocket() {
 	};
 
 	// Custom commands	
+	ws.on('serverMsgCue', async function(data) {
+		if (typeof data === "string" && localStorage.getItem("serverMsg") != data) {
+			D('serverMsg').textContent = data;
+			D('serverMsg').style.display = "";
+			D('serverMsgButton').style.display = "";
+		}
+	});
+	
 	ws.on('setNameChallengeCue', async function(data) {
 		if (changeNameFlag) {	
 			showMsg("Processing representative challenge...");	
@@ -955,7 +965,8 @@ function importWallet(symbol) {
 		addressQR(symbol);	
 		updateView(symbol);	
 		D(symbol + "-gray").style.display = ""; 	//D(symbol + "-gray").style.filter = "opacity(1)";
-		D(symbol + "-load").textContent = "Switch Account";
+		D(symbol + "-load").textContent = "Switch Account";		
+		D("view").style.display = "";
 		
 		fetchDisplayName(symbol, "-display", ccc[symbol].address);
 		refreshBalance(symbol, true).then(function(accountInfo) {
@@ -1019,6 +1030,7 @@ function clearWallet(symbol) {
 	//D(symbol + "-gray").style.filter = "opacity(0.5)";
 	D(symbol + "-gray").style.display = "none";
 	D(symbol + "-load").textContent = "Load Account";
+	D("view").style.display = "none";
 }
 
 function refreshBalance(symbol, confirm) {
@@ -1262,6 +1274,12 @@ function addressQR(symbol) {
 }
 
 //////////////////////////////////////////////////////// General helper functions
+
+function hideServerMsg() {
+	D('serverMsg').style.display = "none";
+	D('serverMsgButton').style.display = "none";
+	localStorage.setItem("serverMsg", D('serverMsg').textContent);
+}
 
 function updateView() {
 	let symbol = D('primary').value;
