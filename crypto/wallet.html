@@ -5,13 +5,6 @@
 	<link rel="icon" href="strawicontrans.png">	
 	<link rel="manifest" href="manifest.json">
 	<link rel="apple-touch-icon" href="strawicontrans.png">
-	
-	<script src="quotes.js"></script>
-	<script src="qrcode.js"></script>
-	<script src="qrscan.js"></script>
-	<script src="xno.js"></script>
-	<script src="sol.js"></script>
-	<script src="nacl.js"></script>
 
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">	
 	<meta name="theme-color" content="#fff">	
@@ -126,7 +119,24 @@ if (typeof(Storage) !== "undefined") {
 	D('quote').appendChild(authorSpan);
 }
 
+function make(string, myClass) { 
+	let myObj = document.createElement(string);
+	if (myClass) myObj.classList.add(myClass);
+	return myObj;
+}
 
+function D(string) { return document.getElementById(string); }	
+</script>
+	
+<script src="quotes.js"></script>
+<script src="qrcode.js"></script>
+<script src="qrscan.js"></script>
+<script src="xno.js"></script>
+<script src="sol.js"></script>
+<script src="nacl.js"></script>
+
+<script>
+'use strict';
 //////////////////////////////////////////////////////// global data
 
 var fullView = localStorage.getItem("view");
@@ -868,7 +878,6 @@ function selectPrimary(symbol) {
 		D(`${symbol}-index`).style.display = "none";
 		D(`${symbol}-tool2`).style.display = "none";
 		D(`${symbol}-arriving-balance-panel`).style.display = "none";
-		D(`${symbol}-seed`).placeholder = "Private key (store securely) ...";
 	} else D(`${symbol}-seed`).maxLength = "64";
 	
 	if (!ccc[symbol].address) {
@@ -1320,12 +1329,6 @@ function clearDOM(myNode) {
 	}
 }
 
-function make(string, myClass) { 
-	let myObj = document.createElement(string);
-	if (myClass) myObj.classList.add(myClass);
-	return myObj;
-}
-
 function clickCopy(elt, str) {
 	if (str.length > 1) {
 		/* Copy the text inside the text field */
@@ -1397,9 +1400,6 @@ function post(url, params) {
     });
 }
 
-
-function D(string) { return document.getElementById(string); }	
-
 let deferredInstallPrompt = null;
 D('installButton').addEventListener('click', function(event) {
 	deferredInstallPrompt.prompt();
@@ -1449,7 +1449,7 @@ function generateHTML(symbol) {
 		<button tabindex="-1" style="font-size:0.8em" onclick="qrscan('${symbol}', '-seed')">Scan QR Code</button>
 		</div>
 		<div style="display:flex; justify-content:space-between; margin-top:15px;">
-			<input onfocus="scrollPanel(this.parentNode)" placeholder="Seed (store securely) ..." id="${symbol}-seed" style="flex-grow:1; flex-basis:20px; margin-right:10px;" type="password" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')" oninput="if (this.value.length == 0) D('${symbol}-generateButton').disabled = false; else D('${symbol}-generateButton').disabled = true;">
+			<input onfocus="scrollPanel(this.parentNode)" placeholder="Seed/private key (store securely) ..." id="${symbol}-seed" style="flex-grow:1; flex-basis:20px; margin-right:10px;" type="password" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')" oninput="if (this.value.length == 0) D('${symbol}-generateButton').disabled = false; else D('${symbol}-generateButton').disabled = true;">
 			<div>
 				<button tabindex="-1" style="font-size:0.8em" onclick="toggleVisibility(this, '${symbol}')">Show</button>
 			</div>			
