@@ -1258,7 +1258,7 @@ function toggleView(symbol) {
 var currentElt;
 
 function scrollPanel(elt) {
-	if (screen.width <= 550 || screen.height <= 550) {
+	if (screen.width <= 550 || screen.height <= 550 && ccc[D('primary').value].address) {
 		elt.parentNode.scrollIntoView({block:'start', behavior:'auto', inline: "nearest"});	
 		currentElt = elt;
 		setTimeout(function() {currentElt = null;}, 1000);
