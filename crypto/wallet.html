@@ -1484,7 +1484,7 @@ function generateHTML(symbol) {
 		
 		<div style="display:flex; justify-content:space-between; margin-top:15px; margin-right:15px">
 			<strong>Amount:</strong>
-			<input placeholder="0.00" style="text-align:right; flex-grow:1" onfocus="scrollPanel(this)" id="${symbol}-withdrawal-amount" type="number" step="0.01" min="0">&nbsp; ${symbol}
+			<input placeholder="0.00" style="text-align:right; flex-grow:1" onfocus="scrollPanel(this.parentNode)" id="${symbol}-withdrawal-amount" type="number" step="0.01" min="0">&nbsp; ${symbol}
 		</div>
 		<div style="text-align:center;">
 			<button style="margin-top:15px" onclick="withdraw('${symbol}')">Transfer ${symbol}</button>
