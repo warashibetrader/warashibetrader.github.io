@@ -84,6 +84,9 @@ if ('serviceWorker' in navigator) {
 		});
 	});
 }
+
+let quickColorArray = {XNO:'steelblue', BAN:'orange', SOL:'#0ca'};
+if (localStorage.getItem('symbol')) document.getElementById('firstDiv').style.backgroundColor = quickColorArray[localStorage.getItem('symbol')];	
 </script>
 	
 <script src="quotes.js"></script>
