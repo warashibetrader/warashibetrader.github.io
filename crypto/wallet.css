@@ -94,13 +94,18 @@ button {
 	cursor: pointer;
 }
 
+button:hover:enabled {  
+	background-color: #d4d7d7;
+}
+
 button.active {
 	background-color: #b4b7b7;	
 }
 
-button:hover:enabled {  
-	background-color: #d4d7d7;
+button.active:hover {
+	background-color: #b4b7b7;	
 }
+
 
 button:disabled, button[disabled]{
 	color:#aaa;
