@@ -406,7 +406,7 @@ ccc['SOL'].getTransactions = function(start) {
 				+ "<div style='display:flex; justify-content:space-between'><span style='cursor:pointer; font-size:0.8em; width:calc(100% - 180px); overflow:hidden; text-overflow:ellipsis; margin-top:4px' onclick='clickCopy(this, this.textContent)'></span>"
 				+ "<span style='text-align:right;'></span></div>";
 				
-				li.firstChild.firstChild.textContent = history[i].slot + ": ";
+				li.firstChild.firstChild.textContent = history[i].slot + ":\xa0";
 				li.firstChild.firstChild.appendChild(displayNameSpan);
 				li.firstChild.firstChild.nextSibling.firstElementChild.textContent = "0.00";
 				
@@ -497,7 +497,7 @@ function nanoDisplayTransactions(symbol, start) {
 					+ "<div style='display:flex; justify-content:space-between'><span style='cursor:pointer; font-size:0.8em; width:calc(100% - 180px); overflow:hidden; text-overflow:ellipsis; margin-top:4px' onclick='clickCopy(this, this.textContent)'></span>"
 					+ "<span style='text-align:right;'></span></div>";
 					
-					li.firstChild.firstChild.textContent = history.history[i].height + ": ";
+					li.firstChild.firstChild.textContent = history.history[i].height + ":\xa0";
 					li.firstChild.firstChild.appendChild(displayNameSpan);
 					li.firstChild.firstChild.nextSibling.firstElementChild.textContent = ccc[symbol].unitFromRaw(history.history[i].amount);
 					li.firstChild.firstChild.nextSibling.firstElementChild.onclick = function() {
