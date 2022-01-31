@@ -401,7 +401,7 @@ ccc['SOL'].getTransactions = function(start) {
 				displayNameSpan.id = `${symbol}-${history[i].slot}-display`;
 				displayNameSpan.textContent = "Unknown";
 				
-				li.innerHTML = "<div style='display:flex; justify-content:space-between'><strong></strong>"
+				li.innerHTML = "<div style='display:flex; justify-content:space-between'><strong style='margin-right:10px'></strong>"
 				+ "<strong style='text-align:right; overflow:hidden; text-overflow:ellipsis; color:" + color + "'>" + sign + "<span style='cursor:pointer;'></span> " + symbol + "</strong></div>"
 				+ "<div style='display:flex; justify-content:space-between'><span style='cursor:pointer; font-size:0.8em; width:calc(100% - 180px); overflow:hidden; text-overflow:ellipsis; margin-top:4px' onclick='clickCopy(this, this.textContent)'></span>"
 				+ "<span style='text-align:right;'></span></div>";
@@ -492,7 +492,7 @@ function nanoDisplayTransactions(symbol, start) {
 						fetchDisplayName(symbol, "-" + history.history[i].height + "-display", history.history[i].account, true);
 					}
 					
-					li.innerHTML = "<div style='display:flex; justify-content:space-between'><strong></strong>"
+					li.innerHTML = "<div style='display:flex; justify-content:space-between'><strong style='margin-right:10px'></strong>"
 					+ "<strong style='text-align:right; overflow:hidden; text-overflow:ellipsis; color:" + color + "'>" + sign + "<span style='cursor:pointer;'></span> " + symbol + "</strong></div>"
 					+ "<div style='display:flex; justify-content:space-between'><span style='cursor:pointer; font-size:0.8em; width:calc(100% - 180px); overflow:hidden; text-overflow:ellipsis; margin-top:4px' onclick='clickCopy(this, this.textContent)'></span>"
 					+ "<span style='text-align:right;'></span></div>";
@@ -1459,16 +1459,16 @@ function generateHTML(symbol) {
 		</div>
 		
 		<div style="margin-top:10px; display:flex; align-items:center; justify-content:space-between">
-			<div style="width:calc(100% - 65px)">
-				<strong>Balance:</strong> 
-				<span id="${symbol}-balance" style="cursor:pointer; max-width:min-content; width:100%; display:inline-block; overflow:hidden; text-overflow:ellipsis; vertical-align:bottom;" onclick="clickCopy(this, this.textContent)">0.00</span> ${symbol}
+			<div style="width:calc(100% - 65px); display:flex">
+				<strong>Balance:&nbsp;</strong> 
+				<span id="${symbol}-balance" style="cursor:pointer; max-width:min-content; overflow:hidden; text-overflow:ellipsis;" onclick="clickCopy(this, this.textContent)">0.00</span>&nbsp;${symbol}&nbsp;
 			</div>
 			<button style="font-size:0.8em" onclick="refreshBalance('${symbol}'); ccc['${symbol}'].getTransactions();">Refresh</button>
 		</div>
 		<div id="${symbol}-arriving-balance-panel" style="margin-top:10px; display:flex; align-items:center; justify-content:space-between">
-			<div style="width:calc(100% - 65px)">
-				<strong>Arriving balance:</strong> 
-				<span id="${symbol}-balance-pending" style="cursor:pointer; max-width:min-content; width:100%; display:inline-block; overflow:hidden; text-overflow:ellipsis; vertical-align:bottom;" onclick="clickCopy(this, this.textContent)">0.00</span> ${symbol}
+			<div style="width:calc(100% - 65px); display:flex">
+				<strong style="white-space:nowrap">Arriving balance:&nbsp;</strong> 
+				<span id="${symbol}-balance-pending" style="cursor:pointer; max-width:min-content; overflow:hidden; text-overflow:ellipsis;" onclick="clickCopy(this, this.textContent)">0.00</span>&nbsp;${symbol}&nbsp;
 			</div>
 			<button style="font-size:0.8em" onclick="cyclePending('${symbol}')">Collect</button>
 		</div>
