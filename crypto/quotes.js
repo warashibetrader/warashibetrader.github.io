@@ -6536,3 +6536,40 @@ var quoteDatabase = [
     "author": "Tom Jackson"
   }
 ];
+
+if (typeof(Storage) !== "undefined") {
+	let quoteElt = document.getElementById('quote');
+	let quoteData = localStorage.getItem("quote");	
+	if (quoteData) quoteData = JSON.parse(quoteData);
+	else {
+		returnVisitor = false;
+		function getRandomIntInclusive(min, max) {
+			const randomBuffer = new Uint32Array(1);
+			window.crypto.getRandomValues(randomBuffer);
+			let randomNumber = randomBuffer[0] / (0xffffffff + 1);
+			min = Math.ceil(min);
+			max = Math.floor(max);
+			return Math.floor(randomNumber * (max - min + 1)) + min;
+		}
+
+		let index = getRandomIntInclusive(0, quoteDatabase.length - 1);
+
+		let author = quoteDatabase[index].author;
+		if (!author) author = "Anonymous";
+		author = author.replace(/ /g, '\xa0');
+		
+		quoteData = {quote:quoteDatabase[index].text, author:author};
+		localStorage.setItem("quote", JSON.stringify(quoteData));
+		
+		quoteElt.appendChild(document.createTextNode("Version updated." + "\x0a\x0a"));
+	}
+
+	let quoteSpan = document.createElement('span');
+	let authorSpan = document.createElement('div');		
+	quoteSpan.textContent = quoteData.quote;
+	authorSpan.textContent = ' -\xa0' + quoteData.author;
+	authorSpan.innerHTML += '\xa0(<a rel="noopener" href="" target="_blank">?</a>)';
+	authorSpan.style.textAlign = "right";
+	quoteElt.appendChild(quoteSpan);
+	quoteElt.appendChild(authorSpan);
+}
