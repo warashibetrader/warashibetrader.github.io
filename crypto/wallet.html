@@ -768,9 +768,15 @@ function setupWebsocket() {
 		try { 
 			data = JSON.parse(event.data); 
 			if (data && data.cueName && ws.customEvents[data.cueName]) ws.customEvents[data.cueName](data.payload);
-			else showMsg("Server: " + event.data);
+			else {
+				showMsg("Unrecognized server message.")
+				console.error(event.data);
+			}
 		}
-		catch { showMsg("Server: " + event.data); }	
+		catch { 
+			showMsg("Unrecognized server message.")
+			console.error(event.data);
+		}	
 	};
 
 	// Custom commands	
