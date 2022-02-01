@@ -6542,7 +6542,6 @@ if (typeof(Storage) !== "undefined") {
 	let quoteData = localStorage.getItem("quote");	
 	if (quoteData) quoteData = JSON.parse(quoteData);
 	else {
-		returnVisitor = false;
 		function getRandomIntInclusive(min, max) {
 			const randomBuffer = new Uint32Array(1);
 			window.crypto.getRandomValues(randomBuffer);
