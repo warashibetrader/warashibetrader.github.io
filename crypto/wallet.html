@@ -525,9 +525,9 @@ ccc['SOL'].sendTo = function(destination, amt) {
 				transaction,
 				[ccc['SOL'].privateKey],
 			);
+			refreshBalance('SOL');
+			return signature;
 		} catch { return false; }
-		refreshBalance('SOL');
-		return signature;
 	});
 };
 
