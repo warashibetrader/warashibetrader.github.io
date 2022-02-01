@@ -67,6 +67,36 @@ input[type=number] {
 	-moz-appearance: textfield;
 }
 
+.close-icon {
+	position: relative;
+	padding: 0px;
+	border:1px solid transparent;
+	background-color: transparent;
+	vertical-align: middle;
+  outline: 0;
+  cursor: pointer;
+}
+.close-icon:hover {
+	background-color: transparent !important;
+}
+.close-icon:after {
+	content: "\2715";
+	position: absolute;
+	z-index:1;
+	right: 15px;
+	bottom: 5px;
+	padding: 2px;
+	cursor: pointer;
+	font-size:14px;
+	color:transparent;
+	text-shadow: 1px 1px 1px #d4d7d7;
+	padding-right:5px;
+}
+input:placeholder-shown ~ .close-icon:after {
+	content: "📝";
+	padding-right:0px;
+}
+
 select {
 	outline: none;
 	padding: 5px 10px;
