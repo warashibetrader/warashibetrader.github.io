@@ -48,15 +48,16 @@
 
 //////////////////////////////////////////////////////// security quote setup
 
-var returnVisitor = true;
+var localStorageWriteable = true;
 if ('serviceWorker' in navigator) {
 	navigator.serviceWorker.register('service-worker.js').then((reg) => {
 		console.log('Service worker registered.', reg);
 
 		reg.addEventListener('updatefound', () => {
 			// An updated service worker has appeared in reg.installing!
+			localStorageWriteable = false;
 			
-			if (returnVisitor) {
+			if (localStorage.getItem("quote")) {
 				showMsg("Update found. Deleting security quote...");
 				D('msg').style.backgroundColor = "#FFB6C1";	
 				
@@ -958,11 +959,13 @@ function importWallet(symbol) {
 		
 		fetchDisplayName(symbol, "-display", ccc[symbol].address);
 		refreshBalance(symbol, true).then(function(accountInfo) {
-			localStorage.setItem(`${symbol}-seed`, seed);
-			localStorage.setItem(`${symbol}-index`, index);
-			localStorage.setItem(`${symbol}-address`, ccc[symbol].address);
-			if (accountInfo) localStorage.setItem(`${symbol}-info`, JSON.stringify(accountInfo));
-			else localStorage.setItem(`${symbol}-info`, "");
+			if (localStorageWriteable) {
+				localStorage.setItem(`${symbol}-seed`, seed);
+				localStorage.setItem(`${symbol}-index`, index);
+				localStorage.setItem(`${symbol}-address`, ccc[symbol].address);
+				if (accountInfo) localStorage.setItem(`${symbol}-info`, JSON.stringify(accountInfo));
+				else localStorage.setItem(`${symbol}-info`, "");
+			}
 		});
 		ccc[symbol].getTransactions();	
 	}
