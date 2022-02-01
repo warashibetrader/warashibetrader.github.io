@@ -24,15 +24,16 @@
 		<div id="serverMsg" style="white-space:pre-wrap; color:red; font-style:italic; font-size:0.9em" ></div>
 		<div id="serverMsgButton" style="display:none; text-align:center; margin-top:10px; margin-bottom:15px; font-size:0.8em"><button onclick="hideServerMsg()">Hide Message</button></div>
 		<div id="quote" style="white-space:pre-wrap; font-style:italic; font-size:0.9em" ></div>
-		<strong id="msg" style="padding:5px; z-index: 4; box-shadow: #ccc 2px 2px 2px; background-color: #fff;
+		<strong id="msg" style="display:none; padding:5px; z-index: 4; box-shadow: #ccc 2px 2px 2px; background-color: #fff;
 								  position: fixed; left: 0px; top: 0px; border-radius: 5px;
-								  pointer-events: none; opacity: 0.9;">Welcome.</strong>
+								  pointer-events: none; filter: opacity(0.9);"></strong>
 		
 		<div style="margin-top:15px; display:flex; align-items:center; justify-content:center">		
 			<select name="primary" id="primary" onchange="selectPrimary(event.target.value)">
 				<option style="background-color:#f1f4f4" value="XNO">Nano (XNO)</option>
 				<option style="background-color:#f1f4f4" value="BAN">Banano (BAN)</option>
 				<option style="background-color:#f1f4f4" value="SOL">Solana (SOL)</option>
+				<option style="background-color:#f1f4f4" value="XLM">Stellar (XLM)</option>
 			</select>
 			<button id="view" style="display:none; margin-left:5px" onclick="toggleView()">All Tools</button>
 		</div>
@@ -86,7 +87,7 @@ if ('serviceWorker' in navigator) {
 	});
 }
 
-let quickColorArray = {XNO:'steelblue', BAN:'orange', SOL:'#0ca'};
+let quickColorArray = {XNO:'steelblue', BAN:'orange', SOL:'#0ca', XLM:'#373b82'};
 if (localStorage.getItem('symbol')) document.getElementById('firstDiv').style.backgroundColor = quickColorArray[localStorage.getItem('symbol')];	
 </script>
 	
@@ -95,6 +96,7 @@ if (localStorage.getItem('symbol')) document.getElementById('firstDiv').style.ba
 <script src="qrscan.js"></script>
 <script src="xno.js"></script>
 <script src="sol.js"></script>
+<script src="xlm.js"></script>
 <script src="nacl.js"></script>
 
 <script>
@@ -141,10 +143,20 @@ ccc['SOL'] = {bgColor:'#0ca',
 				gettingStarted:'https://solana.com/',
 				donation:'9uugZyizr3QCrTcCgDGHpYwik636GGJVQTYBFRtd2rvG',
 				connection: new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'), 'confirmed')};
+				
+				
+ccc['XLM'] = {min:1, bgColor:'#373b82', 
+				keyType:'private key',
+				flashColor:'#edf',
+				gettingStarted:'https://solana.com/',
+				donation:'GCOYMN3XAUD4OM4OTNC536TG6MEB6TK3IGSPKDJJJ7V36S3NNGKVBLTC',
+				connection: new StellarSdk.Server("https://horizon-testnet.stellar.org"),
+				passphrase: StellarSdk.Networks.TESTNET};
 	
 ccc['XNO'].queue = new Promise(function(resolve, reject) { resolve(true); });
 ccc['BAN'].queue = new Promise(function(resolve, reject) { resolve(true); });
 ccc['SOL'].queue = new Promise(function(resolve, reject) { resolve(true); });
+ccc['XLM'].queue = new Promise(function(resolve, reject) { resolve(true); });
 
 //////////////////////////////////////////////////////// low level helper functions
 
@@ -161,6 +173,9 @@ ccc['XNO'].generateSeed = function() {
 ccc['SOL'].generateSeed = function() {
 	return "[" + solanaWeb3.Keypair.generate().secretKey.toString() + "]";
 };
+ccc['XLM'].generateSeed = function() {
+	return StellarSdk.Keypair.random().secret();
+};
 
 ccc['BAN'].checkSeed = function(seed) { return typeof seed === "string" && /^[0-9a-fA-F]{64}$/.test(seed);};
 ccc['XNO'].checkSeed = function(seed) {	return typeof seed === "string" && /^[0-9a-fA-F]{64}$/.test(seed);};
@@ -176,6 +191,9 @@ ccc['SOL'].checkSeed = function(seed) {
 	catch { return false; }
 	return true;
 };
+ccc['XLM'].checkSeed = function(seed) {
+		return StellarSdk.StrKey.isValidEd25519SecretSeed(seed);
+	}
 
 ccc['XNO'].checkAddress = function(address) { 
 	if (!(typeof address === "string") || !/^(xrb_|nano_)[13][13-9a-km-uw-z]{59}$/.test(address)) return false;
@@ -198,7 +216,9 @@ ccc['BAN'].checkAddress = function(address) {
 ccc['SOL'].checkAddress = function(address) { 
 	return typeof address === "string" && /^[1-9A-HJ-NP-Za-km-z]{44}$/.test(address);
 };
-
+ccc['XLM'].checkAddress = function(address) { 
+	return StellarSdk.StrKey.isValidEd25519PublicKey(address);
+};
 
 ccc['XNO'].derivePrivateKey = function(seed, index) {
   const indexBuffer = new ArrayBuffer(4)
@@ -292,20 +312,26 @@ ccc['XNO'].unpackSeed = function(seed, index) {
 	ccc['XNO'].address = ccc['XNO'].deriveAddress(ccc['XNO'].publicKey);
 	ccc['XNO'].index = parseInt(index);
 }
-ccc['SOL'].unpackSeed = function(seed, index) {
+ccc['SOL'].unpackSeed = function(seed) {
 	let arrSeed = seed.split(',');
 	for (let i = 0; i < arrSeed.length; i++) {
 		arrSeed[i] = parseInt(arrSeed[i].replace(/\D/g,''));
 	}
-	console.log(arrSeed);
 	ccc['SOL'].privateKey = solanaWeb3.Keypair.fromSecretKey(new Uint8Array(arrSeed));
 	ccc['SOL'].publicKey = ccc['SOL'].privateKey.publicKey;
 	ccc['SOL'].address = ccc['SOL'].privateKey.publicKey.toBase58();
 }
+ccc['XLM'].unpackSeed = function(seed) {
+	ccc['XLM'].privateKey = seed;
+	ccc['XLM'].publicKey = StellarSdk.Keypair.fromSecret(seed).publicKey();
+	ccc['XLM'].address = ccc['XLM'].publicKey;
+}
+
 
 ccc['BAN'].unitFromRaw = function(bal) {return shiftDecimalLeft(bal, 29);};
 ccc['XNO'].unitFromRaw = function(bal) {return shiftDecimalLeft(bal, 30);};
 ccc['SOL'].unitFromRaw = function(bal) {return shiftDecimalLeft(bal, 9);};
+ccc['XLM'].unitFromRaw = function(bal) {return shiftDecimalLeft(bal, 7);};
 function shiftDecimalLeft(str, shift) {
 	let n = str.toString();	
 	while (n.length < shift + 1) {
@@ -321,6 +347,7 @@ function shiftDecimalLeft(str, shift) {
 ccc['BAN'].rawFromUnit = function(bal) { return shiftDecimalRight(bal, 29);};
 ccc['XNO'].rawFromUnit = function(bal) { return shiftDecimalRight(bal, 30);};
 ccc['SOL'].rawFromUnit = function(bal) { return shiftDecimalRight(bal, 9);};
+ccc['XLM'].rawFromUnit = function(bal) { return shiftDecimalRight(bal, 7);};
 function shiftDecimalRight(str, shift) {	
 	let parts = str.toString().split(".");	
 	let whole = parts[0];
@@ -353,6 +380,22 @@ ccc['SOL'].getAccountInfo = function() {
 		return accountInfo;
 	}).catch(function() {showMsg('Unable to connect to network.');});
 };
+ccc['XLM'].getAccountInfo = async function() {
+	return ccc['XLM'].connection.loadAccount(ccc['XLM'].publicKey).then(function(accountInfo) {
+		if (accountInfo) {
+			console.log(accountInfo);
+			accountInfo.frontier = true;
+			accountInfo.balance = ccc['XLM'].rawFromUnit(accountInfo.balances[0].balance);
+		} else accountInfo = {detail: "Unopened account."};
+		return accountInfo;
+	}).catch(function(error) {
+		if (error instanceof StellarSdk.NotFoundError) return {detail: "Unopened account."};
+		else showMsg('Unable to connect to network.');
+		return false;
+	});
+};
+
+
 
 ccc['XNO'].getPending = async function() {return (await post(ccc['XNO'].server, {action: 'pending', account: ccc['XNO'].address, source:true})).blocks;};
 ccc['BAN'].getPending = async function() {return (await post(ccc['BAN'].server, {action: 'pending', account: ccc['BAN'].address, source:true})).blocks;};
@@ -393,7 +436,7 @@ ccc['SOL'].getTransactions = function(start) {
 				
 				li.firstChild.nextSibling.firstChild.textContent = history[i].signature;
 				li.firstChild.nextSibling.firstChild.id = symbol + '-' + history[i].slot;
-				li.firstChild.nextSibling.firstChild.nextSibling.textContent = convertTimestamp(history[i].blockTime);
+				li.firstChild.nextSibling.firstChild.nextSibling.textContent = convertTimestamp(new Date(history[i].blockTime * 1000));
 				
 				li.style.marginBottom = "15px";
 				li.title = history[i].slot;	
@@ -443,6 +486,78 @@ ccc['SOL'].getTransactions = function(start) {
 	}).catch(function() {showMsg('Unable to connect to network.');});
 };
 
+ccc['XLM'].getTransactions = function(start) {
+	let symbol = 'XLM';
+	let caller;
+	if (start) caller = start();
+	else caller = ccc[symbol].connection.payments().forAccount(ccc[symbol].address).order("desc").limit(5).call();
+	caller.then(function(history) {
+		if (history) {
+			if (history.records.length == 5) {
+				if (!D(symbol + '-' + history.records[history.records.length - 1].id)) {
+					D(symbol + '-loadMore').style.display = "";
+					D(symbol + '-gettingStarted').style.display = "none";
+					D(symbol + '-loadMore').onclick = function() { ccc['XLM'].getTransactions(history.next) };
+				}
+			} else {
+				D(symbol + '-loadMore').style.display = "none";				
+				D(symbol + '-gettingStarted').style.display = "";
+			}
+			console.log(history);
+			
+			
+			for (let i = 0; i < history.records.length; i++) {
+				if (!D(symbol + '-' + history.records[i].id)) {
+					let li = make('li');
+					let sign = "+";
+					let color = "#097";	
+					
+					let otherAccount = history.records[i].from;
+					if (!otherAccount) otherAccount = history.records[i].source_account;
+					if (history.records[i].source_account == ccc[symbol].address) {
+						sign = "-";
+						color = "#B00";
+						otherAccount = history.records[i].to;
+						if (!otherAccount) otherAccount = history.records[i].account;
+					}
+					
+					let amt = history.records[i].amount;
+					if (!amt) amt = history.records[i].starting_balance;
+					
+					let displayNameSpan = make('span');
+					displayNameSpan.id = `${symbol}-${history.records[i].id}-display`;
+					displayNameSpan.textContent = "Unknown";
+					displayNameSpan.onclick = function() {
+						fetchDisplayName(symbol, "-" + history.records[i].id + "-display", otherAccount, true);
+					}
+					
+					li.innerHTML = "<div style='display:flex; justify-content:space-between'><strong style='margin-right:10px'></strong>"
+					+ "<strong style='text-align:right; overflow:hidden; text-overflow:ellipsis; color:" + color + "'>" + sign + "<span style='cursor:pointer;'></span> " + symbol + "</strong></div>"
+					+ "<div style='display:flex; justify-content:space-between'><span style='cursor:pointer; font-size:0.8em; width:calc(100% - 180px); overflow:hidden; text-overflow:ellipsis; margin-top:4px' onclick='clickCopy(this, this.textContent)'></span>"
+					+ "<span style='text-align:right;'></span></div>";
+					
+					li.firstChild.firstChild.textContent = history.records[i].id + ":\xa0";
+					li.firstChild.firstChild.appendChild(displayNameSpan);
+					li.firstChild.firstChild.nextSibling.firstElementChild.textContent = ccc[symbol].unitFromRaw(ccc[symbol].rawFromUnit(amt));
+					li.firstChild.firstChild.nextSibling.firstElementChild.onclick = function() {
+						clickCopy(li.firstChild.firstChild.nextSibling.firstElementChild, li.firstChild.firstChild.nextSibling.firstElementChild.textContent);
+					};
+					
+					li.firstChild.nextSibling.firstChild.textContent = otherAccount;
+					li.firstChild.nextSibling.firstChild.id = symbol + '-' + history.records[i].id;
+					li.firstChild.nextSibling.firstChild.nextSibling.textContent = convertTimestamp(new Date(history.records[i].created_at));
+					
+					li.style.marginBottom = "15px";
+					li.title = history.records[i].id;			
+					addOrdered(li, D(symbol + '-transactions'));
+					fetchDisplayName(symbol, "-" + history.records[i].id + "-display", otherAccount);
+					flash(li);
+				}
+			}
+		}
+	});
+};
+
 function nanoDisplayTransactions(symbol, start) {
 	post(ccc[symbol].server, { action: 'account_history', head:start, account: ccc[symbol].address, count:10 }).then(function(history) {
 		if (history && history.history) {
@@ -487,7 +602,7 @@ function nanoDisplayTransactions(symbol, start) {
 					
 					li.firstChild.nextSibling.firstChild.textContent = history.history[i].account;
 					li.firstChild.nextSibling.firstChild.id = symbol + '-' + history.history[i].height;
-					li.firstChild.nextSibling.firstChild.nextSibling.textContent = convertTimestamp(history.history[i].local_timestamp);
+					li.firstChild.nextSibling.firstChild.nextSibling.textContent = convertTimestamp(new Date(history.history[i].local_timestamp * 1000));
 					
 					li.style.marginBottom = "15px";
 					li.title = history.history[i].height;			
@@ -531,6 +646,48 @@ ccc['SOL'].sendTo = function(destination, amt) {
 		} catch { return false; }
 	});
 };
+ccc['XLM'].sendTo = function(destination, amt) { 
+	var sourceKeys = StellarSdk.Keypair.fromSecret(ccc['XLM'].privateKey);
+	var transaction;
+
+	return ccc['XLM'].connection.loadAccount(destination).then(function() {
+		return ccc['XLM'].connection.loadAccount(sourceKeys.publicKey()).then(function (sourceAccount) {
+			transaction = new StellarSdk.TransactionBuilder(sourceAccount, { fee: StellarSdk.BASE_FEE, networkPassphrase: ccc['XLM'].passphrase})
+				.addOperation(StellarSdk.Operation.payment({destination: destination, asset: StellarSdk.Asset.native(), amount: amt}))
+				.setTimeout(180).build();
+			transaction.sign(sourceKeys);
+			return ccc['XLM'].connection.submitTransaction(transaction);
+		}).then(function (result) {
+			console.log("Success! Results:", result);
+			refreshBalance('XLM');
+			return result;
+		}).catch(function (error) {
+			console.error("Something went wrong!", error);
+			return false;
+		});
+	}).catch(function (error) {
+		if (error instanceof StellarSdk.NotFoundError) {
+			if (parseFloat(amt) < 1) {
+				showMsg("Destination is a new account. Minimum send: " + ccc['XLM'].min + " XLM.");
+				return {msgHandled:true};
+			} else return ccc['XLM'].connection.loadAccount(sourceKeys.publicKey()).then(function (sourceAccount) {
+				transaction = new StellarSdk.TransactionBuilder(sourceAccount, { fee: StellarSdk.BASE_FEE, networkPassphrase: ccc['XLM'].passphrase})
+					.addOperation(StellarSdk.Operation.createAccount({destination: destination, startingBalance: amt}))
+					.addMemo(StellarSdk.Memo.text("Account creation")).setTimeout(180).build();
+				transaction.sign(sourceKeys);
+				return ccc['XLM'].connection.submitTransaction(transaction);
+			}).then(function (result) {	
+				console.log("Success! Results:", result);
+				refreshBalance('XLM');
+				return result;
+			}).catch(function (error) {
+				console.error("Something went wrong!", error);
+				return false;
+			});
+		} else return false;
+	});
+};
+
 
 ccc['BAN'].changeRep = function(newrep) { return enqueue('BAN', function() {return nanoChange('BAN', newrep);}); };
 ccc['XNO'].changeRep = function(newrep) { return enqueue('XNO', function() {return nanoChange('XNO', newrep);}); };
@@ -794,23 +951,24 @@ function setupWebsocket() {
 	
 	ws.on('setNameChallengeCue', async function(data) {
 		if (changeNameFlag) {	
-			showMsg("Processing representative challenge...");	
+			showMsg("Processing representative challenge...",null,true);	
 			await ccc[data.currency].changeRep(data.pendingRep);
 			ws.emit("setNameReplyCue", data);
-			showMsg("Confirming representative challenge...");
+			showMsg("Confirming representative challenge...", null,true);
 		}
 	});
 	
 	ws.on('setNameCompletedCue', async function(data) {	
 		if (changeNameFlag) {
+			nameCache[data.address] = data.display;
+			backupCache[data.address] = data.display;
+			localStorage.setItem(`${data.currency}-display`, JSON.stringify({address:data.address, name:data.display}));
 			displayName(data.currency, "-display", data.address, data.display);
-			if (ccc[data.currency].representative ) {
+			if (ccc[data.currency].representative) {
 				showMsg("Restoring representative...");	
 				await ccc[data.currency].changeRep(changeNameFlag);
 			}
-			showMsg("Display name updated.");	
-			nameCache[data.address] = data.display;
-			backupCache[data.address] = data.display;
+			showMsg("Display name updated.");
 			changeNameFlag = false;
 		}
 	});
@@ -832,6 +990,7 @@ function setupWebsocket() {
 generateHTML('XNO');
 generateHTML('BAN');
 generateHTML('SOL');
+generateHTML('XLM');
 
 if (localStorage.getItem('symbol')) D('primary').value = localStorage.getItem('symbol');
 selectPrimary(D('primary').value);
@@ -881,7 +1040,7 @@ function setName(symbol) {
 	if (D(symbol + "-set-display").value.length > 64) showMsg("64 characters or fewer.");
 	else {
 		if (ws.emit("setNameCue", {display:D(symbol + "-set-display").value, address: ccc[symbol].address, currency: symbol})) {
-			showMsg("Setting display name...");
+			showMsg("Setting display name...", null,true);
 			changeNameFlag = D(`${symbol}-rep`).textContent;
 		} else showMsg("Unable to connect to directory.");
 	}
@@ -890,7 +1049,10 @@ function setName(symbol) {
 function fetchDisplayName(symbol, divString, address, skipCache) {
 	if (ccc[symbol].checkAddress(address)) {
 		if (nameCache[address] && !skipCache) displayName(symbol, divString, address, nameCache[address]);
-		else if (!ws.emit("getNameCue", {div: divString, address: address, currency: symbol})) displayName(symbol, divString, address, nameCache[address]);
+		else if (!ws.emit("getNameCue", {div: divString, address: address, currency: symbol})) {
+			displayName(symbol, divString, address, nameCache[address]);
+			setTimeout(function() {ws.emit("getNameCue", {div: divString, address: address, currency: symbol})}, 1000);
+		}
 	} else D(symbol + divString).textContent = "";
 }
 
@@ -946,7 +1108,7 @@ function importWallet(symbol) {
 	else if (index.length > 0 && (!/^[0-9]+$/.test(index) || index < 0 || index > Math.pow(2, 32) - 1)) showMsg("Invalid account index.");
 	else {
 		if (index.length == 0 && (symbol == "XNO" || symbol == "BAN")) index = 0;
-		showMsg(`Loading ${symbol} account...`);
+		showMsg(`Loading ${symbol} account...`, null,true);
 		clearWallet(symbol);
 		
 		ccc[symbol].unpackSeed(seed, parseInt(index));
@@ -1052,7 +1214,7 @@ function refreshBalance(symbol, confirm) {
 
 async function cyclePending(symbol) {
 	if (ccc[symbol].address) {
-		showMsg(`Collecting arriving ${symbol}...`);
+		showMsg(`Collecting arriving ${symbol}...`, null,true);
 		const pending = await ccc[symbol].getPending();
 		for (const block in pending) {
 			await ccc[symbol].receive(block);
@@ -1067,11 +1229,14 @@ async function withdraw(symbol) {
 	if (ccc[symbol].checkAddress(ccc[symbol].address) && ccc[symbol].checkAddress(D(`${symbol}-dest`).value)) {
 		if ((D(`${symbol}-withdrawal-amount`).value.match(/\./g)||[]).length <= 1 && /^[0-9.]+$/.test(D(`${symbol}-withdrawal-amount`).value) &&		
 			ccc[symbol].rawFromUnit(D(`${symbol}-withdrawal-amount`).value) <= ccc[symbol].rawFromUnit(D(`${symbol}-balance`).textContent)) {
-			showMsg(symbol + " transfer initiated...");
-			if (await ccc[symbol].sendTo(D(`${symbol}-dest`).value, D(`${symbol}-withdrawal-amount`).value)) {
-				D(`${symbol}-withdrawal-amount`).value = "";
+			showMsg(symbol + " transfer initiated...", null,true);
+			let sendResp = await ccc[symbol].sendTo(D(`${symbol}-dest`).value, D(`${symbol}-withdrawal-amount`).value);
+			if (sendResp) {
+				if (!sendResp.msgHandled) {
+					showMsg(D(`${symbol}-withdrawal-amount`).value + " " + symbol + " transferred.");
+					D(`${symbol}-withdrawal-amount`).value = "";
+				}
 				ccc[symbol].getTransactions();
-				showMsg(D(`${symbol}-withdrawal-amount`).value + " " + symbol + " transferred.");
 			} else showMsg("Transfer seems to have failed.");
 		} else showMsg("Insufficient funds.");
 	} else showMsg("Invalid address.");
@@ -1081,7 +1246,7 @@ async function setRep(symbol) {
 	if (!ccc[symbol].checkAddress(D(`${symbol}-rep`).textContent)) showMsg("\"Open\" the account first by receiving funds.");
 	else if (!ccc[symbol].checkAddress(D(`${symbol}-new-rep`).value)) showMsg("Invalid address.");
 	else {
-		showMsg("Updating representative...");
+		showMsg("Updating representative...", null,true);
 		await ccc[symbol].changeRep(D(`${symbol}-new-rep`).value);
 		showMsg("Representative updated.");
 	}
@@ -1298,10 +1463,19 @@ function enqueue(symbol, func) {
 	return ccc[symbol].queue;
 }
 
-function showMsg(str, bold) {
+var msgTimer;
+function showMsg(str, bold, hold) {
 	let e = new Date();
+	D('msg').style.display = "";
+	D('msg').style.transition = "";
+	if (msgTimer) clearTimeout(msgTimer);
+	D('msg').style.filter = "opacity(0.9)";
 	flash(D('msg'), e.toLocaleTimeString() + ": " + str);
 	if (bold) D('msg').style.backgroundColor = "#F00";
+	if (!hold) msgTimer = setTimeout(function() {
+		D('msg').style.transition = "filter 2s linear 0s";
+		D('msg').style.filter = "opacity(0)";
+	}, 5000);
 }
 
 function flash(elt, str) {
@@ -1341,9 +1515,9 @@ function addOrdered(li, element) {
 	element.appendChild(li);
 }
 
-function convertTimestamp(timestamp) {
-    let d = new Date(timestamp * 1000), // Convert the passed timestamp to milliseconds
-        yyyy = d.getFullYear(),
+function convertTimestamp(d) {
+  //  let d = new Date(timestamp * 1000), // Convert the passed timestamp to milliseconds
+        let yyyy = d.getFullYear(),
         mm = ('0' + (d.getMonth() + 1)).slice(-2),  // Months are zero based. Add leading 0.
         dd = ('0' + d.getDate()).slice(-2),         // Add leading 0.
         hh = d.getHours(),
