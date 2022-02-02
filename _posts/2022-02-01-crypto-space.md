@@ -28,7 +28,9 @@ Since "commodity" can be very broadly defined, people get very excited about thi
 
 ### The oracle problem
 
-The problem with the previous proposal is that cryptography is not engrained inside, say, the walls of your house. Someone needs to link your house to some tokenized digital entity which can be integrated into the cryptosystem hoping to oversee its sale. A distributed verification of this link would be necessarily complicated and correspondingly expensive. It is not clear that such a system would make things more reliable. Such a system might simply be shifting trust from one centralized party to another, or from one centralized party to a slightly distributed collection of parties. In other words, it is not clear that such a system is worth building.
+The problem with the previous proposal is that cryptography is not engrained inside, say, the walls of your house. Someone needs to link your house to some tokenized digital entity which can be integrated into the cryptosystem hoping to oversee its sale. 
+
+A distributed verification of this link would be necessarily complicated and correspondingly expensive. It is not clear that such a system would make things more reliable. Instead, the effect of such a system might just be pointless obfuscation, shifting trust from one centralized party to another, or from one centralized party to a slightly distributed collection of parties.
 
 ### A comment about efficiency
 
