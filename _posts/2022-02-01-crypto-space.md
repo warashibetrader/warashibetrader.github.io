@@ -36,7 +36,7 @@ A distributed verification of this link would be necessarily complicated and cor
 
 The crypto space is not strictly more efficient than traditional finance. This is easy to see by thinking in terms of specialization. Centralized entities are specialized and thus very efficient at what they do. Insisting on distributing the work of verification necessarily decreases efficiency in this regard.
 
-On the other hand, centralization harms the _economics_ of finance, by creating monopolies which hold the power to misprice (upward) their services. 
+On the other hand, centralization harms the _economics_ of finance, by creating monopolies which hold the power to misprice their services (upward). 
 
 The question is whether the dentralizing forces of the crypto space improve financial economics more than they decrease efficiencies from specialization.
 
