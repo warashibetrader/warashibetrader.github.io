@@ -2,7 +2,7 @@
 title: "A security quote protocol for tracking web application updates"
 ---
 
-The problem with using web apps for secure applications is that every time the user visits the web app, its code may have changed. In other words, every time you use a web app which handles private information, it's a pleasant surprise that the app does _not_ steal it.
+The problem with using web apps for secure applications is that every time the user visits the web app, its code may have changed. As a result, every time you use a web app which handles private information, it's a pleasant surprise that the app does _not_ steal it.
 
 The _security quote protocol_ solution in a nutshell: Show the same memorable quote (or image) to the user each time the app loads. The quote should be known to the user, and not the server. If the app is updated, the quote is deleted immediately. The user then knows that the app's code has been updated, and to proceed with caution.
 
