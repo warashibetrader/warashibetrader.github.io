@@ -6,6 +6,9 @@ The problem with using web apps for secure applications is that every time the u
 
 The security quote solution in a nutshell: Show the same memorable quote (or image) to the user each time the app loads. The quote should be known to the user, and not the server. If the app is updated, the quote is deleted immediately. The user then knows that the app's code has been updated and to proceed with caution.
 
+
+
+
 ### Background reading
 
 There is a decent amount of discussion about the problem with browser cryptography, especially in the end-to-end encryption community:
