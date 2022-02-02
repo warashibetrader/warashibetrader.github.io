@@ -1363,16 +1363,12 @@ function closeCopy(obj) {
 		obj.value = "";
 		obj.dispatchEvent(new Event('input', {bubbles:true}));
 	}
-	else if (navigator.clipboard.readText) navigator.permissions.query({name:'geolocation'}).then(function(result) {
-		if (result.state === 'granted') {
-			navigator.clipboard.readText().then(function(text) {
-				obj.value = text;
-				obj.dispatchEvent(new Event('input', {bubbles:true}));
-			});
-		} else if (clipboardText) {
-			obj.value = clipboardText;
-			obj.dispatchEvent(new Event('input', {bubbles:true}));
-		}
+	else if (navigator.clipboard.readText) navigator.clipboard.readText().then(function(text) {
+		obj.value = text;
+		obj.dispatchEvent(new Event('input', {bubbles:true}));
+	}).catch(function() {
+		obj.value = clipboardText;
+		obj.dispatchEvent(new Event('input', {bubbles:true}));
 	});
 	else if (clipboardText) {
 		obj.value = clipboardText;
