@@ -2,9 +2,9 @@
 title: "A security quote protocol for tracking web application updates"
 ---
 
-The problem with using web apps for secure applications is that every time the user visits the web app, its code may have changed. In other words, every time you use a web app which handles private information, it's a pleasant surprise that the app has _not_ stolen it.
+The problem with using web apps for secure applications is that every time the user visits the web app, its code may have changed. In other words, every time you use a web app which handles private information, it's a pleasant surprise that the app does _not_ steal it.
 
-The security quote solution in a nutshell: Show the same memorable quote (or image) to the user each time the app loads. The quote should be known to the user, and not the server. If the app is updated, the quote is deleted immediately. The user then knows that the app's code has been updated and to proceed with caution.
+The "security quote protocol" solution in a nutshell: Show the same memorable quote (or image) to the user each time the app loads. The quote should be known to the user, and not the server. If the app is updated, the quote is deleted immediately. The user then knows that the app's code has been updated, and to proceed with caution.
 
 
 
@@ -47,13 +47,13 @@ To understand the issues with web app security, it is helpful to benchmark again
 
 2. The code is downloaded to your device and cannot be changed by the developer.
 
-The solution to (1) is essentially intractable. An audit is an audit, and a third party is needed. (In the crypto space, this is not necessarily a issue. Developers are very active in the space and presumably keen to audit new code.)
+The solution to (1) for web apps is essentially brute force. An audit is an audit, and a third party is needed. (In the crypto space, this is not necessarily an issue. Developers are very active in the space and presumably keen to audit new code.)
 
-The solution to (2) is the topic of this article. Before proceeding, a remark: (2) is evidently not true in the literal sense. The developer can of course update the code. However, this update needs to be submitted through the Google App Store again, and the client gets to decide whether to adopt the update or not. From a theoretical standpoint, this update can be viewed as the installation of an entirely new app.
+The solution to (2) is the topic of this article. Before proceeding, a remark: (2) is evidently not true in the literal sense. The developer can of course update the code. However, this update needs to be submitted through the Google App Store again, and the client gets to decide whether to adopt the update or not. For the purposes of this discussion, the update can be viewed as the installation of an entirely new app.
 
 ### Caching and service workers
 
-Caching seems like a promising solution to (2) above, since caching is, quite literally, downloading code to your device and using it. However, caching is typically automated by the browser, with no visibility for the client.
+Caching seems like a promising solution to (2) above, since caching is, quite literally, downloading code to your device and using it. However, caching is typically automated by the browser, with no visibility for the client. In particular, the browser may delete the cache at will, negating any intended security implications. 
 
 This brings us to the relatively well-established service worker system. In a nutshell, a service worker is a script which gives full control of the cache to the client.
 
@@ -70,9 +70,13 @@ There is a good reason for this: If the service worker was allowed to halt updat
 
 As discussed, browsers currently do not allow clients to halt the update of a service worker. However, they _do_ notify the client before the update is installed. Precisely, the installation of a new service worker fires a javascript event which triggers the [onupdatefound EventListener](https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration/onupdatefound). 
 
-This seems to be the key for a working solution. The "security quote protocol" outlined at the beginning of this article is my proposal for how to use the onupdatefound event to solve the problem of serving browser cryptography in web apps, by forcing the app to reveal updates to the user.
+This seems to be the key for a working solution. The _security quote protocol_ outlined at the beginning of this article is my proposal for how to use the onupdatefound event to solve the problem of serving browser cryptography in web apps, by forcing the app to reveal updates to the user.
 
 Some additional Q&A:
+
+#### Why not just put up a update notification when the onupdatefound event is received?
+
+Malicious code could quickly take down any notification before the end-user sees it. In contrast, it cannot restore a quote it does not know.
 
 #### Why a quote?
 
@@ -83,10 +87,10 @@ Quotes are lightweight and memorable. But a "security image," uploaded by the us
 In principle, yes. This is an empirical question that depends on how each browser prioritizes execution. For a malicious service worker to overcome a security quote, it would need to both
 
 1. Install itself, and
-2. halt all client code in motion,
+2. halt client code in motion,
 
 before the client code successfully deletes its security quote. I have tested this, and it seems that this is not the situation in major browsers.
 
 #### Is this an officially recognized protocol?
 
-No; I'm proposing it now.
+No; I'm proposing it now. As an example, I have implemented it in this [crypto wallet](https://warashibetrader.github.io/crypto/wallet).
