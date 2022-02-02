@@ -18,5 +18,5 @@ Here are some reasons it might appeal to other users:
 
 6. The interface is minimal and accessible. No Courier New, "I'm-a-hacker" nonsense.
 
-7. The currency portfolio is inherently curated. The wallet currently supports Nano, Banano, Solana, and Stellar. I included these mainly because they were reasonably developer friendly. This is an important quality that can help determine whether a crypto project might succeed.
+7. The currency portfolio is inherently curated. The wallet currently supports Nano, Banano, Solana, and Stellar. I included these mainly because they were reasonably developer-friendly. This is an important quality that can help determine whether a crypto project might succeed.
  
