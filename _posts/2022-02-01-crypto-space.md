@@ -32,11 +32,11 @@ The problem with the previous proposal is that cryptography is not engrained ins
 
 ### A comment about efficiency
 
-The crypto space is not necessarily more efficient than traditional finance. This is easy to see by thinking of things in terms of specialization. Centralized entities are specialized and very efficient at what they do. Insisting on distributing the work of verification necessarily decreases efficiency in this regard.
+The crypto space is not strictly more efficient than traditional finance. This is easy to see by thinking in terms of specialization. Centralized entities are specialized and thus very efficient at what they do. Insisting on distributing the work of verification necessarily decreases efficiency in this regard.
 
 On the other hand, centralization harms the _economics_ of finance, by creating monopolies which hold the power to misprice (upward) their services. 
 
-The question is whether the dentralizing forces of the crypto space improve financial economics more than they harm efficiency gained from specialization.
+The question is whether the dentralizing forces of the crypto space improve financial economics more than they decrease efficiencies from specialization.
 
 I am not so sure that there is much of a spectrum with respect to the first of these effects: Each crypto project will either succeed in decentralizing, or it won't. Most of the color in the crypto space arises from the latter effect of efficiency loss: The more complicated, the greater the harm to efficiency. The question is, how complicated can you get before the effort becomes worthless?
 
