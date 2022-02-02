@@ -6560,7 +6560,11 @@ if (typeof(Storage) !== "undefined") {
 		quoteData = {quote:quoteDatabase[index].text, author:author};
 		localStorage.setItem("quote", JSON.stringify(quoteData));
 		
-		quoteElt.appendChild(document.createTextNode("Version updated." + "\x0a\x0a"));
+		let version = document.createElement('div');
+		version.textContent = "Version updated.";
+		version.style.marginBottom = "10px";
+		quoteElt.appendChild(version);
+		//quoteElt.appendChild(document.createTextNode("Version updated." + "\x0a\x0a"));
 	}
 
 	let quoteSpan = document.createElement('span');
