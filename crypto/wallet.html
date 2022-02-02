@@ -578,7 +578,7 @@ ccc['XLM'].getTransactions = function(start) {
 				}
 			}
 		}
-	});
+	}).catch(function(error) {});
 };
 
 function nanoDisplayTransactions(symbol, start) {
