@@ -6,11 +6,11 @@ When I started this blog a few weeks ago, I basically knew nothing about cryptoc
 
 ### A network of accounts
 
-At the risk of stating the obvious, a cryptocurrency is not literally a commodity, the way the venacular ("a bitcoin" or "bitcoins") would suggest. It is more accurate to think of every cryptocurrency as a means for tracking a network of accounts, each with a declared balance.
+At the risk of stating the obvious, a cryptocurrency is not literally a commodity, the way the venacular ("a bitcoin" or "bitcoins") would suggest. It is more accurate to think of every cryptocurrency as a means for tracking a network of accounts, each with a purported balance.
 
 ### Trustless validation
 
-Suppose Alice wants a bag of groceries from Bob. Alice could show Bob a bank account statement with a declared balance. Alice could agree to subtract away some money from this statement and never use the subtracted amount. Bob could add the same amount to his own account statement, and feel free to use his increased quantity. This interaction would constitute payment for the groceries.
+Suppose Alice wants a bag of groceries from Bob. Alice could show Bob a bank account statement with a purported balance. She could agree to subtract away some money from this statement and never use the subtracted amount. Bob could add the same amount to his own account statement, and feel free to use his increased quantity. This interaction would constitute payment for the groceries.
 
 Of course, this scenario in isolation is ludicrous, in the contexts of both traditional finance and the crypto/defi space. The modified account statements mean nothing without validation by others.
 
