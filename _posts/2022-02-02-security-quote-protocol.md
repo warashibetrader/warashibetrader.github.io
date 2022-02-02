@@ -4,7 +4,7 @@ title: "A security quote protocol for tracking web application updates"
 
 The problem with using web apps for secure applications is that every time the user visits the web app, its code may have changed. In other words, every time you use a web app which handles private information, it's a pleasant surprise that the app does _not_ steal it.
 
-The "security quote protocol" solution in a nutshell: Show the same memorable quote (or image) to the user each time the app loads. The quote should be known to the user, and not the server. If the app is updated, the quote is deleted immediately. The user then knows that the app's code has been updated, and to proceed with caution.
+The _security quote protocol_ solution in a nutshell: Show the same memorable quote (or image) to the user each time the app loads. The quote should be known to the user, and not the server. If the app is updated, the quote is deleted immediately. The user then knows that the app's code has been updated, and to proceed with caution.
 
 
 
@@ -13,27 +13,27 @@ The "security quote protocol" solution in a nutshell: Show the same memorable qu
 
 There is a decent amount of discussion about the problem with browser cryptography, especially in the end-to-end encryption community:
 
-1. __[What’s wrong with in-browser cryptography?](https://tonyarcieri.com/whats-wrong-with-webcrypto])__: This is an older article from 2013, but the section titled "The Ugly" is still relevant:
+1. [What’s wrong with in-browser cryptography?](https://tonyarcieri.com/whats-wrong-with-webcrypto]): This is an older article from 2013, but the section titled "The Ugly" is still relevant:
 
 > The convenience of the web stems from the fact it’s a frictionless application delivery platform. Unfortunately, it does not rely on a comprehensive cryptographically secure signature system to determine if content is authentic, but instead just trusts whatever is sitting around on the server at the time you access it. This is worsened by the fact that web browsers give remote servers access to wide-ranging local capabilities exposed via HTML and JavaScript. This creates an environment that is not particularly safe or stable for use in creating, storing, or sharing encryption keys or encrypted messages.
 
-2. __[What’s wrong with in-browser cryptography in 2017?](https://security.stackexchange.com/questions/173620/what-s-wrong-with-in-browser-cryptography-in-2017)__: The answers here are quite good. Ajedi32 summarizes the problem quite nicely:
+2. [What’s wrong with in-browser cryptography in 2017?](https://security.stackexchange.com/questions/173620/what-s-wrong-with-in-browser-cryptography-in-2017): The answers here are quite good. Ajedi32 summarizes the problem quite nicely:
 
 > The main issue with cryptography in web pages is that, because the code you're executing is loaded from a web server, that server has full control over what that code is and can change it every time you refresh the page. Unless you manually inspect the code you're running every time you load a new page on that site (preferably before that code is actually executed), you have no way of knowing what that code will actually do.
 
-3. __[Browser End-to-End Encryption](https://www.cryptologie.net/article/460/browser-end-to-end-encryption/)__: This blog post acknowledges the problem and proposes a naive but flawed solution:
+3. [Browser End-to-End Encryption](https://www.cryptologie.net/article/460/browser-end-to-end-encryption/): This blog post acknowledges the problem and proposes a naive but flawed solution:
 
 > Back to the question: can we provide end-to-end encryption with a web app? There are ways, yes. You can for example create a one-page javascript web application, and have the client download it. In that sense it could be a "trust on first use" kind of application, because later you would only rely on your local copy. If you want to make it light, have the page use remotely served javascript, images, and other files and protect manipulations via the subresource integrity mechanism of web browsers (include a hash of the file in the single-page web app). It is not a "bad" scenario, but it's not the flow that most users are used to. And this is the problem here. We are used to accessing websites directly, install whatever, and update apps quickly.
 
-4. __[Solution to the ‘Browser Crypto Chicken-and-Egg Problem’?](https://security.stackexchange.com/questions/238441/solution-to-the-browser-crypto-chicken-and-egg-problem)__: This post introduces the chicken and egg terminology:
+4. [Solution to the ‘Browser Crypto Chicken-and-Egg Problem’?](https://security.stackexchange.com/questions/238441/solution-to-the-browser-crypto-chicken-and-egg-problem): This post introduces the chicken and egg terminology:
 
 > In discussions around this subject, the ‘browser crypto chicken-and-egg problem’ frequently comes up. The term was coined in 2011 by security researcher Thomas Ptacek. In essence, the problem is: if you can't trust the server with your secrets, then how can you trust the server to serve secure crypto code? Using Protonmail as an example, one could argue that a rogue Protonmail server admin (or an attacker that has gained access to Protonmail’s servers) could alter the client-side javascript code served by Protonmail’s server, such that the code captures the user’s private keys or plaintext information and sends these secrets back to the server (or somewhere else).
 
-5. __[Why is there no web client for Signal?](https://security.stackexchange.com/questions/238011/why-is-there-no-web-client-for-signal)__: A discussion about the problem of browser cryptography using the Signal messaging app as a case study:
+5. [Why is there no web client for Signal?](https://security.stackexchange.com/questions/238011/why-is-there-no-web-client-for-signal): A discussion about the problem of browser cryptography using the Signal messaging app as a case study:
 
 > However, the larger problem here is that the SSL connection, as well as the content being served, is controlled by the Signal server. This means that if the server is compromised or goes rogue (which can easily be achieved by a government serving Signal a subpoena or the like), then it can easily modify the javascript files served to the client in a way that allows them to intercept the communications. This effectively defeats the point of end-to-end encryption, which is that nobody other than the sender and the recipient should be able to read the contents of the communication, since the server now has the power to compromise the communications at will.
 
-6. __[Web App for Signal](https://community.signalusers.org/t/web-app-for-signal/1272)__: A long discussion about why there is no web app for Signal. Keep in mind some discussion here is wrong. But on the other hand, some information is very on-point, like this comment by jespertheend:
+6. [Web App for Signal](https://community.signalusers.org/t/web-app-for-signal/1272): A long discussion about why there is no web app for Signal. Keep in mind some discussion here is wrong. But on the other hand, some information is very on-point, like this comment by jespertheend:
 
 > Actually my point was that the behaviour you are describing is now possible in browsers. To load code once, and then to never request anything from the server ever again. Everything single request is cached once, and then loaded from the users own computer forever. Until an update is available, in which case it would verify this update just like how a downloaded binary would verify an update. 
 > 
