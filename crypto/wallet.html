@@ -321,12 +321,33 @@ ccc['SOL'].unpackSeed = function(seed) {
 	}
 	ccc['SOL'].privateKey = solanaWeb3.Keypair.fromSecretKey(new Uint8Array(arrSeed));
 	ccc['SOL'].publicKey = ccc['SOL'].privateKey.publicKey;
-	ccc['SOL'].address = ccc['SOL'].privateKey.publicKey.toBase58();
+	ccc['SOL'].address = ccc['SOL'].publicKey.toBase58();
 }
 ccc['XLM'].unpackSeed = function(seed) {
 	ccc['XLM'].privateKey = seed;
 	ccc['XLM'].publicKey = StellarSdk.Keypair.fromSecret(seed).publicKey();
 	ccc['XLM'].address = ccc['XLM'].publicKey;
+}
+
+ccc['BAN'].addressFromSeed = function(seed) {
+	let privateKey = ccc['BAN'].derivePrivateKey(seed, 0);
+	let publicKey = ccc['BAN'].derivePublicKey(privateKey);
+	return ccc['BAN'].deriveAddress(publicKey);	
+}
+ccc['XNO'].addressFromSeed = function(seed) {
+	let privateKey = ccc['XNO'].derivePrivateKey(seed, 0);
+	let publicKey = ccc['XNO'].derivePublicKey(privateKey);
+	return ccc['XNO'].deriveAddress(publicKey);	
+}
+ccc['SOL'].addressFromSeed = function(seed) {
+	let arrSeed = seed.split(',');
+	for (let i = 0; i < arrSeed.length; i++) {
+		arrSeed[i] = parseInt(arrSeed[i].replace(/\D/g,''));
+	}
+	return solanaWeb3.Keypair.fromSecretKey(new Uint8Array(arrSeed)).publicKey.toBase58()
+}
+ccc['XLM'].addressFromSeed = function(seed) {
+	return StellarSdk.Keypair.fromSecret(seed).publicKey();
 }
 
 
@@ -1332,6 +1353,8 @@ if (screen.width <= 550 || screen.height <= 550) {
 
 
 document.addEventListener('copy', function(e) {
+	console.log("copy event");
+	console.log(document.getSelection());
 	if (document.getSelection().toString()) clipboardText = document.getSelection().toString();
 });
 
@@ -1450,8 +1473,25 @@ function qrscan(symbol, type) {
 function addressQR(symbol) {
 	if (ccc[symbol].address) {
 		D(symbol + '-qr-input').value = ccc[symbol].address;
+		D(symbol + '-qr-input').dispatchEvent(new Event('input', {bubbles:true}));
 		flash(D(symbol + '-qr-input'));
 		ccc[symbol].qrCode.makeCode(ccc[symbol].address);
+	}
+}
+
+function generateQR(symbol, input) {
+	if (input) ccc[symbol].qrCode.makeCode(input); 
+	else ccc[symbol].qrCode.makeCode('');
+	
+	if (ccc[symbol].checkSeed(input)) {
+		D(symbol + '-type-display').textContent = ccc[symbol].keyType;		
+		fetchDisplayName(symbol, '-directory-display', ccc[symbol].addressFromSeed(input));
+	} else if (ccc[symbol].checkAddress(input)) {
+		D(symbol + '-type-display').textContent = 'address';
+		fetchDisplayName(symbol, '-directory-display', input);
+	} else {
+		D(symbol + '-type-display').textContent = '';
+		D(symbol + '-directory-display').textContent = '';
 	}
 }
 
@@ -1721,11 +1761,13 @@ function generateHTML(symbol) {
 		
 	<div id="${symbol}-tool3" class="objectWrapper" style="padding-bottom:20px">
 		<strong>Device-to-device communication:</strong>
-		<div style="margin-bottom:20px; display:flex; justify-content:space-between">
-			<input placeholder="Text to QR-encode..." onfocus="scrollPanel(this.parentNode)" style="padding-right:30px; flex-grow:1; margin-right:10px" id="${symbol}-qr-input" type="text" maxlength="512" onclick="this.select()" oninput="if (this.value) ccc['${symbol}'].qrCode.makeCode(this.value); else ccc['${symbol}'].qrCode.makeCode('')"><button class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
+		<div style="margin-bottom:10px; display:flex; justify-content:space-between">
+			<input placeholder="Text to QR-encode..." onfocus="scrollPanel(this.parentNode)" style="padding-right:30px; flex-grow:1; margin-right:10px" id="${symbol}-qr-input" type="text" maxlength="512" onclick="this.select()" oninput="generateQR('${symbol}', this.value)"><button class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
 			<button style="font-size:0.8em" onclick="addressQR('${symbol}')">My Address</button>
-		</div>		
-		<div style="display:flex; justify-content:center" id="${symbol}-qrCodeImageBlock"></div>
+		</div>				
+		<strong>Type: </strong><span id="${symbol}-type-display"></span>	
+		<br><strong>Owner: </strong><span id="${symbol}-directory-display"></span>	
+		<div style="margin-top:20px; display:flex; justify-content:center" id="${symbol}-qrCodeImageBlock"></div>
 	</div>
 		
 	<div style="text-align:center; margin-top:30px; margin-bottom:120px;">		
