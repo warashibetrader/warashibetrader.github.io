@@ -6,7 +6,7 @@ Here's the story of how I came to this point.
 
 ### The challenge
 
-I got the idea for a "Warashibe Trading Challenge" (WTC) while playing with tiny amounts of Nano from Nano faucets. Thinking of Nano as a sort of digital commodity, I was reminded of the [One Red Paperclip](https://en.wikipedia.org/wiki/One_red_paperclip) project. I saw on Wiki that this had historical roots in the legend of the [Warashibe Chōja](https://en.wikipedia.org/wiki/Straw_Millionaire). Having a trading background, something clicked.
+I got the idea for a "Warashibe Trading Challenge" (WTC) while playing with tiny amounts from Nano faucets. I was reminded of the [One Red Paperclip](https://en.wikipedia.org/wiki/One_red_paperclip) project and saw on Wiki that this had historical roots in the legend of the [Warashibe Chōja](https://en.wikipedia.org/wiki/Straw_Millionaire). Having a trading background, something clicked.
 
 I've decided that the WTC will be an attempt to stir around miniscule amounts of cryptocurrency purely obtained from faucets, and absolutely not in exchange for fiat currency. This could generalize to other forms of digital value; the two taboos will be fiat and analog value. 
 
