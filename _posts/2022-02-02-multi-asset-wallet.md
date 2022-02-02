@@ -14,7 +14,7 @@ Here are some reasons it might appeal to other users:
 
 4. It also has Progressive Web App (PWA) support, which means you can download it if you prefer a native app experience.
 
-5. It incorporates a _security quote_ protocol, which as far as I'm aware is a novel feature among browser wallets. The upshot is that the security quote makes the wallet as secure as a browser extension wallet, but with no need for explicit installation. I will write a separate post about this soon.
+5. It incorporates a _security quote_ protocol, which as far as I'm aware is a novel feature among browser wallets. The upshot is that the security quote makes the wallet as secure as a browser extension wallet, but with no need for manual installation. I will write a separate post about this soon.
 
 6. The interface is minimal and accessible. No Courier New, "I'm-a-hacker" nonsense.
 
