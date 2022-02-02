@@ -40,6 +40,6 @@ On the other hand, centralization harms the _economics_ of finance, by creating 
 
 The question is whether the decentralizing forces of the crypto space improve financial economics more than they decrease efficiencies from specialization.
 
-I am not so sure that there is much of a spectrum with respect to the first of these effects: Each crypto project will either succeed in decentralizing, or it won't. Most of the color in the crypto space arises from the latter effect of efficiency loss: the more complicated, the greater the harm to efficiency. The question is, how complicated can you get before the effort becomes worthless?
+I am not so sure that there is much of a spectrum with respect to the first of these effects: Each crypto project will either succeed in decentralizing, or it won't. Most of the color in the crypto space arises from the latter effect of efficiency loss: the more complicated, the greater the efficiency loss. The question is, how complicated can you get before the effort becomes worthless?
 
 This is perhaps why I skew toward Nano and likeminded currencies: They aim to be as simple as possible, with very little efficiency loss.
