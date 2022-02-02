@@ -66,7 +66,7 @@ The missing piece in the above proposal is that the service worker is itself a p
 There is a good reason for this: If the service worker was allowed to halt updates to itself, a developer could accidentally "brick" their web app. Only the client would be able to remove the "broken" service worker code, to then receive repaired updates. This is not a user experience that browsers would like to allow, and so the situation is unlikely to change.
 
 
-### Introducing the security quote protocol
+### The security quote protocol
 
 As discussed, browsers currently do not allow clients to halt the update of a service worker. However, they _do_ notify the client before the update is installed. Precisely, the installation of a new service worker fires a javascript event which triggers the [onupdatefound EventListener](https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration/onupdatefound). 
 
