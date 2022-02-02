@@ -193,6 +193,10 @@ ul::-webkit-scrollbar-thumb:hover {
 		cursor: initial;
 	}
 	
+	.close-icon:after {
+		padding: 8px 5px;
+	}
+
 	select {
 		padding: 10px 10px;		
 	}
