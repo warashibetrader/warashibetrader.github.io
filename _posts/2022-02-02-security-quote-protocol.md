@@ -74,7 +74,7 @@ This seems to be the key for a working solution. The _security quote protocol_ o
 
 Some additional Q&A:
 
-#### Why not just put up a update notification when the onupdatefound event is received?
+#### Why not just put up an update notification when the onupdatefound event is received?
 
 Malicious code could quickly take down any notification before the end-user sees it. In contrast, it cannot restore a quote it does not know.
 
