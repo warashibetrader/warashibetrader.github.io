@@ -89,7 +89,7 @@ In principle, yes. This is an empirical question that depends on how each browse
 1. Install itself, and
 2. halt client code in motion,
 
-before the client code can successfully delete its security quote. I have tested this, and it seems that this is not the situation in major browsers.
+before the client code can successfully delete its security quote. I have tested this, and it seems that this is not possible in major browsers.
 
 #### Is this an officially recognized protocol?
 
