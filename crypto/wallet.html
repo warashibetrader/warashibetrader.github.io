@@ -152,8 +152,8 @@ ccc['XLM'] = {min:1, bgColor:'#373b82',
 				flashColor:'#edf',
 				gettingStarted:'https://www.stellar.org/',
 				donation:'GCOYMN3XAUD4OM4OTNC536TG6MEB6TK3IGSPKDJJJ7V36S3NNGKVBLTC',
-				connection: new StellarSdk.Server("https://horizon-testnet.stellar.org"), //https://horizon.stellar.org/
-				passphrase: StellarSdk.Networks.TESTNET};//.PUBLIC
+				connection: new StellarSdk.Server("https://horizon.stellar.org/"), //https://horizon-testnet.stellar.org
+				passphrase: StellarSdk.Networks.PUBLIC}; //.TESTNET
 	
 ccc['XNO'].queue = new Promise(function(resolve, reject) { resolve(true); });
 ccc['BAN'].queue = new Promise(function(resolve, reject) { resolve(true); });
