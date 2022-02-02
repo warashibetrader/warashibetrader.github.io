@@ -38,7 +38,7 @@ The crypto space is not strictly more efficient than traditional finance. This i
 
 On the other hand, centralization harms the _economics_ of finance, by creating monopolies which hold the power to misprice their services (upward). 
 
-The question is whether the dentralizing forces of the crypto space improve financial economics more than they decrease efficiencies from specialization.
+The question is whether the decentralizing forces of the crypto space improve financial economics more than they decrease efficiencies from specialization.
 
 I am not so sure that there is much of a spectrum with respect to the first of these effects: Each crypto project will either succeed in decentralizing, or it won't. Most of the color in the crypto space arises from the latter effect of efficiency loss: the more complicated, the greater the harm to efficiency. The question is, how complicated can you get before the effort becomes worthless?
 
