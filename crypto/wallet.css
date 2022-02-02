@@ -80,18 +80,19 @@ input[type=number] {
 }
 .close-icon:after {
 	content: "\2715";
-	position: absolute;
 	z-index:1;
+	position: absolute;
 	right: 15px;
-	bottom: 5px;
+	bottom: 3px;
 	padding: 2px;
-	cursor: pointer;
+	padding-right:2px;
 	font-size:14px;
-	padding-right:5px;
 	filter:grayscale(1) opacity(0.3);
+	cursor: pointer;
 }
 input:placeholder-shown ~ .close-icon:after {
 	content: "📋";
+	bottom: 5px;
 	padding-right:0px;
 }
 
