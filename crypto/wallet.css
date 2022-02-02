@@ -73,8 +73,7 @@ input[type=number] {
 	border:1px solid transparent;
 	background-color: transparent;
 	vertical-align: middle;
-  outline: 0;
-  cursor: pointer;
+	outline: 0;
 }
 .close-icon:hover {
 	background-color: transparent !important;
@@ -194,6 +193,7 @@ ul::-webkit-scrollbar-thumb:hover {
 
 	button {
 		padding: 10px 10px;
+		cursor: initial;
 	}
 	
 	select {
