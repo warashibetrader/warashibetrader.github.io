@@ -285,30 +285,26 @@ ccc['BAN'].getAccountInfo = function() {return post(ccc['BAN'].server, {action: 
 ccc['XNO'].getAccountInfo = function() {return post(ccc['XNO'].server, {action: 'account_info', pending: true, representative: true, account: ccc['XNO'].address});};
 ccc['SOL'].getAccountInfo = function() {
 	return ccc['SOL'].server.getAccountInfo(ccc['SOL'].publicKey).then(function(accountInfo) {
-		if (accountInfo) {
-			accountInfo.frontier = true;
-			accountInfo.balance = accountInfo.lamports;
-		} else {
+		if (accountInfo) accountInfo.balance = accountInfo.lamports;
+		else {
 		//	const airdropSignature = await ccc['SOL'].server.requestAirdrop(ccc['SOL'].publicKey, solanaWeb3.LAMPORTS_PER_SOL);
 		//	await ccc['SOL'].server.confirmTransaction(airdropSignature);
 		//	accountInfo = await ccc['SOL'].server.getAccountInfo(ccc['SOL'].publicKey);
-			if (accountInfo) {
-				accountInfo.frontier = true;
-				accountInfo.balance = accountInfo.lamports;
-			} else accountInfo = {detail: "Unopened account."};
+		//	if (accountInfo) {
+		//		accountInfo.frontier = true;
+		//		accountInfo.balance = accountInfo.lamports;
+		//	} else 
+			accountInfo = {detail: "Unopened account.", balance: "0"};
 		}
 		return accountInfo;
 	}).catch(function() {showMsg('Unable to connect to network.');});
 };
 ccc['XLM'].getAccountInfo = async function() {
 	return ccc['XLM'].server.loadAccount(ccc['XLM'].publicKey).then(function(accountInfo) {
-		if (accountInfo) {
-			accountInfo.frontier = true;
-			accountInfo.balance = rawFromUnit('XLM', accountInfo.balances[0].balance);
-		} else accountInfo = {detail: "Unopened account."};
+		accountInfo.balance = rawFromUnit('XLM', accountInfo.balances[0].balance);
 		return accountInfo;
 	}).catch(function(error) {
-		if (error instanceof StellarSdk.NotFoundError) return {detail: "Unopened account."};
+		if (error instanceof StellarSdk.NotFoundError) return {detail: "Unopened account.", balance: "0"};
 		else showMsg('Unable to connect to network.');
 		return false;
 	});
@@ -335,6 +331,7 @@ ccc['SOL'].getTransactions = function(start) {
 	let symbol = 'SOL';
 	return ccc[symbol].server.getSignaturesForAddress(ccc[symbol].publicKey, {limit:10, before: start}).then(async function(history) {
 	if (history && history.length > 0) {
+		flash(D(`${symbol}-heading`), "Transactions");
 		if (history.length > 9) {
 			D(symbol + '-loadMore').style.display = "";
 			D(symbol + '-gettingStarted').style.display = "none";
@@ -422,6 +419,7 @@ ccc['XLM'].getTransactions = function(start) {
 	else caller = ccc[symbol].server.payments().forAccount(ccc[symbol].address).order("desc").limit(5).call();
 	caller.then(function(history) {
 		if (history) {
+			flash(D(`${symbol}-heading`), "Transactions");
 			if (history.records.length == 5) {
 				if (!D(symbol + '-' + history.records[history.records.length - 1].id)) {
 					D(symbol + '-loadMore').style.display = "";
@@ -488,7 +486,8 @@ ccc['XLM'].getTransactions = function(start) {
 
 function nanoDisplayTransactions(symbol, start) {
 	post(ccc[symbol].server, { action: 'account_history', head:start, account: ccc[symbol].address, count:10 }).then(function(history) {
-		if (history && history.history) {
+		if (history && history.history) {		
+			flash(D(`${symbol}-heading`), "Transactions");
 			if (history.previous) {
 				if (!D(symbol + '-' + history.history[history.history.length - 1].height)) {
 					D(symbol + '-loadMore').style.display = "";
@@ -1129,14 +1128,13 @@ function refreshBalance(symbol, confirm) {
 				if (accountInfo) accountInfo = JSON.parse(accountInfo);
 			}
 			
-			if (accountInfo && accountInfo.frontier) {
-				if (D(`${symbol}-rep`).textContent != accountInfo.representative) {
+			if (accountInfo) {
+				if (accountInfo.representative && D(`${symbol}-rep`).textContent != accountInfo.representative) {
 					flash(D(`${symbol}-rep`), accountInfo.representative);	
 					fetchDisplayName(symbol, "-rep-display", accountInfo.representative);
 				}
-				flash(D(`${symbol}-balance`), unitFromRaw(symbol, accountInfo.balance));
+				if (accountInfo.balance !== undefined) flash(D(`${symbol}-balance`), unitFromRaw(symbol, accountInfo.balance));
 				if (accountInfo.pending !== undefined) flash(D(`${symbol}-balance-pending`), unitFromRaw(symbol, accountInfo.pending));
-				flash(D(`${symbol}-heading`), "Transactions");
 			}
 			
 			return accountInfo;
