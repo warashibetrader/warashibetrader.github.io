@@ -120,7 +120,7 @@ var clipboardText;
 //////////////////////////////////////////////////////// crypto currency classes
 
 var ccc = {};
-ccc['XNO'] = {shift:30, flashColor:'#def', keyType:'seed', donation:'nano_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7',
+ccc['XNO'] = {shift:30, flashColor:'#def', keyType:'seed', fee:"0", donation:'nano_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7',
 				server:'https://proxy.powernode.cc/proxy',
 				
 					gettingStarted:'https://nanolinks.info/',
@@ -128,7 +128,7 @@ ccc['XNO'] = {shift:30, flashColor:'#def', keyType:'seed', donation:'nano_1gpquw
 					representative:'nano_1natrium1o3z5519ifou7xii8crpxpk8y65qmkih8e8bpsjri651oza8imdd',
 					repRec:'https://mynano.ninja/api/accounts/verified'};
 						
-ccc['BAN'] = {shift:29, flashColor:'#ffc', keyType:'seed', donation:'ban_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7',
+ccc['BAN'] = {shift:29, flashColor:'#ffc', keyType:'seed', fee:"0", donation:'ban_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7',
 				server:'https://kaliumapi.appditto.com/api',
 				
 					gettingStarted:'https://banano.how/links/',
@@ -136,17 +136,17 @@ ccc['BAN'] = {shift:29, flashColor:'#ffc', keyType:'seed', donation:'ban_1gpquws
 					representative:'ban_1ka1ium4pfue3uxtntqsrib8mumxgazsjf58gidh1xeo5te3whsq8z476goo',
 					repRec:'https://api.spyglass.pw/banano/v1/representatives/scores'};
 						
-ccc['SOL'] = {shift:9, flashColor:'#e0faf0', keyType:'private key', donation:'9uugZyizr3QCrTcCgDGHpYwik636GGJVQTYBFRtd2rvG',
+ccc['SOL'] = {shift:9, flashColor:'#e0faf0', keyType:'private key', fee:5000, donation:'9uugZyizr3QCrTcCgDGHpYwik636GGJVQTYBFRtd2rvG',
 				server: new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'), 'confirmed'),
 				
 					gettingStarted:'https://solana.com/',
 					faucet: 'https://solfaucet.togatech.org/'};
 				
-ccc['XLM'] = {shift:7, flashColor:'#edf', keyType:'private key', donation:'GCOYMN3XAUD4OM4OTNC536TG6MEB6TK3IGSPKDJJJ7V36S3NNGKVBLTC',
+ccc['XLM'] = {shift:7, flashColor:'#edf', keyType:'private key', fee: StellarSdk.BASE_FEE, donation:'GCOYMN3XAUD4OM4OTNC536TG6MEB6TK3IGSPKDJJJ7V36S3NNGKVBLTC',
 				server: new StellarSdk.Server("https://horizon.stellar.org/"), //https://horizon-testnet.stellar.org
 				
 					gettingStarted:'https://www.stellar.org',
-					passphrase: StellarSdk.Networks.PUBLIC, //.TESTNET		
+					passphrase: StellarSdk.Networks.PUBLIC, //.TESTNET
 					min:1};
 	
 for (let symbol in ccc) { 
@@ -313,6 +313,21 @@ ccc['XLM'].getAccountInfo = async function() {
 		return false;
 	});
 };
+
+ccc['BAN'].getFee = function() {};
+ccc['XNO'].getFee = function() {};
+ccc['SOL'].getFee = function() {
+	D('SOL' + '-withdrawal-fee').value = unitFromRaw('SOL', ccc['SOL'].fee);
+	D('SOL' + '-withdrawal-fee').parentNode.style.display = 'flex';
+	D('SOL' + '-withdrawal-fee').disabled = true;
+};
+ccc['XLM'].getFee = function() { 
+	D('XLM' + '-withdrawal-fee').value = unitFromRaw('XLM', ccc['XLM'].fee);
+	D('XLM' + '-withdrawal-fee').parentNode.style.display = 'flex';
+	D('XLM' + '-withdrawal-fee').disabled = true;
+};
+
+
 
 ccc['BAN'].getTransactions = function(start) {nanoDisplayTransactions('BAN', start);};
 ccc['XNO'].getTransactions = function(start) {nanoDisplayTransactions('XNO', start);};
@@ -698,6 +713,7 @@ async function nanoChange(symbol, newrep) {
 
 function fetchFrontier(symbol, accountInfo) {
 	if (accountInfo && accountInfo.frontier) return post(ccc[symbol].server, {action: 'block_info', json_block: true, hash: accountInfo.frontier}).then(function(res) {
+		if (!res) return false;
 		let fetchedFrontierBlock = res.contents;
 
 		let producedFrontierBlock = ccc[symbol].createBlock(ccc[symbol].privateKey, {
@@ -1044,6 +1060,7 @@ function importWallet(symbol) {
 				else localStorage.setItem(`${symbol}-info`, "");
 			}
 		});
+		ccc[symbol].getFee();	
 		ccc[symbol].getTransactions();	
 	}
 }
@@ -1141,9 +1158,9 @@ async function cyclePending(symbol) {
 }
 
 async function withdraw(symbol) {
-	if (ccc[symbol].checkAddress(ccc[symbol].address) && ccc[symbol].checkAddress(D(`${symbol}-dest`).value)) {
+	if (ccc[symbol].checkAddress(ccc[symbol].address) && ccc[symbol].checkAddress(D(`${symbol}-dest`).value)) {	
 		if ((D(`${symbol}-withdrawal-amount`).value.match(/\./g)||[]).length <= 1 && /^[0-9.]+$/.test(D(`${symbol}-withdrawal-amount`).value) &&		
-			rawFromUnit(symbol, D(`${symbol}-withdrawal-amount`).value) <= rawFromUnit(symbol, D(`${symbol}-balance`).textContent)) {
+			(BigInt(rawFromUnit(symbol, D(`${symbol}-withdrawal-amount`).value)) + BigInt(ccc[symbol].fee)) <= BigInt(rawFromUnit(symbol, D(`${symbol}-balance`).textContent))) {
 			showMsg(symbol + " transfer initiated...", null,true);
 			let sendResp = await ccc[symbol].sendTo(D(`${symbol}-dest`).value, D(`${symbol}-withdrawal-amount`).value);
 			if (sendResp) {
@@ -1244,8 +1261,6 @@ if (screen.width <= 550 || screen.height <= 550) {
 
 
 window.addEventListener('copy', function(e) {
-	console.log("copy event");
-	console.log(document.getSelection());
 	if (document.getSelection().toString()) clipboardText = document.getSelection().toString();
 });
 
@@ -1254,10 +1269,12 @@ window.addEventListener('keydown', function(evt) {
 		if (evt.keyCode == 81) {
 			evt.preventDefault();
 			toggleView(D('primary').value);
+			//D('primary').focus();
 		}
 		if (evt.keyCode == 49) {
 			evt.preventDefault();
-			toggleView(D('primary').value);
+			//toggleView(D('primary').value);
+			D('primary').focus();
 		}
 	}
 });
@@ -1437,6 +1454,14 @@ function hideServerMsg() {
 
 function updateView() {
 	let symbol = D('primary').value;
+	
+	let seed = localStorage.getItem(`${symbol}-seed`);	
+	if (seed) {	
+		D(`${symbol}-seed`).value = seed;
+		D(`${symbol}-generateButton`).disabled = true;
+		let index = localStorage.getItem(`${symbol}-index`);
+		if (index) D(`${symbol}-index`).value = index; 
+	}
 	if (fullView) {
 		D(symbol + "-tool1").style.display = "";
 		if (symbol == "XNO" || symbol == "BAN") D(symbol + "-tool2").style.display = "";
@@ -1526,9 +1551,7 @@ function convertTimestamp(d) {
     } else if (hh === 12) {
         h = 12;
         ampm = 'PM';
-    } else if (hh == 0) {
-        h = 12;
-    }
+    } else if (hh == 0) h = 12;
 
     // ie: 2014-03-24, 3:00 PM
     time = yyyy + '-' + mm + '-' + dd + ' ' + h + ':' + min + ' ' + ampm;
@@ -1614,19 +1637,10 @@ function selectPrimary(symbol) {
 		D(`${symbol}-seed`).placeholder = "Seed (store securely) ...";
 	}
 	
-	if (!ccc[symbol].address) {
-		let seed = localStorage.getItem(`${symbol}-seed`);	
-		if (seed) {	
-			D(`${symbol}-seed`).value = seed;
-			D(`${symbol}-generateButton`).disabled = true;
-			let index = localStorage.getItem(`${symbol}-index`);
-			if (index) D(`${symbol}-index`).value = index; 
-			importWallet(symbol);
-		}
-	} else {
+	if (ccc[symbol].address) {
 		refreshBalance(symbol);
 		ccc[symbol].getTransactions();	
-	}
+	} else if (localStorage.getItem(`${symbol}-seed`)) importWallet(symbol);
 }
 	
 function generateHTML(symbol) {
@@ -1714,6 +1728,12 @@ function generateHTML(symbol) {
 			<strong>Amount:</strong>
 			<input placeholder="0.00" onkeyup="if (event.keyCode == 27) this.value = '';" style="text-align:right; flex-grow:1" onfocus="scrollPanel(this.parentNode)" id="${symbol}-withdrawal-amount" type="number" step="0.01" min="0">&nbsp; ${symbol}
 		</div>
+		
+		<div style="display:none; justify-content:space-between; margin-top:15px; margin-right:15px; align-items:baseline">
+			<strong>Network fee:</strong>
+			<input placeholder="0.00" onkeyup="if (event.keyCode == 27) this.value = '';" style="text-align:right; flex-grow:1" onfocus="scrollPanel(this.parentNode)" id="${symbol}-withdrawal-fee" type="number" step="0.01" min="0">&nbsp; ${symbol}
+		</div>
+		
 		<div style="text-align:center;">
 			<button style="margin-top:15px" onclick="withdraw('${symbol}')">Transfer ${symbol}</button>
 		</div>
