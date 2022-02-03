@@ -1110,7 +1110,7 @@ function clearWallet(symbol) {
 	D(symbol + '-qr-input').value = "";
 	ccc[symbol].qrCode.makeCode("");
 	
-	if (D(symbol + "-editpanel").style.display != "none") D(symbol + "-editbutton").click();
+	if (D(symbol + "-editpanel").style.display != "none") toggleEdit(symbol);
 	
 	//D(symbol + "-gray").style.filter = "opacity(0.5)";
 	D(symbol + "-gray").style.display = "none";
@@ -1203,14 +1203,14 @@ function suggestRep(symbol) {
 	}).catch(function() {showMsg('Unable to connect to network.');});
 }
 
-function toggleVisibility(caller, symbol) {
+function toggleVisibility(symbol) {
 	let x = D(`${symbol}-seed`);
 	if (x.type === "password") {
 		x.type = "text";
-		caller.classList.add('active');
+		D(symbol + '-show').classList.add('active');
 	} else {
 		x.type = "password";		
-		caller.classList.remove('active');
+		D(symbol + '-show').classList.remove('active');
 	}
 }
 
@@ -1455,7 +1455,8 @@ function updateView() {
 	let symbol = D('primary').value;
 	
 	let seed = localStorage.getItem(`${symbol}-seed`);	
-	if (seed) {	
+	if (seed) {
+		if (D(`${symbol}-seed`).type != "password") toggleVisibility(symbol);
 		D(`${symbol}-seed`).value = seed;
 		D(`${symbol}-generateButton`).disabled = true;
 		let index = localStorage.getItem(`${symbol}-index`);
@@ -1671,7 +1672,7 @@ function generateHTML(symbol) {
 			<input onfocus="scrollPanel(this.parentNode)" placeholder="Private key (store securely) ..." id="${symbol}-seed" style="padding-right:30px; flex-grow:1; flex-basis:20px; margin-right:10px;" type="password" autocomplete="off" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')" oninput="if (this.value.length == 0) D('${symbol}-generateButton').disabled = false; else D('${symbol}-generateButton').disabled = true;">
 			<button class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
 			<div>
-				<button tabindex="-1" style="font-size:0.8em" onclick="toggleVisibility(this, '${symbol}')">Show</button>
+				<button id="${symbol}-show" tabindex="-1" style="font-size:0.8em" onclick="toggleVisibility('${symbol}')">Show</button>
 			</div>			
 		</div>
 		<canvas style="width:100%; margin-top:10px;" hidden="" id="${symbol}-qr-canvas-seed"></canvas>
