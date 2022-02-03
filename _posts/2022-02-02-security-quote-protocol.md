@@ -39,9 +39,9 @@ There is a decent amount of discussion about the problem with browser cryptograp
 > 
 > However, it seems like I missed one important detail. At the moment it is actually not possible to prevent an update client side when the server sends a new service worker to the client. This would make it impossible to verify if an update is trusted, the client would update regardless of whether or not the signature of the updated code is valid.
 
-### A comparison with native app security
+### A comparison with native apps and browser extensions
 
-To understand the issues with web app security, it is helpful to benchmark against native apps. Native apps have two key security advantages over web apps:
+To understand the issues with web app security, it is helpful to benchmark against native apps and browser extensions. Native apps have two key security advantages over web apps:
 
 1. Native apps are verified by a third party, typically Google or Apple. Precisely, an Android app has an extra layer of security because you typically obtain its code from the Google Play Store, rather than directly from the developer. If you trust Google, then this is an advantage because Google audits the app's code before distributing it.
 
