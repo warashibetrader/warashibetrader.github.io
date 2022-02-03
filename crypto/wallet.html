@@ -1428,10 +1428,7 @@ function addressQR(symbol) {
 	}
 }
 
-function generateQR(symbol, input) {
-	if (input) ccc[symbol].qrCode.makeCode(input); 
-	else ccc[symbol].qrCode.makeCode('');
-	
+function generateQR(symbol, input) {	
 	if (ccc[symbol].checkSeed(input)) {
 		D(symbol + '-type-display').textContent = ccc[symbol].keyType;		
 		fetchDisplayName(symbol, '-directory-display', ccc[symbol].addressFromSeed(input));
@@ -1442,6 +1439,8 @@ function generateQR(symbol, input) {
 		D(symbol + '-type-display').textContent = '';
 		D(symbol + '-directory-display').textContent = '';
 	}
+	if (input) ccc[symbol].qrCode.makeCode(input); 
+	else ccc[symbol].qrCode.makeCode('');
 }
 
 //////////////////////////////////////////////////////// General helper functions
