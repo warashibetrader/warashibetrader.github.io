@@ -212,11 +212,11 @@ ul::-webkit-scrollbar-thumb:hover {
 		flex-basis:100px;
 		flex-grow:1;
 		scroll-snap-align:start;
+		scrollbar-width:none;
 	}
 	
 	.secondDiv {
-		padding:10px; 
-		padding-left:15px;
+		padding:15px;
 		box-sizing:border-box;
 		flex-basis:100px;
 		flex-grow:1;
