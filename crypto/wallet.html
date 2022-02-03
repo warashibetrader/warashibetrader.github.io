@@ -120,7 +120,7 @@ var clipboardText;
 //////////////////////////////////////////////////////// crypto currency classes
 
 var ccc = {};
-ccc['XNO'] = {shift:30, flashColor:'#def', keyType:'seed', fee:"0", donation:'nano_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7',
+ccc['XNO'] = {shift:30, flashColor:'#def', keyType:'seed', min:0, fee:0, donation:'nano_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7',
 				server:'https://proxy.powernode.cc/proxy',
 				
 					gettingStarted:'https://nanolinks.info/',
@@ -128,7 +128,7 @@ ccc['XNO'] = {shift:30, flashColor:'#def', keyType:'seed', fee:"0", donation:'na
 					representative:'nano_1natrium1o3z5519ifou7xii8crpxpk8y65qmkih8e8bpsjri651oza8imdd',
 					repRec:'https://mynano.ninja/api/accounts/verified'};
 						
-ccc['BAN'] = {shift:29, flashColor:'#ffc', keyType:'seed', fee:"0", donation:'ban_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7',
+ccc['BAN'] = {shift:29, flashColor:'#ffc', keyType:'seed', min:0, fee:0, donation:'ban_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7',
 				server:'https://kaliumapi.appditto.com/api',
 				
 					gettingStarted:'https://banano.how/links/',
@@ -136,18 +136,17 @@ ccc['BAN'] = {shift:29, flashColor:'#ffc', keyType:'seed', fee:"0", donation:'ba
 					representative:'ban_1ka1ium4pfue3uxtntqsrib8mumxgazsjf58gidh1xeo5te3whsq8z476goo',
 					repRec:'https://api.spyglass.pw/banano/v1/representatives/scores'};
 						
-ccc['SOL'] = {shift:9, flashColor:'#e0faf0', keyType:'private key', fee:5000, donation:'9uugZyizr3QCrTcCgDGHpYwik636GGJVQTYBFRtd2rvG',
+ccc['SOL'] = {shift:9, flashColor:'#e0faf0', keyType:'private key', min:0, fee:5000, donation:'9uugZyizr3QCrTcCgDGHpYwik636GGJVQTYBFRtd2rvG',
 				server: new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'), 'confirmed'),
 				
 					gettingStarted:'https://solana.com/',
 					faucet: 'https://solfaucet.togatech.org/'};
 				
-ccc['XLM'] = {shift:7, flashColor:'#edf', keyType:'private key', fee: StellarSdk.BASE_FEE, donation:'GCOYMN3XAUD4OM4OTNC536TG6MEB6TK3IGSPKDJJJ7V36S3NNGKVBLTC',
+ccc['XLM'] = {shift:7, flashColor:'#edf', keyType:'private key', min:1, fee: StellarSdk.BASE_FEE, donation:'GCOYMN3XAUD4OM4OTNC536TG6MEB6TK3IGSPKDJJJ7V36S3NNGKVBLTC',
 				server: new StellarSdk.Server("https://horizon.stellar.org/"), //https://horizon-testnet.stellar.org
 				
 					gettingStarted:'https://www.stellar.org',
-					passphrase: StellarSdk.Networks.PUBLIC, //.TESTNET
-					min:1};
+					passphrase: StellarSdk.Networks.PUBLIC}; //.TESTNET
 	
 for (let symbol in ccc) { 
 	ccc[symbol].queue = new Promise(function(resolve, reject) { resolve(true); });
@@ -1156,18 +1155,22 @@ async function cyclePending(symbol) {
 }
 
 async function withdraw(symbol) {
-	if (ccc[symbol].checkAddress(ccc[symbol].address) && ccc[symbol].checkAddress(D(`${symbol}-dest`).value)) {	
-		if ((D(`${symbol}-withdrawal-amount`).value.match(/\./g)||[]).length <= 1 && /^[0-9.]+$/.test(D(`${symbol}-withdrawal-amount`).value) &&		
-			(BigInt(rawFromUnit(symbol, D(`${symbol}-withdrawal-amount`).value)) + BigInt(ccc[symbol].fee)) <= BigInt(rawFromUnit(symbol, D(`${symbol}-balance`).textContent))) {
-			showMsg(symbol + " transfer initiated...", null,true);
-			let sendResp = await ccc[symbol].sendTo(D(`${symbol}-dest`).value, D(`${symbol}-withdrawal-amount`).value);
-			if (sendResp) {
-				if (!sendResp.msgHandled) {
-					showMsg(D(`${symbol}-withdrawal-amount`).value + " " + symbol + " transferred.");
-					D(`${symbol}-withdrawal-amount`).value = "";
-				}
-				ccc[symbol].getTransactions();
-			} else showMsg("Transfer seems to have failed.");
+	if (ccc[symbol].checkAddress(ccc[symbol].address) && ccc[symbol].checkAddress(D(`${symbol}-dest`).value)) {
+		let amtWithFee = BigInt(rawFromUnit(symbol, D(`${symbol}-withdrawal-amount`).value)) + BigInt(ccc[symbol].fee);
+		if ((D(`${symbol}-withdrawal-amount`).value.match(/\./g)||[]).length <= 1 
+		&& /^[0-9.]+$/.test(D(`${symbol}-withdrawal-amount`).value) 
+		&& amtWithFee <= BigInt(rawFromUnit(symbol, D(`${symbol}-balance`).textContent))) {
+			if (amtWithFee + BigInt(rawFromUnit(symbol, ccc[symbol].min)) <= BigInt(rawFromUnit(symbol, D(`${symbol}-balance`).textContent))) {
+				showMsg(symbol + " transfer initiated...", null,true);
+				let sendResp = await ccc[symbol].sendTo(D(`${symbol}-dest`).value, D(`${symbol}-withdrawal-amount`).value);
+				if (sendResp) {
+					if (!sendResp.msgHandled) {
+						showMsg(D(`${symbol}-withdrawal-amount`).value + " " + symbol + " transferred.");
+						D(`${symbol}-withdrawal-amount`).value = "";
+					}
+					ccc[symbol].getTransactions();
+				} else showMsg("Transfer seems to have failed.");
+			} else showMsg("Minimum account balance is " + ccc[symbol].min + " " + symbol + ".");
 		} else showMsg("Insufficient funds.");
 	} else showMsg("Invalid address.");
 }
