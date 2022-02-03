@@ -132,13 +132,15 @@ ccc['BAN'] = {shift:29, flashColor:'#ffc', keyType:'seed', donation:'ban_1gpquws
 				server:'https://kaliumapi.appditto.com/api',
 				
 					gettingStarted:'https://banano.how/links/',
+					faucet: 'https://monkeytalks.cc/',
 					representative:'ban_1ka1ium4pfue3uxtntqsrib8mumxgazsjf58gidh1xeo5te3whsq8z476goo',
 					repRec:'https://api.spyglass.pw/banano/v1/representatives/scores'};
 						
 ccc['SOL'] = {shift:9, flashColor:'#e0faf0', keyType:'private key', donation:'9uugZyizr3QCrTcCgDGHpYwik636GGJVQTYBFRtd2rvG',
 				server: new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'), 'confirmed'),
 				
-					gettingStarted:'https://solana.com/'};
+					gettingStarted:'https://solana.com/',
+					faucet: 'https://solfaucet.togatech.org/'};
 				
 ccc['XLM'] = {shift:7, flashColor:'#edf', keyType:'private key', donation:'GCOYMN3XAUD4OM4OTNC536TG6MEB6TK3IGSPKDJJJ7V36S3NNGKVBLTC',
 				server: new StellarSdk.Server("https://horizon.stellar.org/"), //https://horizon-testnet.stellar.org
@@ -1638,10 +1640,10 @@ function generateHTML(symbol) {
 		<ul id="${symbol}-transactions" style="padding-left:0px; max-width:620px; list-style: none;"></ul>
 		<div style="max-width:620px; margin-top:30px; margin-bottom:70px; text-align:center">
 			<button style="display:none" id="${symbol}-loadMore">Load More</button>
-			<ul id="${symbol}-gettingStarted">
-				<li id="${symbol}-faucet" style="display:none"><a href="${ccc[symbol].faucet}" rel="noopener" target="_blank">Free ${symbol} for testing</a>
-				<li><a href="${ccc[symbol].gettingStarted}" rel="noopener" target="_blank">${symbol} information, resources, and links</a>
-				</ul>
+			<div id="${symbol}-gettingStarted">
+				<div id="${symbol}-faucet" style="display:none"><a href="${ccc[symbol].faucet}" rel="noopener" target="_blank">Free ${symbol} for testing</a></div>
+				<div><a href="${ccc[symbol].gettingStarted}" rel="noopener" target="_blank">${symbol} information, resources, and links</a></div>
+			</div>
 		</div>
 	</div>`;
 		
