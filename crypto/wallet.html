@@ -120,45 +120,37 @@ var clipboardText;
 //////////////////////////////////////////////////////// crypto currency classes
 
 var ccc = {};
-ccc['XNO'] = {representative:'nano_1natrium1o3z5519ifou7xii8crpxpk8y65qmkih8e8bpsjri651oza8imdd',
-						server:'https://proxy.powernode.cc/proxy',
-						gettingStarted:'https://nanolinks.info/',
-						repRec:'https://mynano.ninja/api/accounts/verified',
-						donation:'nano_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7',
-						flashColor:'#def',
-						bgColor:'steelblue',
-						keyType:'seed'};
-						
-						
-ccc['BAN'] = {representative:'ban_1ka1ium4pfue3uxtntqsrib8mumxgazsjf58gidh1xeo5te3whsq8z476goo',
-						server:'https://kaliumapi.appditto.com/api',
-						gettingStarted:'https://banano.how/links/',
-						repRec:'https://api.spyglass.pw/banano/v1/representatives/scores',
-						donation:'ban_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7',
-						flashColor:'#ffc',
-						bgColor:'orange',
-						keyType:'seed'};
-						
-ccc['SOL'] = {bgColor:'#0ca', 
-				flashColor:'#e0faf0',
-				keyType:'private key',
-				gettingStarted:'https://solana.com/',
-				donation:'9uugZyizr3QCrTcCgDGHpYwik636GGJVQTYBFRtd2rvG',
-				connection: new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'), 'confirmed')};
+ccc['XNO'] = {shift:30, flashColor:'#def', keyType:'seed', donation:'nano_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7',
+				server:'https://proxy.powernode.cc/proxy',
 				
+					gettingStarted:'https://nanolinks.info/',
+					faucet: 'https://nanodrop.io/',
+					representative:'nano_1natrium1o3z5519ifou7xii8crpxpk8y65qmkih8e8bpsjri651oza8imdd',
+					repRec:'https://mynano.ninja/api/accounts/verified'};
+						
+ccc['BAN'] = {shift:29, flashColor:'#ffc', keyType:'seed', donation:'ban_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7',
+				server:'https://kaliumapi.appditto.com/api',
 				
-ccc['XLM'] = {min:1, bgColor:'#373b82', 
-				keyType:'private key',
-				flashColor:'#edf',
-				gettingStarted:'https://www.stellar.org',
-				donation:'GCOYMN3XAUD4OM4OTNC536TG6MEB6TK3IGSPKDJJJ7V36S3NNGKVBLTC',
-				connection: new StellarSdk.Server("https://horizon.stellar.org/"), //https://horizon-testnet.stellar.org
-				passphrase: StellarSdk.Networks.PUBLIC}; //.TESTNET
+					gettingStarted:'https://banano.how/links/',
+					representative:'ban_1ka1ium4pfue3uxtntqsrib8mumxgazsjf58gidh1xeo5te3whsq8z476goo',
+					repRec:'https://api.spyglass.pw/banano/v1/representatives/scores'};
+						
+ccc['SOL'] = {shift:9, flashColor:'#e0faf0', keyType:'private key', donation:'9uugZyizr3QCrTcCgDGHpYwik636GGJVQTYBFRtd2rvG',
+				server: new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'), 'confirmed'),
+				
+					gettingStarted:'https://solana.com/'};
+				
+ccc['XLM'] = {shift:7, flashColor:'#edf', keyType:'private key', donation:'GCOYMN3XAUD4OM4OTNC536TG6MEB6TK3IGSPKDJJJ7V36S3NNGKVBLTC',
+				server: new StellarSdk.Server("https://horizon.stellar.org/"), //https://horizon-testnet.stellar.org
+				
+					gettingStarted:'https://www.stellar.org',
+					passphrase: StellarSdk.Networks.PUBLIC, //.TESTNET		
+					min:1};
 	
-ccc['XNO'].queue = new Promise(function(resolve, reject) { resolve(true); });
-ccc['BAN'].queue = new Promise(function(resolve, reject) { resolve(true); });
-ccc['SOL'].queue = new Promise(function(resolve, reject) { resolve(true); });
-ccc['XLM'].queue = new Promise(function(resolve, reject) { resolve(true); });
+for (let symbol in ccc) { 
+	ccc[symbol].queue = new Promise(function(resolve, reject) { resolve(true); });
+	ccc[symbol].bgColor = quickColorArray[symbol];
+}
 
 //////////////////////////////////////////////////////// low level helper functions
 
@@ -172,12 +164,8 @@ ccc['XNO'].generateSeed = function() {
 	crypto.getRandomValues(seed);
 	return Array.prototype.map.call(seed, (x) => ('00' + x.toString(16)).slice(-2)).join('').toUpperCase();
 };
-ccc['SOL'].generateSeed = function() {
-	return "[" + solanaWeb3.Keypair.generate().secretKey.toString() + "]";
-};
-ccc['XLM'].generateSeed = function() {
-	return StellarSdk.Keypair.random().secret();
-};
+ccc['SOL'].generateSeed = function() { return "[" + solanaWeb3.Keypair.generate().secretKey.toString() + "]"; };
+ccc['XLM'].generateSeed = function() { return StellarSdk.Keypair.random().secret(); };
 
 ccc['BAN'].checkSeed = function(seed) { return typeof seed === "string" && /^[0-9a-fA-F]{64}$/.test(seed);};
 ccc['XNO'].checkSeed = function(seed) {	return typeof seed === "string" && /^[0-9a-fA-F]{64}$/.test(seed);};
@@ -193,9 +181,7 @@ ccc['SOL'].checkSeed = function(seed) {
 	catch { return false; }
 	return true;
 };
-ccc['XLM'].checkSeed = function(seed) {
-		return StellarSdk.StrKey.isValidEd25519SecretSeed(seed);
-	}
+ccc['XLM'].checkSeed = function(seed) { return StellarSdk.StrKey.isValidEd25519SecretSeed(seed); };
 
 ccc['XNO'].checkAddress = function(address) { 
 	if (!(typeof address === "string") || !/^(xrb_|nano_)[13][13-9a-km-uw-z]{59}$/.test(address)) return false;
@@ -215,12 +201,8 @@ ccc['BAN'].checkAddress = function(address) {
 	let nanoAddr = address.replace('ban_', 'nano_');
 	return (nanoAddr != address) && ccc['XNO'].checkAddress(nanoAddr);
 };
-ccc['SOL'].checkAddress = function(address) { 
-	return typeof address === "string" && /^[1-9A-HJ-NP-Za-km-z]{44}$/.test(address);
-};
-ccc['XLM'].checkAddress = function(address) { 
-	return StellarSdk.StrKey.isValidEd25519PublicKey(address);
-};
+ccc['SOL'].checkAddress = function(address) { return typeof address === "string" && /^[1-9A-HJ-NP-Za-km-z]{44}$/.test(address); };
+ccc['XLM'].checkAddress = function(address) { return StellarSdk.StrKey.isValidEd25519PublicKey(address); };
 
 ccc['XNO'].derivePrivateKey = function(seed, index) {
   const indexBuffer = new ArrayBuffer(4)
@@ -244,63 +226,10 @@ ccc['XNO'].derivePublicKey = function(secretKeyOrAddress) {
 ccc['BAN'].derivePublicKey = ccc['XNO'].derivePublicKey;
 
 ccc['XNO'].deriveAddress = function(publicKey) {
-  const checksum = blake2b(hexToByteArray(publicKey), null, 5).reverse()
+  const checksum = blake2b(hexToByteArray(publicKey), null, 5).reverse();
   return 'nano_' + encodeNanoBase32(hexToByteArray(publicKey)) + encodeNanoBase32(checksum);
 }
-ccc['BAN'].deriveAddress = function(publicKey) {
-	return ccc['XNO'].deriveAddress(publicKey).replace('nano_', 'ban_');
-};
-
-ccc['XNO'].createBlock = function(secretKey, data) {
-	if (typeof data.work === 'undefined') throw new Error('Work is not set');
-	if (!ccc['XNO'].checkAddress(data.representative)) throw new Error('Representative is not valid');
-
-	let correctedPrevious = data.previous;
-	if (data.previous === null) correctedPrevious = BLANK_HASH;
-
-	let linkIsAddress = false;
-	let correctedLink = data.link;
-	if (data.link === null) correctedLink = BLANK_HASH;
-	else if (ccc['XNO'].checkAddress(correctedLink)) linkIsAddress = true;
-	if (correctedPrevious === BLANK_HASH && (linkIsAddress || correctedLink === BLANK_HASH)) throw new Error('Block is impossible');
-
-	let publicKey = ccc['XNO'].derivePublicKey(secretKey);
-	let linkBytes;
-	if (ccc['XNO'].checkAddress(correctedLink)) linkBytes = hexToByteArray(ccc['XNO'].derivePublicKey(correctedLink));
-	else linkBytes = hexToByteArray(correctedLink);
-	
-	const context = blake2bInit(32)
-	blake2bUpdate(context, STATE_BLOCK_PREAMBLE_BYTES)
-	blake2bUpdate(context, hexToByteArray(publicKey))
-	blake2bUpdate(context, hexToByteArray(correctedPrevious))
-	blake2bUpdate(context, hexToByteArray(ccc['XNO'].derivePublicKey(data.representative)))
-	blake2bUpdate(context, hexToByteArray(BigInt(data.balance).toString(16).padStart(32, '0')))
-	blake2bUpdate(context, linkBytes)
-	const hashBytes = blake2bFinal(context)
-	let link
-	let linkAsAddress
-	if (linkIsAddress) {
-		linkAsAddress = correctedLink
-		link = ccc['XNO'].derivePublicKey(linkAsAddress)
-	} else {
-		link = correctedLink
-		linkAsAddress = ccc['XNO'].deriveAddress(link)
-	}
-	const block = {
-		type: 'state',
-		account: ccc['XNO'].deriveAddress(publicKey),
-		previous: correctedPrevious,
-		representative: data.representative,
-		balance: data.balance,
-		link,
-		// eslint-disable-next-line @typescript-eslint/camelcase
-		link_as_account: linkAsAddress,
-		work: data.work,
-		signature: byteArrayToHex(signDetached(hashBytes, hexToByteArray(secretKey))),
-	}
-	return { hash: byteArrayToHex(hashBytes), block: block };
-}
-ccc['BAN'].createBlock = ccc['XNO'].createBlock;
+ccc['BAN'].deriveAddress = function(publicKey) { return ccc['XNO'].deriveAddress(publicKey).replace('nano_', 'ban_'); };
 
 ccc['BAN'].unpackSeed = function(seed, index) {
 	ccc['BAN'].privateKey = ccc['BAN'].derivePrivateKey(seed, index);
@@ -346,55 +275,21 @@ ccc['SOL'].addressFromSeed = function(seed) {
 	}
 	return solanaWeb3.Keypair.fromSecretKey(new Uint8Array(arrSeed)).publicKey.toBase58()
 }
-ccc['XLM'].addressFromSeed = function(seed) {
-	return StellarSdk.Keypair.fromSecret(seed).publicKey();
-}
-
-
-ccc['BAN'].unitFromRaw = function(bal) {return shiftDecimalLeft(bal, 29);};
-ccc['XNO'].unitFromRaw = function(bal) {return shiftDecimalLeft(bal, 30);};
-ccc['SOL'].unitFromRaw = function(bal) {return shiftDecimalLeft(bal, 9);};
-ccc['XLM'].unitFromRaw = function(bal) {return shiftDecimalLeft(bal, 7);};
-function shiftDecimalLeft(str, shift) {
-	let n = str.toString();	
-	while (n.length < shift + 1) {
-		n = '0' + n;
-	}
-	let whole = n.substring(0, n.length - shift);
-	let cut = 0;
-	while (n[n.length - 1 - cut] == '0' && cut < shift - 2) cut++;
-	let fraction = n.substring(n.length - shift, n.length - cut);	
-	return whole + '.' + fraction;	
-}
-
-ccc['BAN'].rawFromUnit = function(bal) { return shiftDecimalRight(bal, 29);};
-ccc['XNO'].rawFromUnit = function(bal) { return shiftDecimalRight(bal, 30);};
-ccc['SOL'].rawFromUnit = function(bal) { return shiftDecimalRight(bal, 9);};
-ccc['XLM'].rawFromUnit = function(bal) { return shiftDecimalRight(bal, 7);};
-function shiftDecimalRight(str, shift) {	
-	let parts = str.toString().split(".");	
-	let whole = parts[0];
-	let fraction = '';
-	if (parts.length > 1) fraction = parts[1];
-	while (fraction.length < shift) {
-		fraction += '0';
-	}
-	return `${whole}${fraction}`;
-}
+ccc['XLM'].addressFromSeed = function(seed) { return StellarSdk.Keypair.fromSecret(seed).publicKey(); };
 
 //////////////////////////////////////////////////////// information fetch helper functions. Todo: remove connections with DOM somehow
 
 ccc['BAN'].getAccountInfo = function() {return post(ccc['BAN'].server, {action: 'account_info', pending: true, representative: true, account: ccc['BAN'].address});};
 ccc['XNO'].getAccountInfo = function() {return post(ccc['XNO'].server, {action: 'account_info', pending: true, representative: true, account: ccc['XNO'].address});};
 ccc['SOL'].getAccountInfo = function() {
-	return ccc['SOL'].connection.getAccountInfo(ccc['SOL'].publicKey).then(function(accountInfo) {
+	return ccc['SOL'].server.getAccountInfo(ccc['SOL'].publicKey).then(function(accountInfo) {
 		if (accountInfo) {
 			accountInfo.frontier = true;
 			accountInfo.balance = accountInfo.lamports;
 		} else {
-		//	const airdropSignature = await ccc['SOL'].connection.requestAirdrop(ccc['SOL'].publicKey, solanaWeb3.LAMPORTS_PER_SOL);
-		//	await ccc['SOL'].connection.confirmTransaction(airdropSignature);
-		//	accountInfo = await ccc['SOL'].connection.getAccountInfo(ccc['SOL'].publicKey);
+		//	const airdropSignature = await ccc['SOL'].server.requestAirdrop(ccc['SOL'].publicKey, solanaWeb3.LAMPORTS_PER_SOL);
+		//	await ccc['SOL'].server.confirmTransaction(airdropSignature);
+		//	accountInfo = await ccc['SOL'].server.getAccountInfo(ccc['SOL'].publicKey);
 			if (accountInfo) {
 				accountInfo.frontier = true;
 				accountInfo.balance = accountInfo.lamports;
@@ -404,11 +299,10 @@ ccc['SOL'].getAccountInfo = function() {
 	}).catch(function() {showMsg('Unable to connect to network.');});
 };
 ccc['XLM'].getAccountInfo = async function() {
-	return ccc['XLM'].connection.loadAccount(ccc['XLM'].publicKey).then(function(accountInfo) {
+	return ccc['XLM'].server.loadAccount(ccc['XLM'].publicKey).then(function(accountInfo) {
 		if (accountInfo) {
-			console.log(accountInfo);
 			accountInfo.frontier = true;
-			accountInfo.balance = ccc['XLM'].rawFromUnit(accountInfo.balances[0].balance);
+			accountInfo.balance = rawFromUnit('XLM', accountInfo.balances[0].balance);
 		} else accountInfo = {detail: "Unopened account."};
 		return accountInfo;
 	}).catch(function(error) {
@@ -418,16 +312,11 @@ ccc['XLM'].getAccountInfo = async function() {
 	});
 };
 
-
-
-ccc['XNO'].getPending = async function() {return (await post(ccc['XNO'].server, {action: 'pending', account: ccc['XNO'].address, source:true})).blocks;};
-ccc['BAN'].getPending = async function() {return (await post(ccc['BAN'].server, {action: 'pending', account: ccc['BAN'].address, source:true})).blocks;};
-
 ccc['BAN'].getTransactions = function(start) {nanoDisplayTransactions('BAN', start);};
 ccc['XNO'].getTransactions = function(start) {nanoDisplayTransactions('XNO', start);};
 ccc['SOL'].getTransactions = function(start) {
 	let symbol = 'SOL';
-	return ccc[symbol].connection.getSignaturesForAddress(ccc[symbol].publicKey, {limit:10, before: start}).then(async function(history) {
+	return ccc[symbol].server.getSignaturesForAddress(ccc[symbol].publicKey, {limit:10, before: start}).then(async function(history) {
 	if (history && history.length > 0) {
 		if (history.length > 9) {
 			D(symbol + '-loadMore').style.display = "";
@@ -470,7 +359,7 @@ ccc['SOL'].getTransactions = function(start) {
 			}
 		}
 		if (details.length > 0) {
-			let historyDetails = await ccc[symbol].connection.getParsedConfirmedTransactions(details);
+			let historyDetails = await ccc[symbol].server.getParsedConfirmedTransactions(details);
 			if (historyDetails.length > 0) {
 				for (let i = 0; i < historyDetails.length; i++) {
 					if (D(symbol + '-' + historyDetails[i].slot)) {
@@ -484,7 +373,7 @@ ccc['SOL'].getTransactions = function(start) {
 									li.firstChild.firstChild.nextSibling.innerHTML =  '-' + "<span style='cursor:pointer;'></span> " + symbol;
 									li.firstChild.firstChild.nextSibling.style.color = "#B00";
 								} else li.firstChild.firstChild.nextSibling.style.color = "#097";
-								li.firstChild.firstChild.nextSibling.firstElementChild.textContent = ccc[symbol].unitFromRaw(change);
+								li.firstChild.firstChild.nextSibling.firstElementChild.textContent = unitFromRaw(symbol, change);
 							} else if (j < 2) {
 								li.firstChild.nextSibling.firstChild.textContent = historyDetails[i].transaction.message.accountKeys[j].pubkey.toBase58();
 								fetchDisplayName(symbol, "-" + historyDetails[i].slot + "-display", li.firstChild.nextSibling.firstChild.textContent);
@@ -513,7 +402,7 @@ ccc['XLM'].getTransactions = function(start) {
 	let symbol = 'XLM';
 	let caller;
 	if (start) caller = start();
-	else caller = ccc[symbol].connection.payments().forAccount(ccc[symbol].address).order("desc").limit(5).call();
+	else caller = ccc[symbol].server.payments().forAccount(ccc[symbol].address).order("desc").limit(5).call();
 	caller.then(function(history) {
 		if (history) {
 			if (history.records.length == 5) {
@@ -527,7 +416,6 @@ ccc['XLM'].getTransactions = function(start) {
 				D(symbol + '-gettingStarted').style.display = "";
 			}
 			console.log(history);
-			
 			
 			for (let i = 0; i < history.records.length; i++) {
 				if (!D(symbol + '-' + history.records[i].id)) {
@@ -561,7 +449,7 @@ ccc['XLM'].getTransactions = function(start) {
 					
 					li.firstChild.firstChild.textContent = history.records[i].id + ":\xa0";
 					li.firstChild.firstChild.appendChild(displayNameSpan);
-					li.firstChild.firstChild.nextSibling.firstElementChild.textContent = ccc[symbol].unitFromRaw(ccc[symbol].rawFromUnit(amt));
+					li.firstChild.firstChild.nextSibling.firstElementChild.textContent = unitFromRaw(symbol, rawFromUnit(symbol, amt));
 					li.firstChild.firstChild.nextSibling.firstElementChild.onclick = function() {
 						clickCopy(li.firstChild.firstChild.nextSibling.firstElementChild, li.firstChild.firstChild.nextSibling.firstElementChild.textContent);
 					};
@@ -618,7 +506,7 @@ function nanoDisplayTransactions(symbol, start) {
 					
 					li.firstChild.firstChild.textContent = history.history[i].height + ":\xa0";
 					li.firstChild.firstChild.appendChild(displayNameSpan);
-					li.firstChild.firstChild.nextSibling.firstElementChild.textContent = ccc[symbol].unitFromRaw(history.history[i].amount);
+					li.firstChild.firstChild.nextSibling.firstElementChild.textContent = unitFromRaw(symbol, history.history[i].amount);
 					li.firstChild.firstChild.nextSibling.firstElementChild.onclick = function() {
 						clickCopy(li.firstChild.firstChild.nextSibling.firstElementChild, li.firstChild.firstChild.nextSibling.firstElementChild.textContent);
 					};
@@ -638,32 +526,21 @@ function nanoDisplayTransactions(symbol, start) {
 	});
 }
 
+ccc['XNO'].getPending = async function() {return (await post(ccc['XNO'].server, {action: 'pending', account: ccc['XNO'].address, source:true})).blocks;};
+ccc['BAN'].getPending = async function() {return (await post(ccc['BAN'].server, {action: 'pending', account: ccc['BAN'].address, source:true})).blocks;};
+
 //////////////////////////////////////////////////////// transaction helper functions
-
-ccc['BAN'].confirmBlock = function(hash) {return nanoConfirm('BAN', hash);};
-ccc['XNO'].confirmBlock = function(hash) {return nanoConfirm('XNO', hash);};
-
-ccc['BAN'].receive = function(hash) { return enqueue('BAN', function() {return nanoReceive('BAN', hash);}); };
-ccc['XNO'].receive = function(hash) { return enqueue('XNO', function() {return nanoReceive('XNO', hash);}); };
 
 ccc['BAN'].sendTo = function(destination, amt) { return enqueue('BAN', function() {return nanoSend('BAN', destination, amt);}); };
 ccc['XNO'].sendTo = function(destination, amt) { return enqueue('XNO', function() {return nanoSend('XNO', destination, amt);}); };
 ccc['SOL'].sendTo = function(destination, amt) { 
 	return enqueue('SOL', async function() {
 		let transaction = new solanaWeb3.Transaction().add(
-			solanaWeb3.SystemProgram.transfer({
-				fromPubkey: ccc['SOL'].publicKey,
-				toPubkey: new solanaWeb3.PublicKey(destination),
-				lamports: ccc['SOL'].rawFromUnit(amt),
-			}),
+			solanaWeb3.SystemProgram.transfer({fromPubkey: ccc['SOL'].publicKey, toPubkey: new solanaWeb3.PublicKey(destination), lamports: rawFromUnit('SOL', amt)})
 		);
 		// Sign transaction, broadcast, and confirm
 		try {
-			let signature = await solanaWeb3.sendAndConfirmTransaction(
-				ccc['SOL'].connection,
-				transaction,
-				[ccc['SOL'].privateKey],
-			);
+			let signature = await solanaWeb3.sendAndConfirmTransaction(ccc['SOL'].server, transaction, [ccc['SOL'].privateKey]);
 			refreshBalance('SOL');
 			return signature;
 		} catch { return false; }
@@ -672,14 +549,13 @@ ccc['SOL'].sendTo = function(destination, amt) {
 ccc['XLM'].sendTo = function(destination, amt) { 
 	var sourceKeys = StellarSdk.Keypair.fromSecret(ccc['XLM'].privateKey);
 	var transaction;
-
-	return ccc['XLM'].connection.loadAccount(destination).then(function() {
-		return ccc['XLM'].connection.loadAccount(sourceKeys.publicKey()).then(function (sourceAccount) {
+	return ccc['XLM'].server.loadAccount(destination).then(function() {
+		return ccc['XLM'].server.loadAccount(sourceKeys.publicKey()).then(function (sourceAccount) {
 			transaction = new StellarSdk.TransactionBuilder(sourceAccount, { fee: StellarSdk.BASE_FEE, networkPassphrase: ccc['XLM'].passphrase})
 				.addOperation(StellarSdk.Operation.payment({destination: destination, asset: StellarSdk.Asset.native(), amount: amt}))
 				.setTimeout(180).build();
 			transaction.sign(sourceKeys);
-			return ccc['XLM'].connection.submitTransaction(transaction);
+			return ccc['XLM'].server.submitTransaction(transaction);
 		}).then(function (result) {
 			console.log("Success! Results:", result);
 			refreshBalance('XLM');
@@ -693,12 +569,12 @@ ccc['XLM'].sendTo = function(destination, amt) {
 			if (parseFloat(amt) < 1) {
 				showMsg("Destination is a new account. Minimum send: " + ccc['XLM'].min + " XLM.");
 				return {msgHandled:true};
-			} else return ccc['XLM'].connection.loadAccount(sourceKeys.publicKey()).then(function (sourceAccount) {
+			} else return ccc['XLM'].server.loadAccount(sourceKeys.publicKey()).then(function (sourceAccount) {
 				transaction = new StellarSdk.TransactionBuilder(sourceAccount, { fee: StellarSdk.BASE_FEE, networkPassphrase: ccc['XLM'].passphrase})
 					.addOperation(StellarSdk.Operation.createAccount({destination: destination, startingBalance: amt}))
 					.addMemo(StellarSdk.Memo.text("Account creation")).setTimeout(180).build();
 				transaction.sign(sourceKeys);
-				return ccc['XLM'].connection.submitTransaction(transaction);
+				return ccc['XLM'].server.submitTransaction(transaction);
 			}).then(function (result) {	
 				console.log("Success! Results:", result);
 				refreshBalance('XLM');
@@ -711,9 +587,76 @@ ccc['XLM'].sendTo = function(destination, amt) {
 	});
 };
 
+ccc['BAN'].receive = function(hash) { return enqueue('BAN', function() {return nanoReceive('BAN', hash);}); };
+ccc['XNO'].receive = function(hash) { return enqueue('XNO', function() {return nanoReceive('XNO', hash);}); };
 
 ccc['BAN'].changeRep = function(newrep) { return enqueue('BAN', function() {return nanoChange('BAN', newrep);}); };
 ccc['XNO'].changeRep = function(newrep) { return enqueue('XNO', function() {return nanoChange('XNO', newrep);}); };
+
+ccc['BAN'].confirmBlock = function(hash) {return nanoConfirm('BAN', hash);};
+ccc['XNO'].confirmBlock = function(hash) {return nanoConfirm('XNO', hash);};
+
+ccc['XNO'].createBlock = function(secretKey, data) {
+	if (typeof data.work === 'undefined') throw new Error('Work is not set');
+	if (!ccc['XNO'].checkAddress(data.representative)) throw new Error('Representative is not valid');
+
+	let correctedPrevious = data.previous;
+	if (data.previous === null) correctedPrevious = BLANK_HASH;
+
+	let linkIsAddress = false;
+	let correctedLink = data.link;
+	if (data.link === null) correctedLink = BLANK_HASH;
+	else if (ccc['XNO'].checkAddress(correctedLink)) linkIsAddress = true;
+	if (correctedPrevious === BLANK_HASH && (linkIsAddress || correctedLink === BLANK_HASH)) throw new Error('Block is impossible');
+
+	let publicKey = ccc['XNO'].derivePublicKey(secretKey);
+	let linkBytes;
+	if (ccc['XNO'].checkAddress(correctedLink)) linkBytes = hexToByteArray(ccc['XNO'].derivePublicKey(correctedLink));
+	else linkBytes = hexToByteArray(correctedLink);
+	
+	const context = blake2bInit(32)
+	blake2bUpdate(context, STATE_BLOCK_PREAMBLE_BYTES)
+	blake2bUpdate(context, hexToByteArray(publicKey))
+	blake2bUpdate(context, hexToByteArray(correctedPrevious))
+	blake2bUpdate(context, hexToByteArray(ccc['XNO'].derivePublicKey(data.representative)))
+	blake2bUpdate(context, hexToByteArray(BigInt(data.balance).toString(16).padStart(32, '0')))
+	blake2bUpdate(context, linkBytes)
+	const hashBytes = blake2bFinal(context)
+	let link
+	let linkAsAddress
+	if (linkIsAddress) {
+		linkAsAddress = correctedLink
+		link = ccc['XNO'].derivePublicKey(linkAsAddress)
+	} else {
+		link = correctedLink
+		linkAsAddress = ccc['XNO'].deriveAddress(link)
+	}
+	const block = {
+		type: 'state',
+		account: ccc['XNO'].deriveAddress(publicKey),
+		previous: correctedPrevious,
+		representative: data.representative,
+		balance: data.balance,
+		link,
+		// eslint-disable-next-line @typescript-eslint/camelcase
+		link_as_account: linkAsAddress,
+		work: data.work,
+		signature: byteArrayToHex(signDetached(hashBytes, hexToByteArray(secretKey))),
+	}
+	return { hash: byteArrayToHex(hashBytes), block: block };
+}
+ccc['BAN'].createBlock = ccc['XNO'].createBlock;
+
+async function nanoSend(symbol, destination, amt) {
+	console.log('Sending '+ amt +' Nano from address '+ ccc[symbol].address +' to '+ destination);
+	// check frontier
+	let frontierBlock = await fetchFrontier(symbol, await refreshBalance(symbol));
+	if (!frontierBlock) return false;
+	
+	console.log("Fetched frontier confirmed check; send proceed: " + frontierBlock.balance);
+	return await postBlock(symbol, 'send', frontierBlock.hash, frontierBlock.hash, frontierBlock.representative, 
+		(BigInt(frontierBlock.balance) - BigInt(rawFromUnit(symbol, amt))).toString(), destination);
+}
 
 async function nanoReceive(symbol, hash) {
 	console.log('Receiving in address '+ ccc[symbol].address +' from block '+ hash);
@@ -740,17 +683,6 @@ async function nanoReceive(symbol, hash) {
 		return await postBlock(symbol, 'receive', workInput, previous, representative, (BigInt(oldBalance) + BigInt(blockInfo.amount)).toString(), hash);
 	});
 };
-
-async function nanoSend(symbol, destination, amt) {
-	console.log('Sending '+ amt +' Nano from address '+ ccc[symbol].address +' to '+ destination);
-	// check frontier
-	let frontierBlock = await fetchFrontier(symbol, await refreshBalance(symbol));
-	if (!frontierBlock) return false;
-	
-	console.log("Fetched frontier confirmed check; send proceed: " + frontierBlock.balance);
-	return await postBlock(symbol, 'send', frontierBlock.hash, frontierBlock.hash, frontierBlock.representative, 
-		(BigInt(frontierBlock.balance) - BigInt(ccc[symbol].rawFromUnit(amt))).toString(), destination);
-}
 
 async function nanoChange(symbol, newrep) {
 	console.log('Changing rep of '+ ccc[symbol].address +' to '+ newrep);
@@ -828,7 +760,7 @@ async function postBlock(symbol, subtype, workInput, previous, representative, b
 			flash(D(`${symbol}-rep`), theBlock.contents.representative);	
 			fetchDisplayName(symbol, "-rep-display", theBlock.contents.representative);
 		}			
-		flash(D(`${symbol}-balance`), ccc[symbol].unitFromRaw(theBlock.contents.balance));
+		flash(D(`${symbol}-balance`), unitFromRaw(symbol, theBlock.contents.balance));
 	});
 	return confirmation;
 }
@@ -1010,52 +942,9 @@ function setupWebsocket() {
 	});
 }
 
-generateHTML('XNO');
-generateHTML('BAN');
-generateHTML('SOL');
-generateHTML('XLM');
-
+for (let symbol in ccc) {generateHTML(symbol);}
 if (localStorage.getItem('symbol')) D('primary').value = localStorage.getItem('symbol');
 selectPrimary(D('primary').value);
-
-function selectPrimary(symbol) {
-	localStorage.setItem('symbol', symbol);
-	qrclose();
-	
-	D('firstDiv').removeChild(D('firstDiv').lastChild);
-	D('secondDiv').removeChild(D('secondDiv').lastChild);
-	
-	D('firstDiv').appendChild(ccc[symbol].sidebarElt);
-	D('secondDiv').appendChild(ccc[symbol].transactionElt);
-	
-	D('firstDiv').style.backgroundColor = ccc[symbol].bgColor;
-	updateView(symbol);
-	
-	if (!ccc[symbol].qrCode) ccc[symbol].qrCode = new QRCode(symbol + "-qrCodeImageBlock");
-	
-	if (symbol != "XNO" && symbol != "BAN") {
-		D(`${symbol}-index`).style.display = "none";
-		D(`${symbol}-tool2`).style.display = "none";
-		D(`${symbol}-arriving-balance-panel`).style.display = "none";
-	} else {
-		D(`${symbol}-seed`).maxLength = "64";
-		D(`${symbol}-seed`).placeholder = "Seed (store securely) ...";
-	}
-	
-	if (!ccc[symbol].address) {
-		let seed = localStorage.getItem(`${symbol}-seed`);	
-		if (seed) {	
-			D(`${symbol}-seed`).value = seed;
-			D(`${symbol}-generateButton`).disabled = true;
-			let index = localStorage.getItem(`${symbol}-index`);
-			if (index) D(`${symbol}-index`).value = index; 
-			importWallet(symbol);
-		}
-	} else {
-		refreshBalance(symbol);
-		ccc[symbol].getTransactions();	
-	}
-}
 
 //////////////////////////////////////////////////////// Interface with helper functions, and websocket
 
@@ -1226,8 +1115,8 @@ function refreshBalance(symbol, confirm) {
 					flash(D(`${symbol}-rep`), accountInfo.representative);	
 					fetchDisplayName(symbol, "-rep-display", accountInfo.representative);
 				}
-				flash(D(`${symbol}-balance`), ccc[symbol].unitFromRaw(accountInfo.balance));
-				if (accountInfo.pending !== undefined) flash(D(`${symbol}-balance-pending`), ccc[symbol].unitFromRaw(accountInfo.pending));
+				flash(D(`${symbol}-balance`), unitFromRaw(symbol, accountInfo.balance));
+				if (accountInfo.pending !== undefined) flash(D(`${symbol}-balance-pending`), unitFromRaw(symbol, accountInfo.pending));
 				flash(D(`${symbol}-heading`), "Transactions");
 			}
 			
@@ -1252,7 +1141,7 @@ async function cyclePending(symbol) {
 async function withdraw(symbol) {
 	if (ccc[symbol].checkAddress(ccc[symbol].address) && ccc[symbol].checkAddress(D(`${symbol}-dest`).value)) {
 		if ((D(`${symbol}-withdrawal-amount`).value.match(/\./g)||[]).length <= 1 && /^[0-9.]+$/.test(D(`${symbol}-withdrawal-amount`).value) &&		
-			ccc[symbol].rawFromUnit(D(`${symbol}-withdrawal-amount`).value) <= ccc[symbol].rawFromUnit(D(`${symbol}-balance`).textContent)) {
+			rawFromUnit(symbol, D(`${symbol}-withdrawal-amount`).value) <= rawFromUnit(symbol, D(`${symbol}-balance`).textContent)) {
 			showMsg(symbol + " transfer initiated...", null,true);
 			let sendResp = await ccc[symbol].sendTo(D(`${symbol}-dest`).value, D(`${symbol}-withdrawal-amount`).value);
 			if (sendResp) {
@@ -1352,10 +1241,23 @@ if (screen.width <= 550 || screen.height <= 550) {
 }
 
 
-document.addEventListener('copy', function(e) {
+window.addEventListener('copy', function(e) {
 	console.log("copy event");
 	console.log(document.getSelection());
 	if (document.getSelection().toString()) clipboardText = document.getSelection().toString();
+});
+
+window.addEventListener('keydown', function(evt) {
+	if (evt.altKey) {
+		if (evt.keyCode == 81) {
+			evt.preventDefault();
+			toggleView(D('primary').value);
+		}
+		if (evt.keyCode == 49) {
+			evt.preventDefault();
+			toggleView(D('primary').value);
+		}
+	}
 });
 
 function closeCopy(obj) {
@@ -1374,6 +1276,31 @@ function closeCopy(obj) {
 		obj.value = clipboardText;
 		obj.dispatchEvent(new Event('input', {bubbles:true}));
 	}
+}
+
+function unitFromRaw(symbol, str) {
+	let shift = ccc[symbol].shift;
+	let n = str.toString();	
+	while (n.length < shift + 1) {
+		n = '0' + n;
+	}
+	let whole = n.substring(0, n.length - shift);
+	let cut = 0;
+	while (n[n.length - 1 - cut] == '0' && cut < shift - 2) cut++;
+	let fraction = n.substring(n.length - shift, n.length - cut);	
+	return whole + '.' + fraction;	
+}
+
+function rawFromUnit(symbol, str) {
+	let shift = ccc[symbol].shift;
+	let parts = str.toString().split(".");	
+	let whole = parts[0];
+	let fraction = '';
+	if (parts.length > 1) fraction = parts[1];
+	while (fraction.length < shift) {
+		fraction += '0';
+	}
+	return `${whole}${fraction}`;
 }
 
 //////////////////////////////////////////////////////// QR helper functions
@@ -1408,7 +1335,7 @@ window.qrcode.callback = res => {
 					if (url.protocol === 'nano:' && ccc[qrScanningSymbol].checkAddress(url.pathname)) {
 						D(qrScanningSymbol + qrScanningType).value = url.pathname;
 						D(qrScanningSymbol + qrScanningType).dispatchEvent(new Event('input', {bubbles:true}));
-						D(qrScanningSymbol + "-withdrawal-amount").value = ccc['XNO'].unitFromRaw(url.searchParams.get('amount'));
+						D(qrScanningSymbol + "-withdrawal-amount").value = unitFromRaw('XNO', url.searchParams.get('amount'));
 						showMsg("Bill scanned.");
 					}
 				} else showMsg("Not a valid address: " + res);
@@ -1660,6 +1587,45 @@ window.addEventListener('beforeinstallprompt', function (evt) {  // CODELAB: Add
 window.addEventListener('appinstalled', function (evt) {  // CODELAB: Add code to log the event  
     console.log('Ansyble was installed.', evt);
 });
+
+function selectPrimary(symbol) {
+	localStorage.setItem('symbol', symbol);
+	qrclose();
+	
+	D('firstDiv').removeChild(D('firstDiv').lastChild);
+	D('secondDiv').removeChild(D('secondDiv').lastChild);
+	
+	D('firstDiv').appendChild(ccc[symbol].sidebarElt);
+	D('secondDiv').appendChild(ccc[symbol].transactionElt);
+	
+	D('firstDiv').style.backgroundColor = ccc[symbol].bgColor;
+	updateView(symbol);
+	if (!ccc[symbol].qrCode) ccc[symbol].qrCode = new QRCode(symbol + "-qrCodeImageBlock");
+	
+	if (ccc[symbol].faucet) D(`${symbol}-faucet`).style.display = "";
+	if (symbol != "XNO" && symbol != "BAN") {
+		D(`${symbol}-index`).style.display = "none";
+		D(`${symbol}-tool2`).style.display = "none";
+		D(`${symbol}-arriving-balance-panel`).style.display = "none";
+	} else {
+		D(`${symbol}-seed`).maxLength = "64";
+		D(`${symbol}-seed`).placeholder = "Seed (store securely) ...";
+	}
+	
+	if (!ccc[symbol].address) {
+		let seed = localStorage.getItem(`${symbol}-seed`);	
+		if (seed) {	
+			D(`${symbol}-seed`).value = seed;
+			D(`${symbol}-generateButton`).disabled = true;
+			let index = localStorage.getItem(`${symbol}-index`);
+			if (index) D(`${symbol}-index`).value = index; 
+			importWallet(symbol);
+		}
+	} else {
+		refreshBalance(symbol);
+		ccc[symbol].getTransactions();	
+	}
+}
 	
 function generateHTML(symbol) {
 	ccc[symbol].transactionElt = make('div');
@@ -1672,7 +1638,10 @@ function generateHTML(symbol) {
 		<ul id="${symbol}-transactions" style="padding-left:0px; max-width:620px; list-style: none;"></ul>
 		<div style="max-width:620px; margin-top:30px; margin-bottom:70px; text-align:center">
 			<button style="display:none" id="${symbol}-loadMore">Load More</button>
-			<div id="${symbol}-gettingStarted"><a href="${ccc[symbol].gettingStarted}" rel="noopener" target="_blank">${symbol} information, resources, and links</a></div>
+			<ul id="${symbol}-gettingStarted">
+				<li id="${symbol}-faucet" style="display:none"><a href="${ccc[symbol].faucet}" rel="noopener" target="_blank">Free ${symbol} for testing</a>
+				<li><a href="${ccc[symbol].gettingStarted}" rel="noopener" target="_blank">${symbol} information, resources, and links</a>
+				</ul>
 		</div>
 	</div>`;
 		
@@ -1705,7 +1674,7 @@ function generateHTML(symbol) {
 		
 		<div id="${symbol}-editpanel" style="display:none; margin-left:20px; margin-right:20px; margin-top:10px; margin-bottom:20px">			
 			<div style="display:flex; justify-content:space-between;">
-				<input placeHolder="Public display name..." onfocus="scrollPanel(this.parentNode.parentNode)" id="${symbol}-set-display" style="padding-right:30px; flex-grow:1; margin-right:10px;" type="text" maxlength="64"><button class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
+				<input placeHolder="Public display name..." onfocus="scrollPanel(this.parentNode.parentNode)" id="${symbol}-set-display" style="padding-right:30px; flex-grow:1; margin-right:10px;" type="text" maxlength="64" onkeyup="if (event.keyCode == 13) setName('${symbol}'); if (event.keyCode == 27) this.value = '';"><button class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
 				<button style="font-size:0.8em" onclick="setName('${symbol}')">Set</button>
 			</div>
 		</div>
@@ -1739,9 +1708,9 @@ function generateHTML(symbol) {
 		</div>		
 		<canvas style="width:100%; margin-top:10px;" hidden="" id="${symbol}-qr-canvas"></canvas>
 		
-		<div style="display:flex; justify-content:space-between; margin-top:15px; margin-right:15px">
+		<div style="display:flex; justify-content:space-between; margin-top:15px; margin-right:15px; align-items:baseline">
 			<strong>Amount:</strong>
-			<input placeholder="0.00" style="text-align:right; flex-grow:1" onfocus="scrollPanel(this.parentNode)" id="${symbol}-withdrawal-amount" type="number" step="0.01" min="0">&nbsp; ${symbol}
+			<input placeholder="0.00" onkeyup="if (event.keyCode == 27) this.value = '';" style="text-align:right; flex-grow:1" onfocus="scrollPanel(this.parentNode)" id="${symbol}-withdrawal-amount" type="number" step="0.01" min="0">&nbsp; ${symbol}
 		</div>
 		<div style="text-align:center;">
 			<button style="margin-top:15px" onclick="withdraw('${symbol}')">Transfer ${symbol}</button>
@@ -1778,13 +1747,8 @@ function generateHTML(symbol) {
 		<button style="font-size:0.8em" onclick="if (confirm('Clear all data for ${symbol} including the wallet seed and private keys?')) {
 													mainClearWallet('${symbol}'); showMsg('${symbol} wallet cleared.'); }">Clear ${symbol} Wallet</button>
 	</div>
-	
 	</div>`;
 }
-
-
-
-
 
 </script>
 </html>
