@@ -55,7 +55,7 @@ The solution to (2) is the topic of this article. Before proceeding, a remark: (
 
 Caching seems like a promising solution to (2) above, since caching is, quite literally, downloading code to your device and using it. However, caching is typically automated by the browser, with no visibility for the client. In particular, the browser may delete the cache at will, negating any intended security implications. 
 
-This brings us to the relatively well-established service worker system. In a nutshell, a service worker is a script which gives full control of the cache to the client.
+This brings us to the relatively well-established service worker paradigm. In a nutshell, a service worker is a script which gives full control of the cache to the client.
 
 The solution to (2) thus appears to be in sight: A web app developer can write (auditable) service worker code which refuses to update the cache containing the web app's code. The web app would then enjoy the security properties of a native app, at least with respect to (2).
 
