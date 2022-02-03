@@ -1725,12 +1725,12 @@ function generateHTML(symbol) {
 		<canvas style="width:100%; margin-top:10px;" hidden="" id="${symbol}-qr-canvas"></canvas>
 		
 		<div style="display:flex; justify-content:space-between; margin-top:15px; margin-right:15px; align-items:baseline">
-			<strong>Amount:</strong>
+			<strong>Amount:&nbsp;</strong>
 			<input placeholder="0.00" onkeyup="if (event.keyCode == 27) this.value = '';" style="text-align:right; flex-grow:1; flex-basis:1px" onfocus="scrollPanel(this.parentNode)" id="${symbol}-withdrawal-amount" type="number" step="0.01" min="0">&nbsp; ${symbol}
 		</div>
 		
 		<div style="display:none; justify-content:space-between; margin-top:15px; margin-right:15px; align-items:baseline">
-			<strong>Network fee:</strong>
+			<strong>Network fee:&nbsp;</strong>
 			<input placeholder="0.00" onkeyup="if (event.keyCode == 27) this.value = '';" style="text-align:right; flex-grow:1; flex-basis:1px" onfocus="scrollPanel(this.parentNode)" id="${symbol}-withdrawal-fee" type="number" step="0.01" min="0">&nbsp; ${symbol}
 		</div>
 		
