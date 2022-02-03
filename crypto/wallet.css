@@ -224,10 +224,10 @@ ul::-webkit-scrollbar-thumb:hover {
 	}
 	
 	button:focus {
-	  outline: none;
+		outline: none;
 	}    
 	   
 	::-webkit-scrollbar {
-		height: 0px;
+		display:none;
 	}	  
 }
