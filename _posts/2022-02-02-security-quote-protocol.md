@@ -9,6 +9,7 @@ The _security quote protocol_ solution in a nutshell: Show the same memorable qu
 Implications: Using the protocol makes a browser web application as secure as a native app or browser extension, acheiving a trust-on-first-use security model.
 
 
+
 ### Background reading
 
 There is a decent amount of discussion about the problem with browser cryptography, especially in the end-to-end encryption community:
