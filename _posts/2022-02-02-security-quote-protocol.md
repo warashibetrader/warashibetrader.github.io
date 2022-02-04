@@ -17,11 +17,11 @@ There is a decent amount of discussion about the problem with browser cryptograp
 
 > The convenience of the web stems from the fact it’s a frictionless application delivery platform. Unfortunately, it does not rely on a comprehensive cryptographically secure signature system to determine if content is authentic, but instead just trusts whatever is sitting around on the server at the time you access it. This is worsened by the fact that web browsers give remote servers access to wide-ranging local capabilities exposed via HTML and JavaScript. This creates an environment that is not particularly safe or stable for use in creating, storing, or sharing encryption keys or encrypted messages.
 
-[What’s wrong with in-browser cryptography in 2017?](https://security.stackexchange.com/questions/173620/what-s-wrong-with-in-browser-cryptography-in-2017): The answers here are quite good. Ajedi32 summarizes the problem quite nicely:
+[What’s wrong with in-browser cryptography in 2017?](https://security.stackexchange.com/questions/173620/what-s-wrong-with-in-browser-cryptography-in-2017): The answers here are quite good. Ajedi32 summarizes the problem nicely:
 
 > The main issue with cryptography in web pages is that, because the code you're executing is loaded from a web server, that server has full control over what that code is and can change it every time you refresh the page. Unless you manually inspect the code you're running every time you load a new page on that site (preferably before that code is actually executed), you have no way of knowing what that code will actually do.
 
-[Browser End-to-End Encryption](https://www.cryptologie.net/article/460/browser-end-to-end-encryption/): This blog post acknowledges the problem and proposes a naive but flawed solution:
+[Browser End-to-End Encryption](https://www.cryptologie.net/article/460/browser-end-to-end-encryption/): This blog post acknowledges the problem and proposes the natural but flawed solution:
 
 > Back to the question: can we provide end-to-end encryption with a web app? There are ways, yes. You can for example create a one-page javascript web application, and have the client download it. In that sense it could be a "trust on first use" kind of application, because later you would only rely on your local copy. If you want to make it light, have the page use remotely served javascript, images, and other files and protect manipulations via the subresource integrity mechanism of web browsers (include a hash of the file in the single-page web app). It is not a "bad" scenario, but it's not the flow that most users are used to. And this is the problem here. We are used to accessing websites directly, install whatever, and update apps quickly.
 
