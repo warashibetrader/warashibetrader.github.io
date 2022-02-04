@@ -1458,7 +1458,7 @@ function updateView() {
 	
 	if (fullView) {
 		let seed = localStorage.getItem(`${symbol}-seed`);
-		if (seed && (D(symbol + "-tool1").style.display = "" || D(`${symbol}-seed`).value == "")) {
+		if (seed && (D(symbol + "-tool1").style.display = "none" || D(`${symbol}-seed`).value == "")) {
 			if (D(`${symbol}-seed`).type != "password") toggleVisibility(symbol);
 			D(`${symbol}-seed`).value = seed;
 			D(`${symbol}-generateButton`).disabled = true;
