@@ -1030,23 +1030,24 @@ function generateWallet(symbol) {
 function importWallet(symbol) {
 	let seed = D(`${symbol}-seed`).value;
 	let index = D(`${symbol}-index`).value;
+	if (index.length == 0 && (symbol == "XNO" || symbol == "BAN")) index = 0;
 	if (!ccc[symbol].checkSeed(seed)) {
 		if (!ccc[symbol].checkAddress(seed)) showMsg("Invalid " + ccc[symbol].keyType  +".");
 		else showMsg("Submit a " + ccc[symbol].keyType  + ", not an address.");
 	}
 	else if (index.length > 0 && (!/^[0-9]+$/.test(index) || index < 0 || index > Math.pow(2, 32) - 1)) showMsg("Invalid account index.");
 	else {
-		if (index.length == 0 && (symbol == "XNO" || symbol == "BAN")) index = 0;
 		showMsg(`Loading ${symbol} account...`, null,true);
 		clearWallet(symbol);
 		
 		ccc[symbol].unpackSeed(seed, parseInt(index));
 		flash(D(`${symbol}-address`), ccc[symbol].address);	
-		addressQR(symbol);	
-		updateView(symbol);	
-		D(symbol + "-gray").style.display = ""; 	//D(symbol + "-gray").style.filter = "opacity(1)";
+		addressQR(symbol);
+		D(symbol + "-gray").style.display = "";
 		D(symbol + "-load").textContent = "Switch Account";		
 		D("view").style.display = "";
+
+		updateView(symbol);	
 		
 		fetchDisplayName(symbol, "-display", ccc[symbol].address);
 		refreshBalance(symbol, true).then(function(accountInfo) {
@@ -1063,7 +1064,7 @@ function importWallet(symbol) {
 	}
 }
 
-function mainClearWallet(symbol) {
+function clickClearWallet(symbol) {
 	clearWallet(symbol);
 	
 	D(`${symbol}-seed`).value = ""; 
@@ -1455,15 +1456,15 @@ function hideServerMsg() {
 function updateView() {
 	let symbol = D('primary').value;
 	
-	let seed = localStorage.getItem(`${symbol}-seed`);	
-	if (seed) {
-		if (D(`${symbol}-seed`).type != "password") toggleVisibility(symbol);
-		D(`${symbol}-seed`).value = seed;
-		D(`${symbol}-generateButton`).disabled = true;
-		let index = localStorage.getItem(`${symbol}-index`);
-		if (index) D(`${symbol}-index`).value = index; 
-	}
 	if (fullView) {
+		let seed = localStorage.getItem(`${symbol}-seed`);
+		if (seed && (D(symbol + "-tool1").style.display = "" || D(`${symbol}-seed`).value == "")) {
+			if (D(`${symbol}-seed`).type != "password") toggleVisibility(symbol);
+			D(`${symbol}-seed`).value = seed;
+			D(`${symbol}-generateButton`).disabled = true;
+			let index = localStorage.getItem(`${symbol}-index`);
+			if (index) D(`${symbol}-index`).value = index; 
+		}
 		D(symbol + "-tool1").style.display = "";
 		if (symbol == "XNO" || symbol == "BAN") D(symbol + "-tool2").style.display = "";
 		D(symbol + "-tool3").style.display = "";
@@ -1617,6 +1618,7 @@ window.addEventListener('appinstalled', function (evt) {  // CODELAB: Add code t
 function selectPrimary(symbol) {
 	localStorage.setItem('symbol', symbol);
 	qrclose();
+	D('firstDiv').style.backgroundColor = ccc[symbol].bgColor;
 	
 	D('firstDiv').removeChild(D('firstDiv').lastChild);
 	D('secondDiv').removeChild(D('secondDiv').lastChild);
@@ -1624,11 +1626,10 @@ function selectPrimary(symbol) {
 	D('firstDiv').appendChild(ccc[symbol].sidebarElt);
 	D('secondDiv').appendChild(ccc[symbol].transactionElt);
 	
-	D('firstDiv').style.backgroundColor = ccc[symbol].bgColor;
 	updateView(symbol);
+	if (ccc[symbol].faucet) D(`${symbol}-faucet`).style.display = "";
 	if (!ccc[symbol].qrCode) ccc[symbol].qrCode = new QRCode(symbol + "-qrCodeImageBlock");
 	
-	if (ccc[symbol].faucet) D(`${symbol}-faucet`).style.display = "";
 	if (symbol != "XNO" && symbol != "BAN") {
 		D(`${symbol}-index`).style.display = "none";
 		D(`${symbol}-tool2`).style.display = "none";
@@ -1768,7 +1769,7 @@ function generateHTML(symbol) {
 			<button id="installButton" style="font-size:0.8em; display:none; margin-right:15px;">Native App</button>
 		<button style="font-size:0.8em;" onclick="donate('${symbol}')">Donate!</button>
 		<button style="font-size:0.8em" onclick="if (confirm('Clear all data for ${symbol} including the wallet seed and private keys?')) {
-													mainClearWallet('${symbol}'); showMsg('${symbol} wallet cleared.'); }">Clear ${symbol} Wallet</button>
+													clickClearWallet('${symbol}'); showMsg('${symbol} wallet cleared.'); }">Clear ${symbol} Wallet</button>
 	</div>
 	</div>`;
 }
