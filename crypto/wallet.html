@@ -1456,15 +1456,16 @@ function hideServerMsg() {
 function updateView() {
 	let symbol = D('primary').value;
 	
+	let seed = localStorage.getItem(`${symbol}-seed`);
+	if (seed && (D(symbol + "-tool1").style.display == "none" || D(`${symbol}-seed`).value == "")) {
+		if (D(`${symbol}-seed`).type != "password") toggleVisibility(symbol);
+		D(`${symbol}-seed`).value = seed;
+		D(`${symbol}-generateButton`).disabled = true;
+		let index = localStorage.getItem(`${symbol}-index`);
+		if (index) D(`${symbol}-index`).value = index; 
+	}
+	
 	if (fullView) {
-		let seed = localStorage.getItem(`${symbol}-seed`);
-		if (seed && (D(symbol + "-tool1").style.display = "none" || D(`${symbol}-seed`).value == "")) {
-			if (D(`${symbol}-seed`).type != "password") toggleVisibility(symbol);
-			D(`${symbol}-seed`).value = seed;
-			D(`${symbol}-generateButton`).disabled = true;
-			let index = localStorage.getItem(`${symbol}-index`);
-			if (index) D(`${symbol}-index`).value = index; 
-		}
 		D(symbol + "-tool1").style.display = "";
 		if (symbol == "XNO" || symbol == "BAN") D(symbol + "-tool2").style.display = "";
 		D(symbol + "-tool3").style.display = "";
