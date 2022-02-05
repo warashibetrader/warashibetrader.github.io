@@ -30,10 +30,10 @@
 		
 		<div style="margin-top:15px; display:flex; align-items:center; position:relative">		
 			<select style="margin:auto" name="primary" id="primary" onchange="selectPrimary(event.target.value)">
-				<option style="background-color:#f1f4f4" value="XNO">Nano (XNO)</option>
-				<option style="background-color:#f1f4f4" value="BAN">Banano (BAN)</option>
-				<option style="background-color:#f1f4f4" value="SOL">Solana (SOL)</option>
-				<option style="background-color:#f1f4f4" value="XLM">Stellar (XLM)</option>
+				<option value="XNO">Nano (XNO)</option>
+				<option value="BAN">Banano (BAN)</option>
+				<option value="SOL">Solana (SOL)</option>
+				<option value="XLM">Stellar (XLM)</option>
 			</select>
 			<button id="view" style="display:none; font-size:0.8em; position:absolute; right:0px" onclick="toggleView()">All Tools</button>
 		</div>
@@ -282,13 +282,19 @@ ccc['XLM'].addressFromSeed = function(seed) { return StellarSdk.Keypair.fromSecr
 
 ccc['BAN'].getAccountInfo = function() {
 	return post(ccc['BAN'].server, {action: 'account_info', pending: true, representative: true, account: ccc['BAN'].address}).then(function(accountInfo) {
-		if (accountInfo && !accountInfo.frontier) accountInfo.balance = "0";
-		return accountInfo;
+		if (accountInfo && !accountInfo.frontier) {
+			accountInfo.balance = "0";
+			cyclePending('BAN');
+		} return accountInfo;
 	});
 };
 ccc['XNO'].getAccountInfo = function() {
 	return post(ccc['XNO'].server, {action: 'account_info', pending: true, representative: true, account: ccc['XNO'].address}).then(function(accountInfo) {
-		if (accountInfo && !accountInfo.frontier) accountInfo.balance = "0";
+		if (accountInfo && !accountInfo.frontier) {
+			accountInfo.balance = "0";			
+			cyclePending('XNO');
+		} 
+		console.log(accountInfo);
 		return accountInfo;
 	});
 };
