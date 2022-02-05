@@ -1646,6 +1646,7 @@ function selectPrimary(symbol) {
 	} else {
 		D(`${symbol}-seed`).maxLength = "64";
 		D(`${symbol}-seed`).placeholder = "Seed (store securely) ...";
+		D(`${symbol}-generateButton`).textContent = "Generate Seed";
 	}
 	
 	if (ccc[symbol].address) {
@@ -1657,7 +1658,7 @@ function selectPrimary(symbol) {
 function generateHTML(symbol) {
 	ccc[symbol].transactionElt = make('div');
 	ccc[symbol].transactionElt.innerHTML = `	
-	<div id="${symbol}-gray2">
+	<div id="${symbol}-gray2" style="display:none;">
 		<div style="max-width:620px; margin-top:30px; display:flex; align-items:center; justify-content:space-between">
 			<strong id="${symbol}-heading" style="font-size:1.2em">Transactions</strong>
 			<button style="font-size:0.8em" onclick="refreshBalance('${symbol}'); ccc['${symbol}'].getTransactions();">Refresh</button>
@@ -1676,7 +1677,7 @@ function generateHTML(symbol) {
 	ccc[symbol].sidebarElt.innerHTML = `
 	<div id="${symbol}-tool1" class="objectWrapper">
 		<div style="text-align:center;">
-		<button tabindex="-1" id="${symbol}-generateButton" style="font-size:0.8em" onclick="generateWallet('${symbol}')">Generate New</button>
+		<button tabindex="-1" id="${symbol}-generateButton" style="font-size:0.8em" onclick="generateWallet('${symbol}')">Generate Key</button>
 		<button tabindex="-1" id="${symbol}-qrButton1" style="font-size:0.8em" onclick="qrscan('${symbol}', '-seed')">Scan QR Code</button>
 		</div>
 		<div style="display:flex; justify-content:space-between; margin-top:15px;">
@@ -1692,7 +1693,7 @@ function generateHTML(symbol) {
 		<button style="margin-top:15px;" id="${symbol}-load" onclick="importWallet('${symbol}')">Load Account</button>
 		</div>
 	</div>
-	<div id="${symbol}-gray" style="margin-top:20px; margin-bottom:20px; display:none; filter:opacity(1)">
+	<div id="${symbol}-gray" style="margin-top:20px; margin-bottom:20px; display:none;">
 	<div class="objectWrapper">
 		<div style="display:flex; align-items:center; justify-content:space-between">
 			<strong><div id="${symbol}-display" style="font-size:1.2em" onclick="fetchDisplayName('${symbol}', '-display', ccc['${symbol}'].address, true)">My Account (Unknown)</div></strong>
