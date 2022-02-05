@@ -284,7 +284,7 @@ ccc['BAN'].getAccountInfo = function() {
 	return post(ccc['BAN'].server, {action: 'account_info', pending: true, representative: true, account: ccc['BAN'].address}).then(function(accountInfo) {
 		if (accountInfo && !accountInfo.frontier) {
 			accountInfo.balance = "0";
-			cyclePending('BAN');
+			cyclePending('BAN', true);
 		} return accountInfo;
 	});
 };
@@ -292,7 +292,7 @@ ccc['XNO'].getAccountInfo = function() {
 	return post(ccc['XNO'].server, {action: 'account_info', pending: true, representative: true, account: ccc['XNO'].address}).then(function(accountInfo) {
 		if (accountInfo && !accountInfo.frontier) {
 			accountInfo.balance = "0";			
-			cyclePending('XNO');
+			cyclePending('XNO', true);
 		} 
 		console.log(accountInfo);
 		return accountInfo;
@@ -1148,16 +1148,16 @@ function refreshBalance(symbol, confirm) {
 	} else return false;
 }
 
-async function cyclePending(symbol) {
+async function cyclePending(symbol, silent) {
 	if (ccc[symbol].address) {
-		showMsg(`Collecting arriving ${symbol}...`, null,true);
+		if (!silent) showMsg(`Collecting arriving ${symbol}...`, null,true);
 		const pending = await ccc[symbol].getPending();
 		for (const block in pending) {
 			await ccc[symbol].receive(block);
 		}
 		ccc[symbol].getTransactions();	
 		D(`${symbol}-balance-pending`).textContent = "0.00";
-		showMsg("Arriving " + symbol + " collected.");		
+		if (!silent) showMsg("Arriving " + symbol + " collected.");		
 	} 
 }
 
