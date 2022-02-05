@@ -1050,6 +1050,7 @@ function importWallet(symbol) {
 		flash(D(`${symbol}-address`), ccc[symbol].address);	
 		addressQR(symbol);
 		D(symbol + "-gray").style.display = "";
+		D(symbol + "-gray2").style.display = "";
 		D(symbol + "-load").textContent = "Switch Account";		
 		D("view").style.display = "";
 
@@ -1119,6 +1120,7 @@ function clearWallet(symbol) {
 	
 	//D(symbol + "-gray").style.filter = "opacity(0.5)";
 	D(symbol + "-gray").style.display = "none";
+	D(symbol + "-gray2").style.display = "none";
 	D(symbol + "-load").textContent = "Load Account";
 }
 
