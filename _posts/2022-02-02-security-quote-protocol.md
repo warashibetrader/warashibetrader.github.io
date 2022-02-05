@@ -2,7 +2,7 @@
 title: "A security quote protocol for regulating web application updates"
 ---
 
-The problem with using web apps for secure applications is that every time the user visits the web app, its code may have changed. As a result, every time you reload a web app which handles private information, it's a pleasant surprise that the app does _not_ disappear with your information in hand.
+The problem with using web apps for secure applications is that every time the user visits the app, its code may have changed. As a result, every time you reload a web app which handles private information, it's a pleasant surprise that the app does _not_ disappear with your information in hand.
 
 The _security quote protocol_ solution in a nutshell: Show the same memorable quote (or image) to the user each time the app loads. The quote should be known to the user, and not the server. If the app is updated, the quote is deleted immediately. The user then knows that the app's code has been updated, and to proceed with caution.
 
@@ -48,9 +48,9 @@ To understand the issues with web app security, it is helpful to benchmark again
 
 2. The code is downloaded to your device and cannot be changed by the developer.
 
-The solution to (1) for web apps is essentially brute force. An audit is an audit, and a third party is needed. (In the crypto space, this is not necessarily an issue. Developers are very active in the space and presumably keen to audit new code.)
+There is no shortcut to achieving (1) for web apps. An audit is an audit, and a third party is needed. (In the crypto space, this is not necessarily an issue. Developers are very active in the space and presumably keen to audit new code.)
 
-The solution to (2) is the topic of this article. Before proceeding, a remark: (2) is evidently not true in the literal sense. The developer can of course update the code. However, this update needs to be submitted through the Google App Store again, and the client gets to decide whether to adopt the update or not. For the purposes of this discussion, the update can be viewed as the installation of an entirely new app.
+Achieving (2) for web apps is the topic of this article. Before proceeding, a remark: (2) is evidently not true in the literal sense, even for native apps. The developer can of course update the code. However, this update needs to be submitted through the Google App Store again, and the client gets to decide whether to adopt the update or not. For the purposes of this discussion, the update can be viewed as the installation of an entirely new app.
 
 ### Caching and service workers
 
