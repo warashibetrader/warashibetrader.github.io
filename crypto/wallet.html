@@ -1708,11 +1708,11 @@ function generateHTML(symbol) {
 		</div>
 		
 		
-		<div style="margin-bottom:15px">
+		<div style="margin-bottom:15px; margin-top:5px;">
 		<div style="overflow:hidden; text-overflow:ellipsis; cursor:pointer; font-size:0.8em" id="${symbol}-address" onclick="clickCopy(this, this.textContent)">&nbsp;</div>
 		</div>
 		
-		<div style="margin-top:10px; display:flex; align-items:center; justify-content:space-between">
+		<div style="display:flex; align-items:center; justify-content:space-between">
 			<div style="width:calc(100% - 65px); display:flex">
 				<strong>Balance:&nbsp;</strong> 
 				<span id="${symbol}-balance" style="cursor:pointer; max-width:min-content; overflow:hidden; text-overflow:ellipsis;" onclick="clickCopy(this, this.textContent)">0.00</span>&nbsp;${symbol}&nbsp;
