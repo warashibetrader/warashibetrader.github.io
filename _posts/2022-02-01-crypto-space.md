@@ -1,5 +1,5 @@
 ---
-title: "Learning about the crypto space"
+title: "A jargon-less introduction to crypto"
 ---
 
 When I started this blog a few weeks ago, I basically knew nothing about cryptocurrency and defi. I now know a little. Here is what I have learned, using no jargon.
