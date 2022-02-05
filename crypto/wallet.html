@@ -293,8 +293,7 @@ ccc['XNO'].getAccountInfo = function() {
 		if (accountInfo && !accountInfo.frontier) {
 			accountInfo.balance = "0";			
 			cyclePending('XNO', true);
-		} 
-		console.log(accountInfo);
+		}
 		return accountInfo;
 	});
 };
@@ -393,7 +392,6 @@ ccc['SOL'].getTransactions = function(start) {
 				for (let i = 0; i < historyDetails.length; i++) {
 					if (D(symbol + '-' + historyDetails[i].slot)) {
 						let li = D(symbol + '-' + historyDetails[i].slot).parentNode.parentNode;
-						console.log(historyDetails[i]);	
 						for (let j = 0; j < historyDetails[i].transaction.message.accountKeys.length; j++) {
 							if (historyDetails[i].transaction.message.accountKeys[j].pubkey.toBase58() == ccc[symbol].address) {
 								let change = historyDetails[i].meta.postBalances[j] - historyDetails[i].meta.preBalances[j];
@@ -445,7 +443,6 @@ ccc['XLM'].getTransactions = function(start) {
 				D(symbol + '-loadMore').style.display = "none";				
 				D(symbol + '-gettingStarted').style.display = "";
 			}
-			console.log(history);
 			
 			for (let i = 0; i < history.records.length; i++) {
 				if (!D(symbol + '-' + history.records[i].id)) {
@@ -679,18 +676,15 @@ ccc['XNO'].createBlock = function(secretKey, data) {
 ccc['BAN'].createBlock = ccc['XNO'].createBlock;
 
 async function nanoSend(symbol, destination, amt) {
-	console.log('Sending '+ amt +' Nano from address '+ ccc[symbol].address +' to '+ destination);
 	// check frontier
 	let frontierBlock = await fetchFrontier(symbol, await refreshBalance(symbol));
 	if (!frontierBlock) return false;
 	
-	console.log("Fetched frontier confirmed check; send proceed: " + frontierBlock.balance);
 	return await postBlock(symbol, 'send', frontierBlock.hash, frontierBlock.hash, frontierBlock.representative, 
 		(BigInt(frontierBlock.balance) - BigInt(rawFromUnit(symbol, amt))).toString(), destination);
 }
 
 async function nanoReceive(symbol, hash) {
-	console.log('Receiving in address '+ ccc[symbol].address +' from block '+ hash);
 	let blockInfoFetch = post(ccc[symbol].server, {action: 'block_info', json_block: true, hash: hash});
 	let oldBalance = '0';
 	let previous = '0'.padStart(64, '0');
@@ -716,12 +710,10 @@ async function nanoReceive(symbol, hash) {
 };
 
 async function nanoChange(symbol, newrep) {
-	console.log('Changing rep of '+ ccc[symbol].address +' to '+ newrep);
 	// check frontier
 	let frontierBlock = await fetchFrontier(symbol, await refreshBalance(symbol));
 	if (!frontierBlock) return false;
 	
-	console.log("Fetched frontier confirmed check; change proceed: " + frontierBlock.balance);	
 	return await postBlock(symbol, 'change', frontierBlock.hash, frontierBlock.hash, newrep, frontierBlock.balance, '0'.padStart(64, '0'));
 }
 
@@ -747,10 +739,7 @@ function fetchFrontier(symbol, accountInfo) {
 		fetchedFrontierBlock.hash = accountInfo.frontier;
 		return fetchedFrontierBlock;
 	});
-	else {
-		console.log(accountInfo);
-		return false;
-	}
+	else return false;
 }
 
 async function postBlock(symbol, subtype, workInput, previous, representative, balance, link) {
@@ -758,7 +747,6 @@ async function postBlock(symbol, subtype, workInput, previous, representative, b
 	let work_threshold = rawWorkThreshold.network_current;
 	if (subtype == 'receive') work_threshold = rawWorkThreshold.network_receive_current;
 
-	console.log('Computing work for subtype "'+ subtype +'", difficulty: '+ work_threshold +' (work being done locally: '+ false +')');
 	let work = (await post(ccc[symbol].server, {action: 'work_generate', hash: workInput, difficulty: work_threshold})).work;
 	if (work === undefined) work = null;
 	
@@ -783,8 +771,6 @@ async function postBlock(symbol, subtype, workInput, previous, representative, b
 		formData.do_work = true;
 		formData.block.work = undefined;
 	}
-	console.log(subtype + ' block:');
-	console.log(block);
 	post(ccc[symbol].server, formData);
 	let confirmation = ccc[symbol].confirmBlock(block.hash);
 	confirmation.then(function(theBlock) {
@@ -895,10 +881,8 @@ setupWebsocket(ws);
 function setupWebsocket() {
 	ws.onopen = function() { 
 		if (ccc[D('primary').value].address) fetchDisplayName(D('primary').value, "-display", ccc[D('primary').value].address);
-		console.log("Exchange RC!"); 
 	};
 	ws.onclose = function() { 
-		console.log("Exchange DC."); 
 		ws = new WebSocket(exchangeURL());
 		setupWebsocket();
 	}
@@ -1199,7 +1183,6 @@ function suggestRep(symbol) {
 		return response.json().then(function(data) { 
 			if (data) {
 				data.sort(function(x, y) { return y.score - x.score; });
-				console.log(data[0]);
 				let repAddr = data[0].account;
 				if (!repAddr) repAddr = data[0].address;
 				if (repAddr) {
@@ -1508,9 +1491,11 @@ function showMsg(str, bold, hold) {
 }
 
 function flash(elt, str) {
-	if (str != undefined) elt.textContent = str;
-	elt.style.backgroundColor = ccc[D('primary').value].flashColor;	
-	setTimeout(function() {	elt.style.backgroundColor = "white";}, 500);
+	if (elt) {
+		if (str != undefined) elt.textContent = str;
+		elt.style.backgroundColor = ccc[D('primary').value].flashColor;	
+		setTimeout(function() {	elt.style.backgroundColor = "white";}, 500);
+	} else console.log("Element disappeared before display.");
 }
 
 function clearDOM(myNode) {	
@@ -1621,7 +1606,7 @@ window.addEventListener('beforeinstallprompt', function (evt) {  // CODELAB: Add
 });
 
 window.addEventListener('appinstalled', function (evt) {  // CODELAB: Add code to log the event  
-    console.log('Ansyble was installed.', evt);
+    console.log('Wallet was installed.', evt);
 });
 
 function selectPrimary(symbol) {
