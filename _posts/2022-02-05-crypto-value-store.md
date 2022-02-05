@@ -12,7 +12,7 @@ However, no one ever claimed that currencies are a good store of value. No one e
 
 What people have claimed is that you should invest in stocks (essentially companies) or bonds (essentially governments). The rationale for this is assertion that dividends returned to you will exceed initial capital investment. In turn, the case for this corresponds roughly with the assertion that companies and governments, in aggregate, produce more than they consume. 
 
-I think this is a reasonable assertion, and even if not, you are presented with a Pascal's wager: If you truly believe that companies and governments - essentially, people - are consuming more than they produce, than civilization and humanity are unsustainable and you may as well jump ship.
+I think this is a reasonable assertion. Even if not, it presents you with a Pascal's wager: If you truly believe that companies and governments - essentially, people - are consuming more than they produce, than civilization and humanity are unsustainable and you may as well jump ship.
 
 
 
