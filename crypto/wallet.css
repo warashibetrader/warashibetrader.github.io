@@ -71,6 +71,10 @@ input[type=number] {
 	-moz-appearance: textfield;
 }
 
+option {
+	background-color:#f1f4f4;
+}
+
 .close-icon {
 	position: relative;
 	padding: 0px;
