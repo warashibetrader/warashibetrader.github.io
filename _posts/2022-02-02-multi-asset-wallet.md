@@ -6,7 +6,7 @@ To help myself learn about crypto, I developed a simple multi-asset wallet. You 
 
 Here are some reasons it might appeal to other users:
 
-1. It is a single-page app. This means there is no reload between actions, like viewing transactions, making payments, etc. This allows for a faster, seamless user experience, and is particularly apt for a crypto wallet due to the the prevalence of copy-paste address transfers performed by the client.
+1. It is a single-page app. This means there is no reload between actions, like viewing transactions, making payments, etc. This allows for a faster, seamless user experience, and is particularly apt for a crypto wallet due to the the prevalence of copy/paste address transfers performed by the client.
 
 2. The interface is integrated with a database of display names, which can help reduce user error when transacting to and from otherwise opaque cryptographic addresses. All users are free to add display names to their addresses, which subsequently display alongside their address for all other users.
 
