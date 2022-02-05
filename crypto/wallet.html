@@ -280,8 +280,18 @@ ccc['XLM'].addressFromSeed = function(seed) { return StellarSdk.Keypair.fromSecr
 
 //////////////////////////////////////////////////////// information fetch helper functions. Todo: remove connections with DOM somehow
 
-ccc['BAN'].getAccountInfo = function() {return post(ccc['BAN'].server, {action: 'account_info', pending: true, representative: true, account: ccc['BAN'].address});};
-ccc['XNO'].getAccountInfo = function() {return post(ccc['XNO'].server, {action: 'account_info', pending: true, representative: true, account: ccc['XNO'].address});};
+ccc['BAN'].getAccountInfo = function() {
+	return post(ccc['BAN'].server, {action: 'account_info', pending: true, representative: true, account: ccc['BAN'].address}).then(function(accountInfo) {
+		if (accountInfo && !accountInfo.frontier) accountInfo.balance = "0";
+		return accountInfo;
+	});
+};
+ccc['XNO'].getAccountInfo = function() {
+	return post(ccc['XNO'].server, {action: 'account_info', pending: true, representative: true, account: ccc['XNO'].address}).then(function(accountInfo) {
+		if (accountInfo && !accountInfo.frontier) accountInfo.balance = "0";
+		return accountInfo;
+	});
+};
 ccc['SOL'].getAccountInfo = function() {
 	return ccc['SOL'].server.getAccountInfo(ccc['SOL'].publicKey).then(function(accountInfo) {
 		if (accountInfo) accountInfo.balance = accountInfo.lamports;
