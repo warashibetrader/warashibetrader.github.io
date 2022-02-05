@@ -10,7 +10,7 @@ The common refrain from crypto advocates is that fiat is inflationary, while mos
 
 However, no one ever claimed that currencies are a good store of value. No one ever became wealthy by investing in currencies, or even gold. (_Trading_ of course is a different story, but that is very hard.)
 
-What people have claimed is that you should invest in stocks (essentially companies) or bonds (essentially governments). The rationale for this is assertion that dividends returned to you will exceed initial capital investment. In turn, the case for this corresponds roughly with the assertion that companies and governments, in aggregate, produce more than they consume. 
+What people have claimed is that you should invest in stocks (essentially companies) or bonds (essentially governments). The rationale for this is the assertion that dividends returned to you will exceed your initial capital investment (even after adjusting for inflation). In turn, the case for this corresponds roughly with the assertion that companies and governments, in aggregate, produce more than they consume. 
 
 I think this is a reasonable assertion. Even if not, it presents you with a Pascal's wager: If you truly believe that companies and governments - essentially, people - are consuming more than they produce, than civilization and humanity are unsustainable and you may as well jump ship.
 
