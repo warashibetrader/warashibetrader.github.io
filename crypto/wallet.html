@@ -431,11 +431,11 @@ ccc['XLM'].getTransactions = function(start) {
 	let symbol = 'XLM';
 	let caller;
 	if (start) caller = start();
-	else caller = ccc[symbol].server.payments().forAccount(ccc[symbol].address).order("desc").limit(5).call();
+	else caller = ccc[symbol].server.payments().forAccount(ccc[symbol].address).order("desc").limit(10).call();
 	caller.then(function(history) {
 		if (history) {
 			flash(D(`${symbol}-heading`), "Transactions");
-			if (history.records.length == 5) {
+			if (history.records.length == 10) {
 				if (!D(symbol + '-' + history.records[history.records.length - 1].id)) {
 					D(symbol + '-loadMore').style.display = "";
 					D(symbol + '-gettingStarted').style.display = "none";
