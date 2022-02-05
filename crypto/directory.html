@@ -136,9 +136,7 @@ var ws = new WebSocket(exchangeURL());
 setupWebsocket(ws);
 
 function setupWebsocket() {
-	ws.onopen = function() { console.log("Exchange RC!"); }
 	ws.onclose = function() { 
-		console.log("Exchange DC."); 
 		ws = new WebSocket(exchangeURL());
 		setupWebsocket();
 	}
@@ -164,7 +162,7 @@ function setupWebsocket() {
 	// Custom commands	
 	ws.on('setNameCompletedCue', async function(data) {	
 		if (data.display) flash(D(`${data.currency}-dest-display`), data.display);
-		else flash(D(`${data.currency}-dest-display`), "(not set)");
+		else flash(D(`${data.currency}-dest-display`), "[No display name set]");
 		showMsg("Display name updated. Don't forget to restore your representative.");	
 	});
 	
@@ -174,7 +172,7 @@ function setupWebsocket() {
 	
 	ws.on('getNameReplyCue', async function(data) {
 		if (!data.display) {
-			if (data.address == ccc[data.currency].address) data.display = "(not set)";
+			if (data.address == ccc[data.currency].address) data.display = "[No display name set]";
 			else if (backupCache[data.address])	data.display = backupCache[data.address];
 			else data.display = "Unknown";
 		}
@@ -202,9 +200,12 @@ async function fetchDestAddress(symbol, elt) {
 		if (accountInfo && accountInfo.representative) {
 			flash(D(`${symbol}-rep`), accountInfo.representative);	
 			ws.emit("getNameCue", {div:symbol + "-rep-display", address: accountInfo.representative, currency: symbol});
+		} else {
+			flash(D(`${symbol}-rep`), "\xa0");
+			D(symbol + "-rep-display").textContent = "";	
 		}
 	} else {
-		D(symbol + "-dest-display").textContent = "";
+		D(symbol + "-dest-display").textContent = "\xa0";
 		D(symbol + "-rep-display").textContent = "";
 		D(symbol + "-rep").textContent = "\xa0";
 		D(symbol + "-challenge").textContent = "\xa0";	
@@ -280,30 +281,29 @@ function selectPrimary(symbol) {
 function generateHTML(symbol) {		
 	sidebarElt[symbol] = make('div');
 	sidebarElt[symbol].innerHTML = `
-		<strong>My address:</strong>
-		<br><input style="margin-bottom:10px; width:80%" id="${symbol}-dest" type="text" maxlength="128" onclick="this.select()" oninput="fetchDestAddress('${symbol}', this)">
-		<br><strong>Display name: </strong><span id="${symbol}-dest-display"></span>
-		
-		<br><br><strong>Representative: </strong><span id="${symbol}-rep-display"></span>
-		<br><div style="overflow:hidden; text-overflow:ellipsis; cursor:pointer; font-size:0.8em" id="${symbol}-rep" onclick="clickCopy(this, this.textContent)">&nbsp;</div>
-		<br>
+		<strong><span id="${symbol}-dest-display" style="font-size:1.2em">&nbsp;</span></strong><br>
+		<input placeholder="My address..." style="margin-bottom:20px; width:80%" id="${symbol}-dest" type="text" maxlength="128" onclick="this.select()" oninput="fetchDestAddress('${symbol}', this)">
+				
 		
 		<p>To update your display name in this public directory:</p>
 
-		<p>1. Demonstrate address ownership by setting your representative to the (randomly selected) challenge representative below, using your trusted wallet.</p>
+		<p>1. Set your representative to the random challenge representative below, using your trusted wallet. (This demonstrates address ownership.)</p>
 		
 		<p>2. Enter the desired display name below and click "Set."</p>
 		
-		<p>3. Restore your original representative above.</p>
+		<p>3. Restore your original representative.</p>
 		
-		<p>You can also update your display name directly within <a href="https://warashibetrader.github.io/crypto/wallet">this wallet</a>, which integrates with this display name directory.</p>
+		<p>You can also update your display name automatically within <a href="https://warashibetrader.github.io/crypto/wallet">this wallet</a>, which integrates with this display name directory.</p>
 		
+		
+		<strong>Representative: </strong><span id="${symbol}-rep-display"></span>
+		<br><div style="overflow:hidden; text-overflow:ellipsis; cursor:pointer; font-size:0.8em" id="${symbol}-rep" onclick="clickCopy(this, this.textContent)">&nbsp;</div>
+		<br>		
 		<strong>Challenge representative: </strong>
 		<br><div style="overflow:hidden; text-overflow:ellipsis; cursor:pointer; font-size:0.8em" id="${symbol}-challenge" onclick="clickCopy(this, this.textContent)">&nbsp;</div>
 		
 		<br><div id="${symbol}-editpanel">
-		<strong>New display name:</strong>
-		<br><input id="${symbol}-set-display" type="text" style="width:80%" maxlength="64" onkeyup="if (event.keyCode == 13) setName('${symbol}')">&nbsp;&nbsp;
+		<input placeholder="New display name..." id="${symbol}-set-display" type="text" style="width:80%" maxlength="64" onkeyup="if (event.keyCode == 13) setName('${symbol}')">&nbsp;&nbsp;
 		<button style="font-size:0.8em" onclick="setName('${symbol}')">Set</button>
 		</div>
 	<br><br>`;
