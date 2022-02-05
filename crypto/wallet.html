@@ -948,7 +948,6 @@ function setupWebsocket() {
 	ws.on('setNameCompletedCue', async function(data) {	
 		if (changeNameFlag) {
 			nameCache[data.address] = data.display;
-			backupCache[data.address] = data.display;
 			localStorage.setItem(`${data.currency}-display`, JSON.stringify({address:data.address, name:data.display}));
 			displayName(data.currency, "-display", data.address, data.display);
 			if (ccc[data.currency].representative) {
@@ -966,10 +965,9 @@ function setupWebsocket() {
 	});	
 	
 	ws.on('getNameReplyCue', function(data) {
-		if (data.display) {
-			nameCache[data.address] = data.display;
-			backupCache[data.address] = data.display;
-		}
+		nameCache[data.address] = data.display;
+		if (data.div == "-display") localStorage.setItem(`${data.currency}-display`, JSON.stringify({address:data.address, name:data.display}));
+		if (data.div == "-rep-display") localStorage.setItem(`${data.currency}-rep-display`, JSON.stringify({address:data.address, name:data.display}));
 		displayName(data.currency, data.div, data.address, data.display);
 	});
 }
@@ -991,37 +989,29 @@ function setName(symbol) {
 }
 
 function fetchDisplayName(symbol, divString, address, skipCache) {
-	if (ccc[symbol].checkAddress(address)) {
-		if (nameCache[address] && !skipCache) displayName(symbol, divString, address, nameCache[address]);
-		else if (!ws.emit("getNameCue", {div: divString, address: address, currency: symbol})) {
-			displayName(symbol, divString, address, nameCache[address]);
+	if (ccc[symbol].checkAddress(address)) {	
+		let displayString = nameCache[address];
+		if (!displayString) {
+			if (divString == "-display") {
+				let myDisplay = localStorage.getItem(`${symbol}-display`);
+				if (myDisplay) myDisplay = JSON.parse(myDisplay);
+				if (myDisplay && myDisplay.address == address) displayString = myDisplay.name;
+			} else if (divString == "-rep-display") {
+				let myDisplay = localStorage.getItem(`${symbol}-rep-display`);
+				if (myDisplay) myDisplay = JSON.parse(myDisplay);
+				if (myDisplay && myDisplay.address == address) displayString = myDisplay.name;
+			}
+		}
+		displayName(symbol, divString, address, displayString);
+	
+		if ((!displayString || skipCache) && !ws.emit("getNameCue", {div: divString, address: address, currency: symbol})) {
 			setTimeout(function() {ws.emit("getNameCue", {div: divString, address: address, currency: symbol})}, 1000);
 		}
 	} else D(symbol + divString).textContent = "";
 }
 
-function displayName(symbol, divString, address, str) {
-	let displayString = str;
+function displayName(symbol, divString, address, displayString) {
 	if (!displayString) displayString = backupCache[address];
-	
-	if (divString == "-display") {
-		if (displayString) localStorage.setItem(`${symbol}-display`, JSON.stringify({address:address, name:displayString}));
-		else {
-			let myDisplay = localStorage.getItem(`${symbol}-display`);
-			if (myDisplay) myDisplay = JSON.parse(myDisplay);
-			if (myDisplay && myDisplay.address == address) displayString = myDisplay.name;
-		}
-	}
-	
-	if (divString == "-rep-display") {
-		if (displayString) localStorage.setItem(`${symbol}-rep-display`, JSON.stringify({address:address, name:displayString}));
-		else {
-			let myDisplay = localStorage.getItem(`${symbol}-rep-display`);
-			if (myDisplay) myDisplay = JSON.parse(myDisplay);
-			if (myDisplay && myDisplay.address == address) displayString = myDisplay.name;
-		}
-	}
-	
 	if (!displayString) {
 		if (divString == "-display") {
 			if (ccc[symbol].index === 0 || ccc[symbol].index > 0) displayString = "My Account #" + ccc[symbol].index + " (Unknown)";
