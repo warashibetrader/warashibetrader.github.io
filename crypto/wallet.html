@@ -34,6 +34,7 @@
 				<option value="BAN">Banano (BAN)</option>
 				<option value="SOL">Solana (SOL)</option>
 				<option value="XLM">Stellar (XLM)</option>
+				<option value="ALGO">Algorand (ALGO)</option>
 			</select>
 			<button id="view" style="display:none; font-size:0.8em; position:absolute; right:0px" onclick="toggleView()">All Tools</button>
 		</div>
@@ -87,7 +88,7 @@ if ('serviceWorker' in navigator) {
 	});
 }
 
-let quickColorArray = {XNO:'steelblue', BAN:'orange', SOL:'#0ca', XLM:'#373b82'};
+let quickColorArray = {XNO:'steelblue', BAN:'orange', SOL:'#0ca', XLM:'#373b82', ALGO:'#b72375' };
 if (localStorage.getItem('symbol')) document.getElementById('firstDiv').style.backgroundColor = quickColorArray[localStorage.getItem('symbol')];	
 </script>
 	
@@ -98,6 +99,11 @@ if (localStorage.getItem('symbol')) document.getElementById('firstDiv').style.ba
 <script src="sol.js"></script>
 <script src="xlm.js"></script>
 <script src="nacl.js"></script>
+<script
+  src="https://unpkg.com/algosdk@1.13.1/dist/browser/algosdk.min.js"
+  integrity="sha384-0BSEzBpLxqFWYBI+sOGhv3W91/wPf+jFwCiuXNrC52XZav2qb3Rz+pfq3AFI0CrL"
+  crossorigin="anonymous"
+></script>
 
 <script>
 'use strict';
@@ -147,6 +153,12 @@ ccc['XLM'] = {shift:7, flashColor:'#edf', keyType:'private key', min:1, fee: Ste
 				
 					gettingStarted:'https://www.stellar.org',
 					passphrase: StellarSdk.Networks.PUBLIC}; //.TESTNET
+					
+ccc['ALGO'] = {shift:6, flashColor:'#ebd', keyType:'private key', min:0.1, fee: algosdk.ALGORAND_MIN_TX_FEE, donation:'EWB5J4POIJXWGOFS54HY7BGJ3MQW4HMJGQOKNECE7WANYNSKZS25E3G3NA',
+				server: 'https://algoindexer.testnet.algoexplorerapi.io/v2/accounts/',
+				
+					gettingStarted:'https://www.algorand.com/',
+					faucet: 'https://thealgofaucet.com/'}; 
 	
 for (let symbol in ccc) { 
 	ccc[symbol].queue = new Promise(function(resolve, reject) { resolve(true); });
@@ -167,6 +179,7 @@ ccc['XNO'].generateSeed = function() {
 };
 ccc['SOL'].generateSeed = function() { return "[" + solanaWeb3.Keypair.generate().secretKey.toString() + "]"; };
 ccc['XLM'].generateSeed = function() { return StellarSdk.Keypair.random().secret(); };
+ccc['ALGO'].generateSeed = function() { console.log(algosdk.generateAccount()); return algosdk.secretKeyToMnemonic(algosdk.generateAccount().sk); };
 
 ccc['BAN'].checkSeed = function(seed) { return typeof seed === "string" && /^[0-9a-fA-F]{64}$/.test(seed);};
 ccc['XNO'].checkSeed = function(seed) {	return typeof seed === "string" && /^[0-9a-fA-F]{64}$/.test(seed);};
@@ -183,6 +196,11 @@ ccc['SOL'].checkSeed = function(seed) {
 	return true;
 };
 ccc['XLM'].checkSeed = function(seed) { return StellarSdk.StrKey.isValidEd25519SecretSeed(seed); };
+ccc['ALGO'].checkSeed = function(seed) { 
+	try { algosdk.mnemonicToSecretKey(seed); }
+	catch { return false; }
+	return true;
+};
 
 ccc['XNO'].checkAddress = function(address) { 
 	if (!(typeof address === "string") || !/^(xrb_|nano_)[13][13-9a-km-uw-z]{59}$/.test(address)) return false;
@@ -204,6 +222,27 @@ ccc['BAN'].checkAddress = function(address) {
 };
 ccc['SOL'].checkAddress = function(address) { return typeof address === "string" && /^[1-9A-HJ-NP-Za-km-z]{44}$/.test(address); };
 ccc['XLM'].checkAddress = function(address) { return StellarSdk.StrKey.isValidEd25519PublicKey(address); };
+ccc['ALGO'].checkAddress = function(address) { return algosdk.isValidAddress(address); };
+
+ccc['BAN'].addressFromSeed = function(seed) {
+	let privateKey = ccc['BAN'].derivePrivateKey(seed, 0);
+	let publicKey = ccc['BAN'].derivePublicKey(privateKey);
+	return ccc['BAN'].deriveAddress(publicKey);	
+}
+ccc['XNO'].addressFromSeed = function(seed) {
+	let privateKey = ccc['XNO'].derivePrivateKey(seed, 0);
+	let publicKey = ccc['XNO'].derivePublicKey(privateKey);
+	return ccc['XNO'].deriveAddress(publicKey);	
+}
+ccc['SOL'].addressFromSeed = function(seed) {
+	let arrSeed = seed.split(',');
+	for (let i = 0; i < arrSeed.length; i++) {
+		arrSeed[i] = parseInt(arrSeed[i].replace(/\D/g,''));
+	}
+	return solanaWeb3.Keypair.fromSecretKey(new Uint8Array(arrSeed)).publicKey.toBase58()
+}
+ccc['XLM'].addressFromSeed = function(seed) { return StellarSdk.Keypair.fromSecret(seed).publicKey(); };
+ccc['ALGO'].addressFromSeed = function(seed) { return algosdk.mnemonicToSecretKey(seed).addr; };
 
 ccc['XNO'].derivePrivateKey = function(seed, index) {
   const indexBuffer = new ArrayBuffer(4)
@@ -258,27 +297,14 @@ ccc['XLM'].unpackSeed = function(seed) {
 	ccc['XLM'].publicKey = StellarSdk.Keypair.fromSecret(seed).publicKey();
 	ccc['XLM'].address = ccc['XLM'].publicKey;
 }
+ccc['ALGO'].unpackSeed = function(seed) {
+	let unpack = algosdk.mnemonicToSecretKey(seed);
+	ccc['ALGO'].privateKey = unpack.sk;
+	ccc['ALGO'].publicKey = unpack.addr;
+	ccc['ALGO'].address = unpack.addr;
+}
 
-ccc['BAN'].addressFromSeed = function(seed) {
-	let privateKey = ccc['BAN'].derivePrivateKey(seed, 0);
-	let publicKey = ccc['BAN'].derivePublicKey(privateKey);
-	return ccc['BAN'].deriveAddress(publicKey);	
-}
-ccc['XNO'].addressFromSeed = function(seed) {
-	let privateKey = ccc['XNO'].derivePrivateKey(seed, 0);
-	let publicKey = ccc['XNO'].derivePublicKey(privateKey);
-	return ccc['XNO'].deriveAddress(publicKey);	
-}
-ccc['SOL'].addressFromSeed = function(seed) {
-	let arrSeed = seed.split(',');
-	for (let i = 0; i < arrSeed.length; i++) {
-		arrSeed[i] = parseInt(arrSeed[i].replace(/\D/g,''));
-	}
-	return solanaWeb3.Keypair.fromSecretKey(new Uint8Array(arrSeed)).publicKey.toBase58()
-}
-ccc['XLM'].addressFromSeed = function(seed) { return StellarSdk.Keypair.fromSecret(seed).publicKey(); };
-
-//////////////////////////////////////////////////////// information fetch helper functions. Todo: remove connections with DOM somehow
+//////////////////////////////////////////////////////// information fetch helper functions
 
 ccc['BAN'].getAccountInfo = function() {
 	return post(ccc['BAN'].server, {action: 'account_info', pending: true, representative: true, account: ccc['BAN'].address}).then(function(accountInfo) {
@@ -323,6 +349,23 @@ ccc['XLM'].getAccountInfo = async function() {
 		return false;
 	});
 };
+ccc['ALGO'].getAccountInfo = async function() {
+ const algodToken = {};
+        const algodServer = 'https://node.testnet.algoexplorerapi.io/v2';
+        const algodPort = "";
+        let algodClient = new algosdk.Algodv2(algodToken, algodServer, algodPort);
+		console.log(algodClient);
+		 let params = await algodClient.getTransactionParams().do();
+		 console.log(params);
+
+	return fetch(ccc['ALGO'].server + ccc['ALGO'].address + "?include-all=true").then(function(response) { 
+	return response.json().then(function(data) { 
+		if (data.account) {
+			data.account.balance = data.account.amount;
+			return data.account;
+		} else return {detail: "Unopened account.", balance: "0"};
+	});});
+};
 
 ccc['BAN'].getFee = function() {};
 ccc['XNO'].getFee = function() {};
@@ -336,6 +379,11 @@ ccc['XLM'].getFee = function() {
 	D('XLM' + '-withdrawal-fee').parentNode.style.display = 'flex';
 	D('XLM' + '-withdrawal-fee').disabled = true;
 };
+ccc['ALGO'].getFee = function() { 
+	D('ALGO' + '-withdrawal-fee').value = unitFromRaw('ALGO', ccc['ALGO'].fee);
+	D('ALGO' + '-withdrawal-fee').parentNode.style.display = 'flex';
+	D('ALGO' + '-withdrawal-fee').disabled = true;
+};
 
 
 
@@ -344,7 +392,7 @@ ccc['XNO'].getTransactions = function(start) {nanoDisplayTransactions('XNO', sta
 ccc['SOL'].getTransactions = function(start) {
 	let symbol = 'SOL';
 	return ccc[symbol].server.getSignaturesForAddress(ccc[symbol].publicKey, {limit:10, before: start}).then(async function(history) {
-	if (history && history.length > 0) {
+	if (D(symbol + '-loadMore') && history && history.length > 0) {
 		flash(D(`${symbol}-heading`), "Transactions");
 		if (history.length > 9) {
 			D(symbol + '-loadMore').style.display = "";
@@ -431,7 +479,7 @@ ccc['XLM'].getTransactions = function(start) {
 	if (start) caller = start();
 	else caller = ccc[symbol].server.payments().forAccount(ccc[symbol].address).order("desc").limit(10).call();
 	caller.then(function(history) {
-		if (history) {
+		if (D(symbol + '-loadMore') && history) {
 			flash(D(`${symbol}-heading`), "Transactions");
 			if (history.records.length == 10) {
 				if (!D(symbol + '-' + history.records[history.records.length - 1].id)) {
@@ -496,9 +544,13 @@ ccc['XLM'].getTransactions = function(start) {
 	}).catch(function(error) {});
 };
 
+ccc['ALGO'].getTransactions = function(start) {
+	console.log("transactions!");
+};
+
 function nanoDisplayTransactions(symbol, start) {
 	post(ccc[symbol].server, { action: 'account_history', head:start, account: ccc[symbol].address, count:10 }).then(function(history) {
-		if (history && history.history) {		
+		if (D(symbol + '-loadMore') && history && history.history) {		
 			flash(D(`${symbol}-heading`), "Transactions");
 			if (history.previous) {
 				if (!D(symbol + '-' + history.history[history.history.length - 1].height)) {
@@ -575,35 +627,17 @@ ccc['SOL'].sendTo = function(destination, amt) {
 	});
 };
 ccc['XLM'].sendTo = function(destination, amt) { 
-	var sourceKeys = StellarSdk.Keypair.fromSecret(ccc['XLM'].privateKey);
-	var transaction;
-	return ccc['XLM'].server.loadAccount(destination).then(function() {
-		return ccc['XLM'].server.loadAccount(sourceKeys.publicKey()).then(function (sourceAccount) {
-			transaction = new StellarSdk.TransactionBuilder(sourceAccount, { fee: StellarSdk.BASE_FEE, networkPassphrase: ccc['XLM'].passphrase})
-				.addOperation(StellarSdk.Operation.payment({destination: destination, asset: StellarSdk.Asset.native(), amount: amt}))
-				.setTimeout(180).build();
-			transaction.sign(sourceKeys);
-			return ccc['XLM'].server.submitTransaction(transaction);
-		}).then(function (result) {
-			console.log("Success! Results:", result);
-			refreshBalance('XLM');
-			return result;
-		}).catch(function (error) {
-			console.error("Something went wrong!", error);
-			return false;
-		});
-	}).catch(function (error) {
-		if (error instanceof StellarSdk.NotFoundError) {
-			if (parseFloat(amt) < 1) {
-				showMsg("Destination is a new account. Minimum send: " + ccc['XLM'].min + " XLM.");
-				return {msgHandled:true};
-			} else return ccc['XLM'].server.loadAccount(sourceKeys.publicKey()).then(function (sourceAccount) {
+	return enqueue('XLM', function() {
+		var sourceKeys = StellarSdk.Keypair.fromSecret(ccc['XLM'].privateKey);
+		var transaction;
+		return ccc['XLM'].server.loadAccount(destination).then(function() {
+			return ccc['XLM'].server.loadAccount(sourceKeys.publicKey()).then(function (sourceAccount) {
 				transaction = new StellarSdk.TransactionBuilder(sourceAccount, { fee: StellarSdk.BASE_FEE, networkPassphrase: ccc['XLM'].passphrase})
-					.addOperation(StellarSdk.Operation.createAccount({destination: destination, startingBalance: amt}))
-					.addMemo(StellarSdk.Memo.text("Account creation")).setTimeout(180).build();
+					.addOperation(StellarSdk.Operation.payment({destination: destination, asset: StellarSdk.Asset.native(), amount: amt}))
+					.setTimeout(180).build();
 				transaction.sign(sourceKeys);
 				return ccc['XLM'].server.submitTransaction(transaction);
-			}).then(function (result) {	
+			}).then(function (result) {
 				console.log("Success! Results:", result);
 				refreshBalance('XLM');
 				return result;
@@ -611,7 +645,47 @@ ccc['XLM'].sendTo = function(destination, amt) {
 				console.error("Something went wrong!", error);
 				return false;
 			});
-		} else return false;
+		}).catch(function (error) {
+			if (error instanceof StellarSdk.NotFoundError) {
+				if (parseFloat(amt) < 1) {
+					showMsg("Destination is a new account. Minimum send: " + ccc['XLM'].min + " XLM.");
+					return {msgHandled:true};
+				} else return ccc['XLM'].server.loadAccount(sourceKeys.publicKey()).then(function (sourceAccount) {
+					transaction = new StellarSdk.TransactionBuilder(sourceAccount, { fee: StellarSdk.BASE_FEE, networkPassphrase: ccc['XLM'].passphrase})
+						.addOperation(StellarSdk.Operation.createAccount({destination: destination, startingBalance: amt}))
+						.addMemo(StellarSdk.Memo.text("Account creation")).setTimeout(180).build();
+					transaction.sign(sourceKeys);
+					return ccc['XLM'].server.submitTransaction(transaction);
+				}).then(function (result) {	
+					console.log("Success! Results:", result);
+					refreshBalance('XLM');
+					return result;
+				}).catch(function (error) {
+					console.error("Something went wrong!", error);
+					return false;
+				});
+			} else return false;
+		});
+	});
+};
+ccc['ALGO'].sendTo = function(destination, amt) { 
+	return enqueue('ALGO', function() {
+        const enc = new TextEncoder();
+        const note = enc.encode("");
+        let txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
+            from: ccc['ALGO'].address, 
+            to: destination, 
+            amount: rawFromUnit('ALGO', amt), 
+            note: note, 
+            suggestedParams: {fee: ccc['ALGO'].fee, flatFee:true }
+        });
+
+
+        // Sign the transaction
+        let signedTxn = txn.signTxn(ccc['ALGO'].privateKey);
+        let txId = txn.txID().toString();
+        console.log("Signed transaction with txID: %s", txId);
+	
 	});
 };
 
