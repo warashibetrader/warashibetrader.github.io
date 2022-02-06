@@ -1,7 +1,7 @@
 'use strict';
 
 const CACHE_NAME = 'static-cache-v1';
-const FILES_TO_CACHE = ['wallet', 'wallet.html', 'wallet.css', 'strawicontrans.png', 'quotes.js', 'qrcode.js', 'qrscan.js', 'xno.js', 'nacl.js', 'sol.js', 'xlm.js'];
+const FILES_TO_CACHE = ['wallet', 'wallet.html', 'wallet.css', 'strawicontrans.png', 'quotes.js', 'qrcode.js', 'qrscan.js', 'xno.js', 'nacl.js', 'sol.js', 'xlm.js', 'algo.js'];
 
 self.addEventListener('install', (evt) => {	
 	self.skipWaiting();
