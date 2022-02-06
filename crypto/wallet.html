@@ -149,13 +149,14 @@ ccc['SOL'] = {shift:9, flashColor:'#e0faf0', keyType:'private key', min:0, fee:5
 					faucet: 'https://solfaucet.togatech.org/'};
 				
 ccc['XLM'] = {shift:7, flashColor:'#edf', keyType:'private key', min:1, fee: StellarSdk.BASE_FEE, donation:'GCOYMN3XAUD4OM4OTNC536TG6MEB6TK3IGSPKDJJJ7V36S3NNGKVBLTC',
-				server: new StellarSdk.Server("https://horizon.stellar.org/"), //https://horizon-testnet.stellar.org
+				server: new StellarSdk.Server("https://horizon-testnet.stellar.org/"), //https://horizon-testnet.stellar.org
 				
 					gettingStarted:'https://www.stellar.org',
-					passphrase: StellarSdk.Networks.PUBLIC}; //.TESTNET
+					passphrase: StellarSdk.Networks.TESTNET}; //.TESTNET
 					
 ccc['ALGO'] = {shift:6, flashColor:'#ebd', keyType:'private key', min:0.1, fee: algosdk.ALGORAND_MIN_TX_FEE, donation:'EWB5J4POIJXWGOFS54HY7BGJ3MQW4HMJGQOKNECE7WANYNSKZS25E3G3NA',
 				server: 'https://algoindexer.testnet.algoexplorerapi.io/v2/accounts/', 
+				confirmServer:'https://algoindexer.testnet.algoexplorerapi.io/', 
 				sendServer: 'https://node.testnet.algoexplorerapi.io/',
 				
 					gettingStarted:'https://www.algorand.com/',
@@ -338,7 +339,7 @@ ccc['SOL'].getAccountInfo = function() {
 			accountInfo = {detail: "Unopened account.", balance: "0"};
 		}
 		return accountInfo;
-	}).catch(function() {showMsg('Unable to connect to network.');});
+	}).catch(function() { networkFailMsg(); });
 };
 ccc['XLM'].getAccountInfo = function() {
 	return ccc['XLM'].server.loadAccount(ccc['XLM'].publicKey).then(function(accountInfo) {
@@ -346,8 +347,7 @@ ccc['XLM'].getAccountInfo = function() {
 		return accountInfo;
 	}).catch(function(error) {
 		if (error instanceof StellarSdk.NotFoundError) return {detail: "Unopened account.", balance: "0"};
-		else showMsg('Unable to connect to network.');
-		return false;
+		else return networkFailMsg();
 	});
 };
 ccc['ALGO'].getAccountInfo = function() {
@@ -463,7 +463,7 @@ ccc['SOL'].getTransactions = function(start) {
 		D(symbol + '-loadMore').style.display = "none";				
 		D(symbol + '-gettingStarted').style.display = "";
 	}
-	}).catch(function() {showMsg('Unable to connect to network.');});
+	}).catch(function() {networkFailMsg();});
 };
 
 ccc['XLM'].getTransactions = function(start) {
@@ -599,8 +599,8 @@ function nanoDisplayTransactions(symbol, start) {
 	});
 }
 
-ccc['XNO'].getPending = async function() {return (await post(ccc['XNO'].server, {action: 'pending', account: ccc['XNO'].address, source:true})).blocks;};
-ccc['BAN'].getPending = async function() {return (await post(ccc['BAN'].server, {action: 'pending', account: ccc['BAN'].address, source:true})).blocks;};
+ccc['XNO'].getPending = function() {return post(ccc['XNO'].server, {action: 'pending', account: ccc['XNO'].address, source:true}); };
+ccc['BAN'].getPending = function() {return post(ccc['BAN'].server, {action: 'pending', account: ccc['BAN'].address, source:true}); };
 
 //////////////////////////////////////////////////////// transaction helper functions
 
@@ -616,7 +616,7 @@ ccc['SOL'].sendTo = function(destination, amt) {
 			let signature = await solanaWeb3.sendAndConfirmTransaction(ccc['SOL'].server, transaction, [ccc['SOL'].privateKey]);
 			refreshBalance('SOL');
 			return signature;
-		} catch { return false; }
+		} catch { return unknownFailMsg(); }
 	});
 };
 ccc['XLM'].sendTo = function(destination, amt) { 
@@ -636,13 +636,13 @@ ccc['XLM'].sendTo = function(destination, amt) {
 				return result;
 			}).catch(function (error) {
 				console.error("Something went wrong!", error);
-				return false;
+				return unknownFailMsg(); 
 			});
 		}).catch(function (error) {
 			if (error instanceof StellarSdk.NotFoundError) {
 				if (parseFloat(amt) < 1) {
 					showMsg("Destination is a new account. Minimum send: " + ccc['XLM'].min + " XLM.");
-					return {msgHandled:true};
+					return false;
 				} else return ccc['XLM'].server.loadAccount(sourceKeys.publicKey()).then(function (sourceAccount) {
 					transaction = new StellarSdk.TransactionBuilder(sourceAccount, { fee: StellarSdk.BASE_FEE, networkPassphrase: ccc['XLM'].passphrase})
 						.addOperation(StellarSdk.Operation.createAccount({destination: destination, startingBalance: amt}))
@@ -654,10 +654,11 @@ ccc['XLM'].sendTo = function(destination, amt) {
 					refreshBalance('XLM');
 					return result;
 				}).catch(function (error) {
-					console.error("Something went wrong!", error);
-					return false;
+					console.error("Something went wrong!", error);		
+					return unknownFailMsg(); 
 				});
-			} else return false;
+			} else if (error.message == "Network Error") return networkFailMsg();
+			else return unknownFailMsg(); 
 		});
 	});
 };
@@ -686,9 +687,11 @@ ccc['ALGO'].sendTo = function(destination, amt) {
 			
 			 // Submit the transaction
 			let sendTx = await algodClient.sendRawTransaction(signedTxn).do();
+			
+			let algodClientData = new algosdk.Algodv2("", ccc['ALGO'].confirmServer, "");
 
 			// Wait for confirmation
-			return await algosdk.waitForConfirmation(algodClient, txId, 4);
+			return await algosdk.waitForConfirmation(algodClientData, txId, 4);
 		}
 		catch (error) { console.error(error); return false; }
 	
@@ -866,18 +869,21 @@ async function postBlock(symbol, subtype, workInput, previous, representative, b
 function nanoConfirm(symbol, hash) {
 	return new Promise(async function(resolve, reject) {
 		let firstBlockInfo = await post(ccc[symbol].server, {action: 'block_info', json_block: true, hash: hash});
-		if (firstBlockInfo.confirmed == "true") resolve(firstBlockInfo);
+		if (firstBlockInfo && firstBlockInfo.confirmed == "true") resolve(firstBlockInfo);
 		else {
 			let counter = 0;
 			waitCheckHash();
 			function waitCheckHash() {
 				setTimeout(async function() {
 					let blockInfo = await post(ccc[symbol].server, {action: 'block_info', json_block: true, hash: hash});
-					if (blockInfo.confirmed == "true") resolve(blockInfo);
+					if (blockInfo && blockInfo.confirmed == "true") resolve(blockInfo);
 					else if (counter < 10) {
 						counter++;
 						waitCheckHash();
-					} else resolve();
+					} else {
+						showMsg("Transfer seems to have failed or is delayed.");
+						resolve();
+					}
 				}, 1000);
 			}
 		}
@@ -992,7 +998,7 @@ function setupWebsocket() {
 	};
 
 	// Custom commands	
-	ws.on('serverMsgCue', async function(data) {
+	ws.on('serverMsgCue', function(data) {
 		if (typeof data === "string" && localStorage.getItem("serverMsg") != data) {
 			D('serverMsg').textContent = data;
 			D('serverMsg').style.display = "";
@@ -1214,16 +1220,19 @@ function refreshBalance(symbol, confirm) {
 	} else return false;
 }
 
-async function cyclePending(symbol, silent) {
+function cyclePending(symbol, silent) {
 	if (ccc[symbol].address) {
 		if (!silent) showMsg(`Collecting arriving ${symbol}...`, null,true);
-		const pending = await ccc[symbol].getPending();
-		for (const block in pending) {
-			await ccc[symbol].receive(block);
-		}
-		ccc[symbol].getTransactions();	
-		D(`${symbol}-balance-pending`).textContent = "0.00";
-		if (!silent) showMsg("Arriving " + symbol + " collected.");		
+		ccc[symbol].getPending().then(async function(data) {
+			if (data) {
+				for (const block in data.blocks) {
+					await ccc[symbol].receive(block);
+				}
+				ccc[symbol].getTransactions();	
+				D(`${symbol}-balance-pending`).textContent = "0.00";
+				if (!silent) showMsg("Arriving " + symbol + " collected.");	
+			}
+		});		
 	} 
 }
 
@@ -1234,15 +1243,15 @@ async function withdraw(symbol) {
 		&& /^[0-9.]+$/.test(D(`${symbol}-withdrawal-amount`).value) 
 		&& amtWithFee <= BigInt(rawFromUnit(symbol, D(`${symbol}-balance`).textContent))) {
 			if (amtWithFee + BigInt(rawFromUnit(symbol, ccc[symbol].min)) <= BigInt(rawFromUnit(symbol, D(`${symbol}-balance`).textContent))) {
+			
 				showMsg(symbol + " transfer initiated...", null,true);
 				let sendResp = await ccc[symbol].sendTo(D(`${symbol}-dest`).value, D(`${symbol}-withdrawal-amount`).value);
 				if (sendResp) {
-					if (!sendResp.msgHandled) {
-						showMsg(D(`${symbol}-withdrawal-amount`).value + " " + symbol + " transferred.");
-						D(`${symbol}-withdrawal-amount`).value = "";
-					}
+					showMsg(D(`${symbol}-withdrawal-amount`).value + " " + symbol + " transferred.");
+					D(`${symbol}-withdrawal-amount`).value = "";
 					ccc[symbol].getTransactions();
-				} else showMsg("Transfer seems to have failed.");
+				}
+				
 			} else showMsg("Minimum account balance is " + ccc[symbol].min + " " + symbol + ".");
 		} else showMsg("Insufficient funds.");
 	} else showMsg("Invalid address.");
@@ -1273,7 +1282,7 @@ function suggestRep(symbol) {
 				}
 			}
 		});
-	}).catch(function() {showMsg('Unable to connect to network.');});
+	}).catch(function() {networkFailMsg();});
 }
 
 function toggleVisibility(symbol) {
@@ -1570,6 +1579,15 @@ function showMsg(str, bold, hold) {
 	}, 5000);
 }
 
+function unknownFailMsg() {
+	showMsg("Transfer seems to have failed or is delayed.");
+	return false;
+}
+function networkFailMsg() {
+	showMsg("Unable to connect to network.");
+	return false;
+}
+
 function flash(elt, str) {
 	if (elt) {
 		if (str != undefined) elt.textContent = str;
@@ -1649,7 +1667,7 @@ function post(url, params) {
 					}
 				} else {
 					console.log('Failed to connect to '+ url);
-					showMsg('Unable to connect to network.');
+					networkFailMsg();
 					resolve();
 				}
 			}
