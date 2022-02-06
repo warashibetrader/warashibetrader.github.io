@@ -155,7 +155,8 @@ ccc['XLM'] = {shift:7, flashColor:'#edf', keyType:'private key', min:1, fee: Ste
 					passphrase: StellarSdk.Networks.PUBLIC}; //.TESTNET
 					
 ccc['ALGO'] = {shift:6, flashColor:'#ebd', keyType:'private key', min:0.1, fee: algosdk.ALGORAND_MIN_TX_FEE, donation:'EWB5J4POIJXWGOFS54HY7BGJ3MQW4HMJGQOKNECE7WANYNSKZS25E3G3NA',
-				server: 'https://algoindexer.testnet.algoexplorerapi.io/v2/accounts/',
+				server: 'https://algoindexer.testnet.algoexplorerapi.io/v2/accounts/', 
+				sendServer: 'https://node.testnet.algoexplorerapi.io/',
 				
 					gettingStarted:'https://www.algorand.com/',
 					faucet: 'https://thealgofaucet.com/'}; 
@@ -339,7 +340,7 @@ ccc['SOL'].getAccountInfo = function() {
 		return accountInfo;
 	}).catch(function() {showMsg('Unable to connect to network.');});
 };
-ccc['XLM'].getAccountInfo = async function() {
+ccc['XLM'].getAccountInfo = function() {
 	return ccc['XLM'].server.loadAccount(ccc['XLM'].publicKey).then(function(accountInfo) {
 		accountInfo.balance = rawFromUnit('XLM', accountInfo.balances[0].balance);
 		return accountInfo;
@@ -349,15 +350,7 @@ ccc['XLM'].getAccountInfo = async function() {
 		return false;
 	});
 };
-ccc['ALGO'].getAccountInfo = async function() {
- const algodToken = {};
-        const algodServer = 'https://node.testnet.algoexplorerapi.io/v2';
-        const algodPort = "";
-        let algodClient = new algosdk.Algodv2(algodToken, algodServer, algodPort);
-		console.log(algodClient);
-		 let params = await algodClient.getTransactionParams().do();
-		 console.log(params);
-
+ccc['ALGO'].getAccountInfo = function() {
 	return fetch(ccc['ALGO'].server + ccc['ALGO'].address + "?include-all=true").then(function(response) { 
 	return response.json().then(function(data) { 
 		if (data.account) {
@@ -669,22 +662,35 @@ ccc['XLM'].sendTo = function(destination, amt) {
 	});
 };
 ccc['ALGO'].sendTo = function(destination, amt) { 
-	return enqueue('ALGO', function() {
-        const enc = new TextEncoder();
-        const note = enc.encode("");
-        let txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-            from: ccc['ALGO'].address, 
-            to: destination, 
-            amount: rawFromUnit('ALGO', amt), 
-            note: note, 
-            suggestedParams: {fee: ccc['ALGO'].fee, flatFee:true }
-        });
+	return enqueue('ALGO', async function() {
+		try {
+			let algodClient = new algosdk.Algodv2("", ccc['ALGO'].sendServer, "");
+			let params = await algodClient.getTransactionParams().do();
+			params.fee = ccc['ALGO'].fee;
+			params.flatFee = true;
+			
+			const enc = new TextEncoder();
+			const note = enc.encode("");
+			let txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
+				from: ccc['ALGO'].address, 
+				to: destination, 
+				amount: BigInt(rawFromUnit('ALGO', amt)), 
+				note: note, 
+				suggestedParams: params
+			});
 
+			// Sign the transaction
+			let signedTxn = txn.signTxn(ccc['ALGO'].privateKey);
+			let txId = txn.txID().toString();
+			console.log("Signed transaction with txID: %s", txId);
+			
+			 // Submit the transaction
+			let sendTx = await algodClient.sendRawTransaction(signedTxn).do();
 
-        // Sign the transaction
-        let signedTxn = txn.signTxn(ccc['ALGO'].privateKey);
-        let txId = txn.txID().toString();
-        console.log("Signed transaction with txID: %s", txId);
+			// Wait for confirmation
+			return await algosdk.waitForConfirmation(algodClient, txId, 4);
+		}
+		catch (error) { console.error(error); return false; }
 	
 	});
 };
