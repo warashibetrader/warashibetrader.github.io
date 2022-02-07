@@ -136,11 +136,6 @@ button.active {
 	background-color: #b4b7b7;	
 }
 
-button.active:hover {
-	background-color: #b4b7b7;	
-}
-
-
 button:disabled, button[disabled]{
 	color:#aaa;
 	cursor:initial;
@@ -219,9 +214,13 @@ ul::-webkit-scrollbar-thumb:hover {
 	}
 	
 	button:hover:enabled {  
-		background-color: revert;
+		background-color: #f1f4f4;
 	}
 	
+	button.active:hover {
+		background-color: #b4b7b7;	
+	}
+
 	button:focus {
 		outline: none;
 	}   
