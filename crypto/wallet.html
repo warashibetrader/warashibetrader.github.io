@@ -23,7 +23,7 @@
 	<div class="objectWrapper" style="margin-top:50px">
 		<div id="serverMsg" style="white-space:pre-wrap; color:red; font-style:italic; font-size:0.9em" ></div>
 		<div id="serverMsgButton" style="display:none; text-align:center; margin-top:10px; margin-bottom:15px; font-size:0.8em"><button onclick="hideServerMsg()">Hide Message</button></div>
-		<img src="" id="preview" style="display:none; margin-left:auto; margin-right:auto; margin-bottom:10px; display:block; max-width:100%; max-height:200px; border-radius:15px">
+		<img src="" id="preview" style="display:none; margin-left:auto; margin-right:auto; margin-bottom:10px; max-width:100%; max-height:200px; border-radius:15px">
 		<div id="quote" style="white-space:pre-wrap; font-style:italic; font-size:0.9em" ></div>
 		<input type="file" style="display:none" id="filetag" accept="image/*">	
 		
@@ -124,7 +124,7 @@ var fullView = localStorage.getItem("view");
 let imgsrc = localStorage.getItem("image");
 if (imgsrc) {
 	D('preview').src = imgsrc;
-	D('preview').style.display = "";
+	D('preview').style.display = "block";
 	D('quote').style.display = "none";
 	D("imageButton").classList.add('active');
 	D("imageButton").textContent = "Clear Security Image";
@@ -1364,7 +1364,6 @@ function toggleAccount() {
 }
 
 function donate(symbol) {
-	if (fullView) D(symbol + "-dest").parentNode.parentNode.scrollIntoView({block:"center", behavior:"auto"});
 	D(symbol + "-dest").value = ccc[symbol].donation;
 	flash(D(symbol + "-dest"));
 	fetchDisplayName(symbol, '-dest-display', D(symbol + "-dest").value, true);
@@ -1847,7 +1846,7 @@ D('filetag').addEventListener("change", function(e) {
 			if (t == 'image/jpeg') D('preview').src = canvas.toDataURL("image/jpeg", 0.85);
 			else D('preview').src = canvas.toDataURL("image/png");
 			if (x.src.length < D('preview').src.length) D('preview').src = x.src;
-			D('preview').style.display = "";
+			D('preview').style.display = "block";
 			
 			D('quote').style.display = "none";
 			localStorage.setItem("image", D('preview').src);
@@ -1932,11 +1931,11 @@ function generateHTML(symbol) {
 		<input onfocus="scrollPanel(this)" placeholder="Account index (default 0; or 1, 2, 3, etc) ..." id="${symbol}-index" type="number" style="margin-top:15px; width:calc(100% - 70px)" min="0" maxlength="64" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')">
 		<div style="text-align:center;">
 		<button style="margin-top:15px;" id="${symbol}-load" onclick="importWallet('${symbol}')">Load Account</button>
-		<button id="${symbol}-clear" onclick="if (confirm('Clear all data for ${symbol}, including the seed and private keys?')) {
+		<button id="${symbol}-clear" style="display:none" onclick="if (confirm('Clear all data for ${symbol}, including the seed and private keys?')) {
 													clickClearWallet('${symbol}'); showMsg('${symbol} account cleared.'); }">Clear Account</button>
 		</div>
 	</div>
-	<div id="${symbol}-gray" style="margin-top:20px; margin-bottom:20px; display:none;">
+	<div id="${symbol}-gray" style="margin-top:20px; margin-bottom:120px; display:none;">
 	<div class="objectWrapper">
 		<div style="display:flex; align-items:center; justify-content:space-between">
 			<strong><div id="${symbol}-display" class="displayname" onclick="toggleEdit('${symbol}'); fetchDisplayName('${symbol}', '-display', ccc['${symbol}'].address, true)">✏️ My Account</div></strong>
@@ -1993,6 +1992,12 @@ function generateHTML(symbol) {
 		</div>
 	</div>
 		
+	<div style="text-align:center; margin-top:30px">		
+		<button id="installButton" style="font-size:0.8em; display:none; margin-right:15px;">Native App</button>
+		<button style="font-size:0.8em;" onclick="donate('${symbol}')">Donate!</button>
+		<button id="view" style="font-size:0.8em;" onclick="toggleView()">More Tools</button>
+	</div>
+		
 	<div id="${symbol}-tool2" class="objectWrapper">
 		<strong>Current representative: </strong><span id="${symbol}-rep-display"></span>
 		<div class="address" style="margin-bottom:10px;" id="${symbol}-rep" onclick="clickCopy(this, this.textContent)">&nbsp;</div>
@@ -2015,12 +2020,6 @@ function generateHTML(symbol) {
 		<strong>Owner: </strong><span id="${symbol}-directory-display"></span>	
 		<br><strong>Type: </strong><span id="${symbol}-type-display"></span>	
 		<div style="margin-top:20px; display:flex; justify-content:center" id="${symbol}-qrCodeImageBlock"></div>
-	</div>
-		
-	<div style="text-align:center; margin-top:30px; margin-bottom:120px;">		
-		<button id="installButton" style="font-size:0.8em; display:none; margin-right:15px;">Native App</button>
-		<button style="font-size:0.8em;" onclick="donate('${symbol}')">Donate!</button>
-		<button id="view" style="font-size:0.8em;" onclick="toggleView()">All Tools</button>
 	</div>
 	</div>`;
 }
