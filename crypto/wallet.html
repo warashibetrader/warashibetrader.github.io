@@ -1378,6 +1378,7 @@ function toggleView() {
 		localStorage.setItem("view", "true");
 	}
 	updateView();
+	if (fullView) D('view').scrollIntoView({block:"start", behavior:"smooth"});
 }
 
 function toggleWipe() {
