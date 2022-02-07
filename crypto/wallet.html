@@ -23,7 +23,16 @@
 	<div class="objectWrapper" style="margin-top:50px">
 		<div id="serverMsg" style="white-space:pre-wrap; color:red; font-style:italic; font-size:0.9em" ></div>
 		<div id="serverMsgButton" style="display:none; text-align:center; margin-top:10px; margin-bottom:15px; font-size:0.8em"><button onclick="hideServerMsg()">Hide Message</button></div>
+		<img src="" id="preview" style="margin-left:auto; margin-right:auto; margin-bottom:10px; display:block; max-width:100%; max-height:200px; border-radius:15px">
 		<div id="quote" style="white-space:pre-wrap; font-style:italic; font-size:0.9em" ></div>
+		<input type="file" style="display:none" id="filetag" accept="image/*">	
+		
+		<div id="advancedQuote" style="text-align:center; margin-top:15px; display:none;">
+			<button id="imageButton" style="font-size:0.8em;" onclick="toggleImage()">Select Security Image</button>
+			<button id="wipeButton" style="font-size:0.8em;" onclick="toggleWipe()">Clear Keys on Updates</button>
+			<span style="float:right">(<a rel="noopener" href="https://warashibetrader.github.io/2022/02/02/security-quote-protocol" target="_blank">?</a>)</span>
+		</div>
+		
 		<strong id="msg" style="display:none; padding:5px; z-index: 4; box-shadow: #ccc 2px 2px 2px; background-color: #fff;
 								  position: fixed; left: 0px; top: 0px; border-radius: 5px;
 								  pointer-events: none; filter: opacity(0.9);"></strong>
@@ -36,7 +45,7 @@
 				<option value="XLM">Stellar (XLM)</option>
 				<option value="ALGO">Algorand (ALGO)</option>
 			</select>
-			<button id="view" style="display:none; font-size:0.8em; position:absolute; right:0px" onclick="toggleView()">All Tools</button>
+			<button class="active" id="account" style="font-size:0.8em; position:absolute; right:0px" onclick="toggleAccount()">Account</button>
 		</div>
 	</div>
 	</div>
@@ -50,6 +59,9 @@
 
 //////////////////////////////////////////////////////// security quote setup
 
+if (localStorage.getItem("quote")) document.getElementById("advancedQuote").style.display = "";
+var wipeKeys = localStorage.getItem("wipe");
+if (wipeKeys) document.getElementById("wipeButton").classList.add('active');
 var localStorageWriteable = true;
 if ('serviceWorker' in navigator) {
 	navigator.serviceWorker.register('service-worker.js').then((reg) => {
@@ -64,8 +76,10 @@ if ('serviceWorker' in navigator) {
 				D('msg').style.backgroundColor = "#FFB6C1";	
 				
 				localStorage.removeItem("quote");
-				localStorage.clear();
+				localStorage.removeItem("image");
+				if (wipeKeys) localStorage.clear();
 				D('quote').textContent = "";
+				D('preview').src = "";
 				
 				showMsg("Installing update... Security quote deleted. Clearing DOM...");
 				
@@ -108,6 +122,13 @@ if (localStorage.getItem('symbol')) document.getElementById('firstDiv').style.ba
 //////////////////////////////////////////////////////// global data
 
 var fullView = localStorage.getItem("view");
+let imgsrc = localStorage.getItem("image");
+if (imgsrc) {
+	D('preview').src = imgsrc;
+	D('quote').style.display = "none";
+	D("imageButton").classList.add('active');
+	D("imageButton").textContent = "Clear Security Image";
+}
 
 var changeNameFlag = false;
 var nameCache = {};
@@ -1128,6 +1149,7 @@ function importWallet(symbol) {
 	else if (index.length > 0 && (!/^[0-9]+$/.test(index) || index < 0 || index > Math.pow(2, 32) - 1)) showMsg("Invalid account index.");
 	else {
 		showMsg(`Loading ${symbol} account...`, null,true);
+		let existingWallet = ccc[symbol].address;
 		clearWallet(symbol);
 		
 		ccc[symbol].unpackSeed(seed, parseInt(index));
@@ -1135,10 +1157,14 @@ function importWallet(symbol) {
 		addressQR(symbol);
 		D(symbol + "-gray").style.display = "";
 		D(symbol + "-gray2").style.display = "";
-		D(symbol + "-load").textContent = "Switch Account";		
-		D("view").style.display = "";
+		D(symbol + "-load").textContent = "Switch Account";	
+		D(symbol + "-clear").style.display = "";
+		if (!existingWallet) {
+			D(symbol + '-tool1').style.display = "none";
+			D('account').classList.remove('active');
+		}
 
-		updateView(symbol);	
+		updateView();	
 		
 		fetchDisplayName(symbol, "-display", ccc[symbol].address, true);
 		refreshBalance(symbol, true).then(function(accountInfo) {
@@ -1172,7 +1198,7 @@ function clickClearWallet(symbol) {
 	D(symbol + "-dest").value = "";	
 	D(`${symbol}-withdrawal-amount`).value = "";
 	
-	updateView(symbol);
+	updateView();
 	D('firstDiv').scrollTo(0, 0);
 }
 
@@ -1205,6 +1231,7 @@ function clearWallet(symbol) {
 	D(symbol + "-gray").style.display = "none";
 	D(symbol + "-gray2").style.display = "none";
 	D(symbol + "-load").textContent = "Load Account";
+	D(symbol + "-clear").style.display = "none";		
 }
 
 function refreshBalance(symbol, confirm) {
@@ -1324,6 +1351,18 @@ function toggleEdit(symbol) {
 	}
 }
 
+function toggleAccount() {
+	let symbol = D('primary').value;
+	if (D(symbol + "-tool1").style.display == "none") {
+		D(symbol + "-tool1").style.display = "";
+		D('account').classList.add('active');
+	} else {
+		D(symbol + "-tool1").style.display = "none";
+		D(symbol + "-tool1").value = "";
+		D('account').classList.remove('active');
+	}
+}
+
 function donate(symbol) {
 	if (fullView) D(symbol + "-dest").parentNode.parentNode.scrollIntoView({block:"center", behavior:"auto"});
 	D(symbol + "-dest").value = ccc[symbol].donation;
@@ -1331,7 +1370,7 @@ function donate(symbol) {
 	fetchDisplayName(symbol, '-dest-display', D(symbol + "-dest").value, true);
 }
 
-function toggleView(symbol) {
+function toggleView() {
 	if (fullView) {
 		fullView = false;
 		localStorage.removeItem("view");
@@ -1339,7 +1378,29 @@ function toggleView(symbol) {
 		fullView = true;
 		localStorage.setItem("view", "true");
 	}
-	updateView(symbol);
+	updateView();
+}
+
+function toggleWipe() {
+	if (wipeKeys) {
+		wipeKeys = false;
+		localStorage.removeItem("wipe");
+		D("wipeButton").classList.remove('active');		
+	} else if (confirm("This security setting clears your private keys before any updates are installed. This is a good idea, but updates may arrive without advance notice. Make sure you back up your keys elsewhere.")) {
+		wipeKeys = true;
+		localStorage.setItem("wipe", "true");
+		D("wipeButton").classList.add('active');
+	}
+}
+
+function toggleImage() {
+	if (localStorage.getItem("image")) {
+		D('preview').src = "";
+		D('quote').style.display = "";
+		D("imageButton").classList.remove('active');
+		D("imageButton").textContent = "Select Security Image";
+		localStorage.removeItem("image");
+	} else D('filetag').click();
 }
 
 var currentElt;
@@ -1366,12 +1427,12 @@ window.addEventListener('keydown', function(evt) {
 	if (evt.altKey) {
 		if (evt.keyCode == 81) {
 			evt.preventDefault();
-			toggleView(D('primary').value);
+			toggleView();
 			//D('primary').focus();
 		}
 		if (evt.keyCode == 49) {
 			evt.preventDefault();
-			//toggleView(D('primary').value);
+			//toggleView();
 			D('primary').focus();
 		}
 	}
@@ -1562,13 +1623,13 @@ function updateView() {
 	}
 	
 	if (fullView) {
-		D(symbol + "-tool1").style.display = "";
+	//	D(symbol + "-tool1").style.display = "";
 		if (symbol == "XNO" || symbol == "BAN") D(symbol + "-tool2").style.display = "";
 		D(symbol + "-tool3").style.display = "";
 		D("view").classList.add('active');
 	} else {
-		if (ccc[symbol].address) D(symbol + "-tool1").style.display = "none";
-		else D(symbol + "-tool1").style.display = "";
+	//	if (ccc[symbol].address) D(symbol + "-tool1").style.display = "none";
+	//	else D(symbol + "-tool1").style.display = "";
 		D(symbol + "-tool2").style.display = "none";
 		D(symbol + "-tool3").style.display = "none";
 		D("view").classList.remove('active');
@@ -1748,6 +1809,52 @@ window.addEventListener('appinstalled', function (evt) {  // CODELAB: Add code t
     console.log('Wallet was installed.', evt);
 });
 
+D('filetag').addEventListener("change", function(e) {
+  if (this.files && this.files[0]) {
+    var reader = new FileReader();
+    reader.onloadend = function(event) {   	    
+		var x = make('img');
+		x.src = event.target.result;
+		let t = e.target.files[0].type;
+		x.onload = function() {
+			var canvas = resizer(x, 800, 600);
+			
+			function resizer(x, MAX_WIDTH, MAX_HEIGHT) {			
+				var canvas = make("canvas");
+				var ctx = canvas.getContext("2d");
+				ctx.drawImage(x, 0, 0);
+				var width = x.width;
+				var height = x.height;
+
+				if (width > height) {
+					if (width > MAX_WIDTH) {
+						height *= MAX_WIDTH / width;
+						width = MAX_WIDTH;
+					}
+				} else if (height > MAX_HEIGHT) {
+					width *= MAX_HEIGHT / height;
+					height = MAX_HEIGHT;
+				}    
+				canvas.width = width;
+				canvas.height = height;
+				ctx.drawImage(x, 0, 0, width, height);
+				return canvas;
+			}	
+
+			if (t == 'image/jpeg') D('preview').src = canvas.toDataURL("image/jpeg", 0.85);
+			else D('preview').src = canvas.toDataURL("image/png");
+			if (x.src.length < D('preview').src.length) D('preview').src = x.src;
+			
+			D('quote').style.display = "none";
+			localStorage.setItem("image", D('preview').src);
+			D("imageButton").classList.add('active');			
+			D("imageButton").textContent = "Clear Security Image";
+		}
+    }
+    reader.readAsDataURL(this.files[0]);
+  }
+});
+
 function selectPrimary(symbol) {
 	localStorage.setItem('symbol', symbol);
 	qrclose();
@@ -1759,7 +1866,7 @@ function selectPrimary(symbol) {
 	D('firstDiv').appendChild(ccc[symbol].sidebarElt);
 	D('secondDiv').appendChild(ccc[symbol].transactionElt);
 	
-	updateView(symbol);
+	updateView();
 	if (ccc[symbol].faucet) D(`${symbol}-faucet`).style.display = "";
 	if (!ccc[symbol].qrCode) ccc[symbol].qrCode = new QRCode(symbol + "-qrCodeImageBlock");
 	
@@ -1773,10 +1880,16 @@ function selectPrimary(symbol) {
 		D(`${symbol}-generateButton`).textContent = "Generate Seed";
 	}
 	
+	D(symbol + '-tool1').style.display = "none";
+	D('account').classList.remove('active');
 	if (ccc[symbol].address) {
 		refreshBalance(symbol);
 		ccc[symbol].getTransactions();	
 	} else if (localStorage.getItem(`${symbol}-seed`)) importWallet(symbol);
+	else {
+		D(symbol + '-tool1').style.display = "";
+		D('account').classList.add('active');
+	}
 }
 	
 function generateHTML(symbol) {
@@ -1815,6 +1928,8 @@ function generateHTML(symbol) {
 		<input onfocus="scrollPanel(this)" placeholder="Account index (default 0; or 1, 2, 3, etc) ..." id="${symbol}-index" type="number" style="margin-top:15px; width:calc(100% - 70px)" min="0" maxlength="64" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')">
 		<div style="text-align:center;">
 		<button style="margin-top:15px;" id="${symbol}-load" onclick="importWallet('${symbol}')">Load Account</button>
+		<button id="${symbol}-clear" onclick="if (confirm('Clear all data for ${symbol}, including the seed and private keys?')) {
+													clickClearWallet('${symbol}'); showMsg('${symbol} account cleared.'); }">Clear Account</button>
 		</div>
 	</div>
 	<div id="${symbol}-gray" style="margin-top:20px; margin-bottom:20px; display:none;">
@@ -1899,10 +2014,9 @@ function generateHTML(symbol) {
 	</div>
 		
 	<div style="text-align:center; margin-top:30px; margin-bottom:120px;">		
-			<button id="installButton" style="font-size:0.8em; display:none; margin-right:15px;">Native App</button>
+		<button id="installButton" style="font-size:0.8em; display:none; margin-right:15px;">Native App</button>
 		<button style="font-size:0.8em;" onclick="donate('${symbol}')">Donate!</button>
-		<button style="font-size:0.8em" onclick="if (confirm('Clear all data for ${symbol} including the wallet seed and private keys?')) {
-													clickClearWallet('${symbol}'); showMsg('${symbol} wallet cleared.'); }">Clear ${symbol} Wallet</button>
+		<button id="view" style="font-size:0.8em;" onclick="toggleView()">All Tools</button>
 	</div>
 	</div>`;
 }
