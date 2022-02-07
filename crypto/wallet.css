@@ -219,7 +219,7 @@ ul::-webkit-scrollbar-thumb:hover {
 	}
 	
 	button:hover:enabled {  
-		background-color: #f1f4f4;
+		background-color: revert;
 	}
 	
 	button:focus {
