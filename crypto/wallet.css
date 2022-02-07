@@ -218,6 +218,10 @@ ul::-webkit-scrollbar-thumb:hover {
 		cursor: initial;
 	}
 	
+	button:hover:enabled {  
+		background-color: #f1f4f4;
+	}
+	
 	button:focus {
 		outline: none;
 	}   
