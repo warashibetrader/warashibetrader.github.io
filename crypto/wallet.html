@@ -67,7 +67,7 @@ if ('serviceWorker' in navigator) {
 				localStorage.clear();
 				D('quote').textContent = "";
 				
-				showMsg("Installing update... Security quote deleted. Clearing DOM...");	
+				showMsg("Installing update... Security quote deleted. Clearing DOM...");
 				
 				if (ccc) {
 					for (let symbol in ccc) {
@@ -165,19 +165,15 @@ for (let symbol in ccc) {
 
 //////////////////////////////////////////////////////// low level helper functions
 
-ccc['BAN'].generateSeed = function() {
-	const seed = new Uint8Array(32);
-	crypto.getRandomValues(seed);
-	return Array.prototype.map.call(seed, (x) => ('00' + x.toString(16)).slice(-2)).join('').toUpperCase();
-};
 ccc['XNO'].generateSeed = function() {
 	const seed = new Uint8Array(32);
 	crypto.getRandomValues(seed);
 	return Array.prototype.map.call(seed, (x) => ('00' + x.toString(16)).slice(-2)).join('').toUpperCase();
 };
+ccc['BAN'].generateSeed = function() { return ccc['XNO'].generateSeed(); };
 ccc['SOL'].generateSeed = function() { return "[" + solanaWeb3.Keypair.generate().secretKey.toString() + "]"; };
 ccc['XLM'].generateSeed = function() { return StellarSdk.Keypair.random().secret(); };
-ccc['ALGO'].generateSeed = function() { console.log(algosdk.generateAccount()); return algosdk.secretKeyToMnemonic(algosdk.generateAccount().sk); };
+ccc['ALGO'].generateSeed = function() { return algosdk.secretKeyToMnemonic(algosdk.generateAccount().sk); };
 
 ccc['BAN'].checkSeed = function(seed) { return typeof seed === "string" && /^[0-9a-fA-F]{64}$/.test(seed);};
 ccc['XNO'].checkSeed = function(seed) {	return typeof seed === "string" && /^[0-9a-fA-F]{64}$/.test(seed);};
@@ -202,7 +198,6 @@ ccc['ALGO'].checkSeed = function(seed) {
 
 ccc['XNO'].checkAddress = function(address) { 
 	if (!(typeof address === "string") || !/^(xrb_|nano_)[13][13-9a-km-uw-z]{59}$/.test(address)) return false;
-
 	let prefixLength = 5;
 	if (address.startsWith('xrb_')) prefixLength = 4;
 
@@ -304,36 +299,20 @@ ccc['ALGO'].unpackSeed = function(seed) {
 
 //////////////////////////////////////////////////////// information fetch helper functions
 
-ccc['BAN'].getAccountInfo = function() {
-	return post(ccc['BAN'].server, {action: 'account_info', pending: true, representative: true, account: ccc['BAN'].address}).then(function(accountInfo) {
+ccc['XNO'].getAccountInfo = function() { return nanoGetAccountInfo('XNO'); };
+ccc['BAN'].getAccountInfo = function() { return nanoGetAccountInfo('BAN'); };
+function nanoGetAccountInfo(symbol) {
+	return post(ccc[symbol].server, {action: 'account_info', pending: true, representative: true, account: ccc[symbol].address}).then(function(accountInfo) {
 		if (accountInfo && !accountInfo.frontier) {
 			accountInfo.balance = "0";
-			cyclePending('BAN', true);
+			cyclePending(symbol, true);
 		} return accountInfo;
 	});
-};
-ccc['XNO'].getAccountInfo = function() {
-	return post(ccc['XNO'].server, {action: 'account_info', pending: true, representative: true, account: ccc['XNO'].address}).then(function(accountInfo) {
-		if (accountInfo && !accountInfo.frontier) {
-			accountInfo.balance = "0";			
-			cyclePending('XNO', true);
-		}
-		return accountInfo;
-	});
-};
+}
 ccc['SOL'].getAccountInfo = function() {
 	return ccc['SOL'].server.getAccountInfo(ccc['SOL'].publicKey).then(function(accountInfo) {
 		if (accountInfo) accountInfo.balance = accountInfo.lamports;
-		else {
-		//	const airdropSignature = await ccc['SOL'].server.requestAirdrop(ccc['SOL'].publicKey, solanaWeb3.LAMPORTS_PER_SOL);
-		//	await ccc['SOL'].server.confirmTransaction(airdropSignature);
-		//	accountInfo = await ccc['SOL'].server.getAccountInfo(ccc['SOL'].publicKey);
-		//	if (accountInfo) {
-		//		accountInfo.frontier = true;
-		//		accountInfo.balance = accountInfo.lamports;
-		//	} else 
-			accountInfo = {detail: "Unopened account.", balance: "0"};
-		}
+		else accountInfo = {detail: "Unopened account.", balance: "0"};
 		return accountInfo;
 	}).catch(function() { networkFailMsg(); });
 };
@@ -373,8 +352,6 @@ ccc['ALGO'].getFee = function() {
 	D('ALGO' + '-withdrawal-fee').parentNode.style.display = 'flex';
 	D('ALGO' + '-withdrawal-fee').disabled = true;
 };
-
-
 
 ccc['BAN'].getTransactions = function(start) {nanoDisplayTransactions('BAN', start);};
 ccc['XNO'].getTransactions = function(start) {nanoDisplayTransactions('XNO', start);};
@@ -919,7 +896,7 @@ async function postBlock(symbol, subtype, workInput, previous, representative, b
 	confirmation.then(function(theBlock) {
 		if (D(`${symbol}-rep`).textContent != theBlock.contents.representative) {
 			flash(D(`${symbol}-rep`), theBlock.contents.representative);	
-			fetchDisplayName(symbol, "-rep-display", theBlock.contents.representative);
+			fetchDisplayName(symbol, "-rep-display", theBlock.contents.representative, true);
 		}			
 		flash(D(`${symbol}-balance`), unitFromRaw(symbol, theBlock.contents.balance));
 	});
@@ -1096,7 +1073,7 @@ function setName(symbol) {
 }
 
 function fetchDisplayName(symbol, divString, address, skipCache) {
-	if (ccc[symbol].checkAddress(address)) {	
+	if (ccc[symbol].checkAddress(address)) {
 		let displayString = nameCache[address];
 		if (!displayString) {
 			if (divString == "-display") {
@@ -1121,8 +1098,8 @@ function displayName(symbol, divString, address, displayString) {
 	if (!displayString) displayString = backupCache[address];
 	if (!displayString) {
 		if (divString == "-display") {
-			if (ccc[symbol].index === 0 || ccc[symbol].index > 0) displayString = "My Account #" + ccc[symbol].index + " (Unknown)";
-			else displayString = "My Account (Unknown)";
+			if (ccc[symbol].index === 0 || ccc[symbol].index > 0) displayString = "✏️ My Account #" + ccc[symbol].index;
+			else displayString = "✏️ My Account";
 		} else if (address == ccc[symbol].address) displayString = "(me)";
 		else displayString = "Unknown";
 	} else if (divString != "-display" && address == ccc[symbol].address) displayString += " (me)";
@@ -1163,7 +1140,7 @@ function importWallet(symbol) {
 
 		updateView(symbol);	
 		
-		fetchDisplayName(symbol, "-display", ccc[symbol].address);
+		fetchDisplayName(symbol, "-display", ccc[symbol].address, true);
 		refreshBalance(symbol, true).then(function(accountInfo) {
 			if (localStorageWriteable) {
 				localStorage.setItem(`${symbol}-seed`, seed);
@@ -1200,7 +1177,6 @@ function clickClearWallet(symbol) {
 }
 
 function clearWallet(symbol) {
-	nameCache = {};
 	qrclose();
 	clearDOM(D(symbol + '-transactions'));	
 	D(symbol + '-loadMore').style.display = "none";
@@ -1211,7 +1187,7 @@ function clearWallet(symbol) {
 	ccc[symbol].address = "";
 	ccc[symbol].index = "";
 	
-	flash(D(`${symbol}-display`), "My Account (Unknown)");	
+	flash(D(`${symbol}-display`), "✏️ My Account");	
 	flash(D(`${symbol}-address`), "\xa0");	
 	flash(D(`${symbol}-balance`), "0.00");
 	flash(D(`${symbol}-balance-pending`), "0.00");
@@ -1246,7 +1222,7 @@ function refreshBalance(symbol, confirm) {
 			if (accountInfo) {
 				if (accountInfo.representative && D(`${symbol}-rep`) && D(`${symbol}-rep`).textContent != accountInfo.representative) {
 					flash(D(`${symbol}-rep`), accountInfo.representative);	
-					fetchDisplayName(symbol, "-rep-display", accountInfo.representative);
+					fetchDisplayName(symbol, "-rep-display", accountInfo.representative, true);
 				}
 				if (accountInfo.balance !== undefined) flash(D(`${symbol}-balance`), unitFromRaw(symbol, accountInfo.balance));
 				if (accountInfo.pending !== undefined) flash(D(`${symbol}-balance-pending`), unitFromRaw(symbol, accountInfo.pending));
@@ -1321,7 +1297,7 @@ function suggestRep(symbol) {
 					ccc[symbol].representative = repAddr;
 					D(`${symbol}-new-rep`).value = repAddr;
 					flash(D(`${symbol}-new-rep`));
-					fetchDisplayName(symbol, '-new-rep-display', repAddr);
+					fetchDisplayName(symbol, '-new-rep-display', repAddr, true);
 				}
 			}
 		});
@@ -1342,11 +1318,9 @@ function toggleVisibility(symbol) {
 function toggleEdit(symbol) {
 	if (D(symbol + "-editpanel").style.display == "none") {
 		D(symbol + "-editpanel").style.display = "";
-		D(symbol + "-editbutton").classList.add('active');
 	} else {
 		D(symbol + "-editpanel").style.display = "none";
 		D(symbol + "-set-display").value = "";
-		D(symbol + "-editbutton").classList.remove('active');
 	}
 }
 
@@ -1354,7 +1328,7 @@ function donate(symbol) {
 	if (fullView) D(symbol + "-dest").parentNode.parentNode.scrollIntoView({block:"center", behavior:"auto"});
 	D(symbol + "-dest").value = ccc[symbol].donation;
 	flash(D(symbol + "-dest"));
-	fetchDisplayName(symbol, '-dest-display', D(symbol + "-dest").value);
+	fetchDisplayName(symbol, '-dest-display', D(symbol + "-dest").value, true);
 }
 
 function toggleView(symbol) {
@@ -1383,7 +1357,6 @@ if (screen.width <= 550 || screen.height <= 550) {
 		if (currentElt) currentElt.parentNode.scrollIntoView({block:'start', behavior:'auto', inline: "nearest"});	
 	});
 }
-
 
 window.addEventListener('copy', function(e) {
 	if (document.getSelection().toString()) clipboardText = document.getSelection().toString();
@@ -1556,10 +1529,10 @@ function addressQR(symbol) {
 function generateQR(symbol, input) {	
 	if (ccc[symbol].checkSeed(input)) {
 		D(symbol + '-type-display').textContent = ccc[symbol].keyType;		
-		fetchDisplayName(symbol, '-directory-display', ccc[symbol].addressFromSeed(input));
+		fetchDisplayName(symbol, '-directory-display', ccc[symbol].addressFromSeed(input, true));
 	} else if (ccc[symbol].checkAddress(input)) {
 		D(symbol + '-type-display').textContent = 'public address';
-		fetchDisplayName(symbol, '-directory-display', input);
+		fetchDisplayName(symbol, '-directory-display', input, true);
 	} else {
 		D(symbol + '-type-display').textContent = '';
 		D(symbol + '-directory-display').textContent = '';
@@ -1847,8 +1820,8 @@ function generateHTML(symbol) {
 	<div id="${symbol}-gray" style="margin-top:20px; margin-bottom:20px; display:none;">
 	<div class="objectWrapper">
 		<div style="display:flex; align-items:center; justify-content:space-between">
-			<strong><div id="${symbol}-display" style="font-size:1.2em" onclick="fetchDisplayName('${symbol}', '-display', ccc['${symbol}'].address, true)">My Account (Unknown)</div></strong>
-			<button id="${symbol}-editbutton" style="font-size:0.8em" onclick="toggleEdit('${symbol}')">Edit</button>
+			<strong><div id="${symbol}-display" class="displayname" onclick="toggleEdit('${symbol}'); fetchDisplayName('${symbol}', '-display', ccc['${symbol}'].address, true)">✏️ My Account</div></strong>
+			<button style="font-size:0.8em" onclick="refreshBalance('${symbol}'); ccc['${symbol}'].getTransactions();">Refresh</button>
 		</div>
 		
 		<div id="${symbol}-editpanel" style="display:none; margin-left:20px; margin-right:20px; margin-top:10px; margin-bottom:20px">			
@@ -1864,11 +1837,10 @@ function generateHTML(symbol) {
 		</div>
 		
 		<div style="display:flex; align-items:center; justify-content:space-between">
-			<div style="width:calc(100% - 65px); display:flex">
+			<div style="width:calc(100% - 15px); display:flex">
 				<strong>Balance:&nbsp;</strong> 
-				<span id="${symbol}-balance" style="cursor:pointer; max-width:min-content; overflow:hidden; text-overflow:ellipsis;" onclick="clickCopy(this, this.textContent)">0.00</span>&nbsp;${symbol}&nbsp;
+				<span id="${symbol}-balance" style="cursor:pointer; max-width:min-content; overflow:hidden; text-overflow:ellipsis;" onclick="clickCopy(this, this.textContent)">0.00</span>&nbsp;${symbol}
 			</div>
-			<button style="font-size:0.8em" onclick="refreshBalance('${symbol}'); ccc['${symbol}'].getTransactions();">Refresh</button>
 		</div>
 		<div id="${symbol}-arriving-balance-panel" style="margin-top:10px; display:flex; align-items:center; justify-content:space-between">
 			<div style="width:calc(100% - 65px); display:flex">
