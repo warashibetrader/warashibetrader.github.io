@@ -59,7 +59,7 @@
 
 //////////////////////////////////////////////////////// security quote setup
 
-if (localStorage.getItem("quote")) document.getElementById("advancedQuote").style.display = "";
+// if (localStorage.getItem("quote")) document.getElementById("advancedQuote").style.display = "";
 var wipeKeys = localStorage.getItem("wipe");
 if (wipeKeys) document.getElementById("wipeButton").classList.add('active');
 var localStorageWriteable = true;
@@ -1627,12 +1627,14 @@ function updateView() {
 		if (symbol == "XNO" || symbol == "BAN") D(symbol + "-tool2").style.display = "";
 		D(symbol + "-tool3").style.display = "";
 		D("view").classList.add('active');
+		D("advancedQuote").style.display = "";
 	} else {
 	//	if (ccc[symbol].address) D(symbol + "-tool1").style.display = "none";
 	//	else D(symbol + "-tool1").style.display = "";
 		D(symbol + "-tool2").style.display = "none";
 		D(symbol + "-tool3").style.display = "none";
 		D("view").classList.remove('active');
+		D("advancedQuote").style.display = "none";
 	}
 }
 
