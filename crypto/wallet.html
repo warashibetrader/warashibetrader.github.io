@@ -1485,7 +1485,7 @@ function scrollPanel(elt) {
 
 if (screen.width <= 550 || screen.height <= 550) {
 	window.addEventListener("resize", function() {
-	//	if (currentElt) currentElt.parentNode.scrollIntoView({block:'start', behavior:'auto'});	
+		if (currentElt) currentElt.parentNode.scrollIntoView({block:'start', behavior:'auto'});	
 	});
 }
 
