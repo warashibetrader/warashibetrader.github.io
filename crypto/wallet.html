@@ -33,10 +33,12 @@
 			<div id="quote" style="cursor:pointer; white-space:pre-wrap; font-style:italic; font-size:0.9em" onclick="toggleQuote();"></div>
 			
 			<input type="file" style="display:none" id="filetag" accept="image/*">		
-			<div id="advancedQuote" class="accordion" style="text-align:center; max-height:0px;">
+			<div id="advancedQuote" class="accordion" style="display:flex; align-items:center; position:relative; max-height:0px;">
+				<div style="margin:auto">
 				<button id="imageButton" style="font-size:0.8em;" onclick="toggleImage()">Select Security Image</button>
 				<button id="wipeButton" style="font-size:0.8em;" onclick="toggleWipe()">Clear Keys on Updates</button>
-				<span style="float:right">(<a rel="noopener" href="https://warashibetrader.github.io/2022/02/02/security-quote-protocol" target="_blank">?</a>)</span>
+				</div>
+				<span style="position:absolute; right:0px">(<a rel="noopener" href="https://warashibetrader.github.io/2022/02/02/security-quote-protocol" target="_blank">?</a>)</span>
 			</div>
 			
 			
@@ -1348,7 +1350,7 @@ function toggleEdit(symbol) {
 	if (obj.style.maxHeight == "0px") {
      	obj.style.maxHeight = obj.scrollHeight + "px";
      	obj.style.marginTop = "10px";
-     	obj.style.marginBottom = "10px";
+     	obj.style.marginBottom = "20px";
 	} else {	
       	obj.style.maxHeight = "0px";
      	obj.style.marginTop = "0px";
