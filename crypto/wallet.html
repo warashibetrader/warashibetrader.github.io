@@ -1365,12 +1365,14 @@ function toggleAccount() {
      	obj.style.maxHeight = obj.scrollHeight + "px";
 		obj.style.padding = "";
 		D('account').classList.add('active');
+		setTimeout(function() { obj.style.overflow = "visible"; }, 100);
 	} else {	
       	obj.style.maxHeight = "0px";
 		obj.style.paddingTop = "0px";
 		obj.style.paddingBottom = "0px";
 		obj.value = "";
 		D('account').classList.remove('active');
+		obj.style.overflow = "";
 	}
 }
 
@@ -1409,6 +1411,8 @@ function updateView() {
 		obj3.style.paddingBottom = "20px";
 		D(D('primary').value + "-view").classList.add('active');
 		//D("advancedQuote").style.display = "";
+		setTimeout(function() { obj.style.overflow = "visible"; }, 100);
+		setTimeout(function() { obj3.style.overflow = "visible"; }, 100);
 	} else {
       	obj.style.maxHeight = "0px";
 		obj.style.paddingTop = "0px";
@@ -1419,17 +1423,9 @@ function updateView() {
 		obj3.style.paddingBottom = "0px";
 		D(D('primary').value + "-view").classList.remove('active');
 		//D("advancedQuote").style.display = "none";
+		obj.style.overflow = "";
+		obj3.style.overflow = "";
 	}
-}
-
-function expand(accord) {
-	accord.style.maxHeight = "100" + "px";
-	accord.style.display = "";
-}
-
-function collapse(accord) {
-	accord.style.maxHeight = null;
-	accord.style.display = "none";
 }
 
 function donate(symbol) {
