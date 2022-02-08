@@ -44,7 +44,7 @@
 				<option value="XLM">Stellar (XLM)</option>
 				<option value="ALGO">Algorand (ALGO)</option>
 			</select>
-			<button class="active" id="account" style="font-size:0.8em; position:absolute; right:0px" onclick="toggleAccount()">Account</button>
+			<button id="account" style="font-size:0.8em; position:absolute; right:0px" onclick="toggleAccount()">Account</button>
 		</div>
 	</div>
 	</div>
@@ -1916,7 +1916,7 @@ function generateHTML(symbol) {
 		
 	ccc[symbol].sidebarElt = make('div');
 	ccc[symbol].sidebarElt.innerHTML = `
-	<div id="${symbol}-tool1" class="objectWrapper">
+	<div id="${symbol}-tool1" class="objectWrapper" style="display:none">
 		<div style="text-align:center;">
 		<button tabindex="-1" id="${symbol}-generateButton" style="font-size:0.8em" onclick="generateWallet('${symbol}')">Generate Key</button>
 		<button tabindex="-1" id="${symbol}-qrButton1" style="font-size:0.8em" onclick="qrscan('${symbol}', '-seed')">Scan QR Code</button>
