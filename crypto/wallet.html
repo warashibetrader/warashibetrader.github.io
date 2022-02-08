@@ -37,6 +37,7 @@
 								  pointer-events: none; filter: opacity(0.9);"></strong>
 		
 		<div style="margin-top:15px; display:flex; align-items:center; position:relative">		
+			<button id="nprButton" style="font-size:0.8em; position:absolute; left:0px" onclick="npr()">Play NPR</button>
 			<select style="margin:auto" name="primary" id="primary" onchange="selectPrimary(event.target.value)">
 				<option value="XNO">Nano (XNO)</option>
 				<option value="BAN">Banano (BAN)</option>
@@ -2007,7 +2008,6 @@ function generateHTML(symbol) {
 	<div style="text-align:center; margin-top:30px">		
 		<button id="installButton" style="font-size:0.8em; display:none; margin-right:15px;">Native App</button>
 		<button style="font-size:0.8em;" onclick="donate('${symbol}')">Donate!</button>
-		<button id="nprButton" style="font-size:0.8em;" onclick="npr()">Play NPR</button>
 		<button id="view" style="font-size:0.8em; scroll-margin-top:60px" onclick="toggleView()">More Tools</button>
 	</div>
 		
