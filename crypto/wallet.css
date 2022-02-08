@@ -19,14 +19,6 @@ body {
 	width:100%;
 }
 
-.objectWrapper {
-	background-color:white;
-	border-radius:15px;
-	padding:15px 10px;
-	margin:10px;	
-	scroll-margin-top:60px;
-}
-
 .firstDiv {
 	overflow:auto; 
 	resize:horizontal; 
@@ -40,6 +32,21 @@ body {
 	padding-left:50px;
 	overflow:auto; 
 	flex-grow:1;
+}
+
+.accordion {
+	overflow:hidden;
+	transition-property: max-height, padding, margin;
+	transition-duration: 0.1s;
+	transition-timing-function: ease-out;
+}
+
+.objectWrapper {
+	background-color:white;
+	border-radius:15px;
+	padding:15px 10px;
+	margin:10px;	
+	scroll-margin-top:60px;
 }
 
 div:focus {
@@ -161,13 +168,6 @@ a:hover {
 .displayname {
 	cursor:pointer;
 	font-size:1.2em;
-}
-
-.accordion {
-	overflow:hidden;
-	transition-property: max-height, padding, margin;
-	transition-duration: 0.1s;
-	transition-timing-function: ease-out;
 }
 
 /*-----------*/
