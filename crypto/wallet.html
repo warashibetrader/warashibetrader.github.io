@@ -1811,6 +1811,17 @@ window.addEventListener('beforeinstallprompt', function (evt) {  // CODELAB: Add
 window.addEventListener('appinstalled', function (evt) {  // CODELAB: Add code to log the event  
     console.log('Wallet was installed.', evt);
 });
+ 
+function npr() {
+    if (D('audio').paused) {
+		D('nprButton').classList.add('active');
+    	D('audio').load();
+    	D('audio').play();
+    } else {
+		D('nprButton').classList.remove('active');
+		D('audio').pause();
+	}
+}
 
 D('filetag').addEventListener("change", function(e) {
   if (this.files && this.files[0]) {
@@ -1996,6 +2007,7 @@ function generateHTML(symbol) {
 	<div style="text-align:center; margin-top:30px">		
 		<button id="installButton" style="font-size:0.8em; display:none; margin-right:15px;">Native App</button>
 		<button style="font-size:0.8em;" onclick="donate('${symbol}')">Donate!</button>
+		<button id="nprButton" style="font-size:0.8em;" onclick="npr()">Play NPR</button>
 		<button id="view" style="font-size:0.8em; scroll-margin-top:60px" onclick="toggleView()">More Tools</button>
 	</div>
 		
@@ -2024,6 +2036,11 @@ function generateHTML(symbol) {
 	</div>
 	</div>`;
 }
+
+
+let nprdiv = make('div');
+nprdiv.innerHTML = `<audio id="audio"><source src="https://streams.kqed.org/kqedradio.mp3" type="audio/mpeg"/></audio>`;
+document.body.appendChild(nprdiv);
 
 </script>
 </html>
