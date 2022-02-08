@@ -109,10 +109,6 @@ if (localStorage.getItem('symbol')) document.getElementById('firstDiv').style.ba
 <script src="quotes.js"></script>
 <script src="qrcode.js"></script>
 <script src="qrscan.js"></script>
-<script src="xno.js"></script>
-<script src="sol.js"></script>
-<script src="xlm.js"></script>
-<script src="algo.js"></script>
 <script src="nacl.js"></script>
 
 
@@ -162,18 +158,18 @@ ccc['BAN'] = {shift:29, flashColor:'#ffc', keyType:'seed', min:0, fee:0, donatio
 					repRec:'https://api.spyglass.pw/banano/v1/representatives/scores'};
 						
 ccc['SOL'] = {shift:9, flashColor:'#e0faf0', keyType:'private key', min:0, fee:5000, donation:'9uugZyizr3QCrTcCgDGHpYwik636GGJVQTYBFRtd2rvG',
-				server: new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'), 'confirmed'),				
+				server: 'mainnet-beta',				
 				gettingStarted:'https://solana.com/',
 					
 					faucet: 'https://solfaucet.togatech.org/'};
 				
-ccc['XLM'] = {shift:7, flashColor:'#edf', keyType:'private key', min:1, fee: StellarSdk.BASE_FEE, donation:'GCOYMN3XAUD4OM4OTNC536TG6MEB6TK3IGSPKDJJJ7V36S3NNGKVBLTC',
-				server: new StellarSdk.Server("https://horizon-testnet.stellar.org/"), //https://horizon-testnet.stellar.org				
+ccc['XLM'] = {shift:7, flashColor:'#edf', keyType:'private key', min:1, fee: 100, donation:'GCOYMN3XAUD4OM4OTNC536TG6MEB6TK3IGSPKDJJJ7V36S3NNGKVBLTC',
+				server: "https://horizon-testnet.stellar.org/", //https://horizon-testnet.stellar.org				
 				gettingStarted:'https://www.stellar.org',
 				
-					passphrase: StellarSdk.Networks.TESTNET}; //.TESTNET //.PUBLIC
+					passphrase: "Test SDF Network ; September 2015"}; // "Public Global Stellar Network ; September 2015"
 					
-ccc['ALGO'] = {shift:6, flashColor:'#ebd', keyType:'private key', min:0.1, fee: algosdk.ALGORAND_MIN_TX_FEE, donation:'EWB5J4POIJXWGOFS54HY7BGJ3MQW4HMJGQOKNECE7WANYNSKZS25E3G3NA',
+ccc['ALGO'] = {shift:6, flashColor:'#ebd', keyType:'private key', min:0.1, fee: 1000, donation:'EWB5J4POIJXWGOFS54HY7BGJ3MQW4HMJGQOKNECE7WANYNSKZS25E3G3NA',
 				server: 'https://algoindexer.testnet.algoexplorerapi.io/v2/',				
 				gettingStarted:'https://www.algorand.com/',
 				
@@ -1379,7 +1375,7 @@ function toggleView() {
 		localStorage.setItem("view", "true");
 	}
 	updateView();
-	if (fullView) D('view').scrollIntoView({block:"start", behavior:"smooth"});
+	if (fullView) D(D('primary').value + "-view").scrollIntoView({block:"start", behavior:"smooth"});
 }
 
 function toggleWipe() {
@@ -1628,14 +1624,14 @@ function updateView() {
 	//	D(symbol + "-tool1").style.display = "";
 		if (symbol == "XNO" || symbol == "BAN") D(symbol + "-tool2").style.display = "";
 		D(symbol + "-tool3").style.display = "";
-		D("view").classList.add('active');
+		D(D('primary').value + "-view").classList.add('active');
 		D("advancedQuote").style.display = "";
 	} else {
 	//	if (ccc[symbol].address) D(symbol + "-tool1").style.display = "none";
 	//	else D(symbol + "-tool1").style.display = "";
 		D(symbol + "-tool2").style.display = "none";
 		D(symbol + "-tool3").style.display = "none";
-		D("view").classList.remove('active');
+		D(D('primary').value + "-view").classList.remove('active');
 		D("advancedQuote").style.display = "none";
 	}
 }
@@ -1788,25 +1784,28 @@ function post(url, params) {
 function D(string) { return document.getElementById(string); }	
 
 let deferredInstallPrompt = null;
-D('installButton').addEventListener('click', function(event) {
-	deferredInstallPrompt.prompt();
-	
-	// CODELAB: Log user response to prompt.  
-	deferredInstallPrompt.userChoice.then((choice) => {
-		if (choice.outcome === 'accepted') {
-		  console.log('User accepted the A2HS prompt', choice);
-		  evt.srcElement.style.display = 'none';
-		} else console.log('User dismissed the A2HS prompt', choice);
-		deferredInstallPrompt = null;
-	});
-});
 
 // CODELAB: Add event listener for beforeinstallprompt event
 window.addEventListener('beforeinstallprompt', function (evt) {  // CODELAB: Add code to save event & show the install button.  
 	console.log("Detected that PWA can be installed.");
     deferredInstallPrompt = evt;
     evt.preventDefault();
-    D('installButton').style.display = 'inline';
+	D('nprButton').textContent = "Native App";
+    D('nprButton').onclick = function(event) {
+		deferredInstallPrompt.prompt();
+		
+		// CODELAB: Log user response to prompt.  
+		deferredInstallPrompt.userChoice.then((choice) => {
+			if (choice.outcome === 'accepted') {
+			  console.log('User accepted the A2HS prompt', choice);
+			  
+				D('nprButton').textContent = "Play NPR";
+				D('nprButton').onclick = npr;
+	
+			} else console.log('User dismissed the A2HS prompt', choice);
+			deferredInstallPrompt = null;
+		});
+	}
 });
 
 window.addEventListener('appinstalled', function (evt) {  // CODELAB: Add code to log the event  
@@ -1871,7 +1870,27 @@ D('filetag').addEventListener("change", function(e) {
   }
 });
 
-function selectPrimary(symbol) {
+function callScript(symbol) {
+	return new Promise(function(resolve, reject) {
+		let script = make("script");
+		script.type = "text/javascript";
+		let scriptName = symbol.toLowerCase() + ".js";
+		script.src = scriptName;
+		script.id = symbol;
+		script.onload = function() { resolve(); };
+		document.body.appendChild(script);
+	});
+}
+	
+async function selectPrimary(symbol) {
+	if (!D(symbol)) {
+		if (symbol == "BAN") await callScript("XNO");
+		else await callScript(symbol);
+		
+		if (symbol == "SOL") ccc['SOL'].server = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl(ccc['SOL'].server), 'confirmed');
+		if (symbol == "XLM") ccc['XLM'].server = new StellarSdk.Server(ccc['XLM'].server);
+	}
+	
 	localStorage.setItem('symbol', symbol);
 	qrclose();
 	D('firstDiv').style.backgroundColor = ccc[symbol].bgColor;
@@ -2005,10 +2024,9 @@ function generateHTML(symbol) {
 		</div>
 	</div>
 		
-	<div style="text-align:center; margin-top:30px">		
-		<button id="installButton" style="font-size:0.8em; display:none; margin-right:15px;">Native App</button>
+	<div style="text-align:center; margin-top:30px">
 		<button style="font-size:0.8em;" onclick="donate('${symbol}')">Donate!</button>
-		<button id="view" style="font-size:0.8em; scroll-margin-top:60px" onclick="toggleView()">More Tools</button>
+		<button id="${symbol}-view" style="font-size:0.8em; scroll-margin-top:60px" onclick="toggleView()">More Tools</button>
 	</div>
 		
 	<div id="${symbol}-tool2" class="objectWrapper">
