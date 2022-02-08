@@ -1993,7 +1993,7 @@ function generateHTML(symbol) {
 		
 	ccc[symbol].sidebarElt = make('div');
 	ccc[symbol].sidebarElt.innerHTML = `
-	<div id="${symbol}-tool1" class="accordion objectWrapper" style="max-height:0px; padding-top:0px; padding-bottom:0px;">
+	<div id="${symbol}-tool1" class="objectWrapper" style="max-height:0px; padding-top:0px; padding-bottom:0px;">
 		<div style="text-align:center;">
 		<button tabindex="-1" id="${symbol}-generateButton" style="font-size:0.8em" onclick="generateWallet('${symbol}')">Generate Key</button>
 		<button tabindex="-1" id="${symbol}-qrButton1" style="font-size:0.8em" onclick="qrscan('${symbol}', '-seed')">Scan QR Code</button>
@@ -2075,7 +2075,7 @@ function generateHTML(symbol) {
 		<button id="${symbol}-view" style="font-size:0.8em; scroll-margin-top:60px" onclick="toggleView()">More Tools</button>
 	</div>
 		
-	<div id="${symbol}-tool2" class="accordion objectWrapper">
+	<div id="${symbol}-tool2" class="objectWrapper">
 		<strong>Current representative: </strong><span id="${symbol}-rep-display"></span>
 		<div class="address" style="margin-bottom:10px;" id="${symbol}-rep" onclick="clickCopy(this, this.textContent)">&nbsp;</div>
 		<strong>New representative: </strong><span id="${symbol}-new-rep-display"></span>	
