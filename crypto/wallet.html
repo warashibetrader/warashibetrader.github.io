@@ -1364,12 +1364,14 @@ function toggleAccount() {
 	if (obj.style.maxHeight == "0px") {
      	obj.style.maxHeight = obj.scrollHeight + "px";
 		obj.style.padding = "";
+		obj.style.marginBottom = "20px";
 		D('account').classList.add('active');
 		setTimeout(function() { obj.style.overflow = "visible"; }, 100);
 	} else {	
       	obj.style.maxHeight = "0px";
 		obj.style.paddingTop = "0px";
 		obj.style.paddingBottom = "0px";
+		obj.style.marginBottom = "0px";
 		obj.value = "";
 		D('account').classList.remove('active');
 		obj.style.overflow = "";
