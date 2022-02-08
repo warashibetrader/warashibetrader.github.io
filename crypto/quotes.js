@@ -6571,7 +6571,7 @@ if (typeof(Storage) !== "undefined") {
 	let authorSpan = document.createElement('div');		
 	quoteSpan.textContent = quoteData.quote;
 	authorSpan.textContent = ' -\xa0' + quoteData.author;
-	authorSpan.innerHTML += '\xa0(<a rel="noopener" href="https://warashibetrader.github.io/2022/02/02/security-quote-protocol" target="_blank">?</a>)';
+	//authorSpan.innerHTML += '\xa0(<a rel="noopener" href="https://warashibetrader.github.io/2022/02/02/security-quote-protocol" target="_blank">?</a>)';
 	authorSpan.style.textAlign = "right";
 	quoteElt.appendChild(quoteSpan);
 	quoteElt.appendChild(authorSpan);
