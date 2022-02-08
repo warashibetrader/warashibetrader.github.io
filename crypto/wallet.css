@@ -47,11 +47,6 @@ body {
 	padding:15px 10px;
 	margin:10px;	
 	scroll-margin-top:60px;
-	
-	overflow:hidden;
-	transition-property: max-height, padding, margin;
-	transition-duration: 0.1s;
-	transition-timing-function: ease-out;
 }
 
 div:focus {
