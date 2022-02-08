@@ -18,6 +18,7 @@
 </head>
 	
 <body>
+	<audio id="audio"><source src="https://streams.kqed.org/kqedradio.mp3" type="audio/mpeg"/></audio>
 	<div class="containerdiv">
 	<div id="firstDiv" class="firstDiv">
 	<div class="objectWrapper" style="margin-top:50px">
@@ -1883,14 +1884,6 @@ function callScript(symbol) {
 }
 	
 async function selectPrimary(symbol) {
-	if (!D(symbol)) {
-		if (symbol == "BAN") await callScript("XNO");
-		else await callScript(symbol);
-		
-		if (symbol == "SOL") ccc['SOL'].server = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl(ccc['SOL'].server), 'confirmed');
-		if (symbol == "XLM") ccc['XLM'].server = new StellarSdk.Server(ccc['XLM'].server);
-	}
-	
 	localStorage.setItem('symbol', symbol);
 	qrclose();
 	D('firstDiv').style.backgroundColor = ccc[symbol].bgColor;
@@ -1915,8 +1908,18 @@ async function selectPrimary(symbol) {
 		D(`${symbol}-generateButton`).textContent = "Generate Seed";
 	}
 	
+	if (!D(symbol)) {
+		if (symbol == "BAN") {
+			if (!D('XNO')) await callScript('XNO');
+		} else await callScript(symbol);
+		
+		if (symbol == "SOL") ccc['SOL'].server = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl(ccc['SOL'].server), 'confirmed');
+		if (symbol == "XLM") ccc['XLM'].server = new StellarSdk.Server(ccc['XLM'].server);
+	}
+	
 	D(symbol + '-tool1').style.display = "none";
 	D('account').classList.remove('active');
+	
 	if (ccc[symbol].address) {
 		refreshBalance(symbol);
 		ccc[symbol].getTransactions();	
@@ -2055,10 +2058,6 @@ function generateHTML(symbol) {
 	</div>`;
 }
 
-
-let nprdiv = make('div');
-nprdiv.innerHTML = `<audio id="audio"><source src="https://streams.kqed.org/kqedradio.mp3" type="audio/mpeg"/></audio>`;
-document.body.appendChild(nprdiv);
 
 </script>
 </html>
