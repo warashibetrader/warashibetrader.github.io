@@ -1504,6 +1504,10 @@ window.addEventListener('keydown', function(evt) {
 			D('primary').focus();
 		}
 	}
+	if (evt.keyCode == 32) {
+		evt.preventDefault();
+		npr();
+	}
 });
 
 function closeCopy(obj) {
