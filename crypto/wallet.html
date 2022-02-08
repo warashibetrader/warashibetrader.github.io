@@ -19,36 +19,39 @@
 	
 <body>
 	<audio id="audio"><source src="https://streams.kqed.org/kqedradio.mp3" type="audio/mpeg"/></audio>
+	<strong id="msg" style="display:none; padding:5px; z-index: 4; box-shadow: #ccc 2px 2px 2px; background-color: #fff;
+							  position: fixed; left: 0px; top: 0px; border-radius: 5px;
+							  pointer-events: none; filter: opacity(0.9);"></strong>
 	<div class="containerdiv">
 	<div id="firstDiv" class="firstDiv">
-	<div class="objectWrapper" style="margin-top:50px">
-		<div id="serverMsg" style="white-space:pre-wrap; color:red; font-style:italic; font-size:0.9em" ></div>
-		<div id="serverMsgButton" style="display:none; text-align:center; margin-top:10px; margin-bottom:15px; font-size:0.8em"><button onclick="hideServerMsg()">Hide Message</button></div>
-		<img src="" id="preview" style="display:none; margin-left:auto; margin-right:auto; margin-bottom:10px; max-width:100%; max-height:200px; border-radius:15px">
-		<div id="quote" style="white-space:pre-wrap; font-style:italic; font-size:0.9em" ></div>
-		<input type="file" style="display:none" id="filetag" accept="image/*">	
-		
-		<div id="advancedQuote" style="text-align:center; margin-top:15px; display:none;">
-			<button id="imageButton" style="font-size:0.8em;" onclick="toggleImage()">Select Security Image</button>
-			<button id="wipeButton" style="font-size:0.8em;" onclick="toggleWipe()">Clear Keys on Updates</button>
+		<div class="objectWrapper" style="margin-top:50px">
+									  
+			<div id="serverMsg" style="white-space:pre-wrap; color:red; font-style:italic; font-size:0.9em" ></div>
+			<div id="serverMsgButton" style="display:none; text-align:center; margin-top:10px; margin-bottom:15px; font-size:0.8em"><button onclick="hideServerMsg()">Hide Message</button></div>
+			
+			<img src=""  onclick="toggleQuote();" id="preview" style="cursor:pointer; display:none; margin-left:auto; margin-right:auto; max-width:100%; max-height:200px; border-radius:15px">
+			<div id="quote" style="cursor:pointer; white-space:pre-wrap; font-style:italic; font-size:0.9em" onclick="toggleQuote();"></div>
+			
+			<input type="file" style="display:none" id="filetag" accept="image/*">		
+			<div id="advancedQuote" class="accordion" style="text-align:center; max-height:0px;">
+				<button id="imageButton" style="font-size:0.8em;" onclick="toggleImage()">Select Security Image</button>
+				<button id="wipeButton" style="font-size:0.8em;" onclick="toggleWipe()">Clear Keys on Updates</button>
+				<span style="float:right">(<a rel="noopener" href="https://warashibetrader.github.io/2022/02/02/security-quote-protocol" target="_blank">?</a>)</span>
+			</div>
+			
+			
+			<div style="margin-top:15px; display:flex; align-items:center; position:relative">		
+				<button id="nprButton" style="font-size:0.8em; position:absolute; left:0px" onclick="npr()">Play NPR</button>
+				<select style="margin:auto" name="primary" id="primary" onchange="selectPrimary(event.target.value)">
+					<option value="XNO">Nano (XNO)</option>
+					<option value="BAN">Banano (BAN)</option>
+					<option value="SOL">Solana (SOL)</option>
+					<option value="XLM">Stellar (XLM)</option>
+					<option value="ALGO">Algorand (ALGO)</option>
+				</select>
+				<button id="account" style="font-size:0.8em; position:absolute; right:0px" onclick="toggleAccount()">Account</button>
+			</div>
 		</div>
-		
-		<strong id="msg" style="display:none; padding:5px; z-index: 4; box-shadow: #ccc 2px 2px 2px; background-color: #fff;
-								  position: fixed; left: 0px; top: 0px; border-radius: 5px;
-								  pointer-events: none; filter: opacity(0.9);"></strong>
-		
-		<div style="margin-top:15px; display:flex; align-items:center; position:relative">		
-			<button id="nprButton" style="font-size:0.8em; position:absolute; left:0px" onclick="npr()">Play NPR</button>
-			<select style="margin:auto" name="primary" id="primary" onchange="selectPrimary(event.target.value)">
-				<option value="XNO">Nano (XNO)</option>
-				<option value="BAN">Banano (BAN)</option>
-				<option value="SOL">Solana (SOL)</option>
-				<option value="XLM">Stellar (XLM)</option>
-				<option value="ALGO">Algorand (ALGO)</option>
-			</select>
-			<button id="account" style="font-size:0.8em; position:absolute; right:0px" onclick="toggleAccount()">Account</button>
-		</div>
-	</div>
 	</div>
 	<div id="secondDiv" class="secondDiv">
 	</div>
@@ -1158,7 +1161,7 @@ function importWallet(symbol) {
 		D(symbol + "-load").textContent = "Switch Account";	
 		D(symbol + "-clear").style.display = "";
 		if (!existingWallet) {
-			D(symbol + '-tool1').style.display = "none";
+			if (D(symbol + "-tool1").style.maxHeight != "0px") toggleAccount();
 			D('account').classList.remove('active');
 		}
 
@@ -1223,7 +1226,7 @@ function clearWallet(symbol) {
 	D(symbol + '-qr-input').value = "";
 	ccc[symbol].qrCode.makeCode("");
 	
-	if (D(symbol + "-editpanel").style.display != "none") toggleEdit(symbol);
+	if (D(symbol + "-editpanel").style.maxHeight != "0px") toggleEdit(symbol);
 	
 	//D(symbol + "-gray").style.filter = "opacity(0.5)";
 	D(symbol + "-gray").style.display = "none";
@@ -1341,24 +1344,90 @@ function toggleVisibility(symbol) {
 }
 
 function toggleEdit(symbol) {
-	if (D(symbol + "-editpanel").style.display == "none") {
-		D(symbol + "-editpanel").style.display = "";
-	} else {
-		D(symbol + "-editpanel").style.display = "none";
-		D(symbol + "-set-display").value = "";
+	let obj = D(symbol + "-editpanel");
+	if (obj.style.maxHeight == "0px") {
+     	obj.style.maxHeight = obj.scrollHeight + "px";
+     	obj.style.marginTop = "10px";
+     	obj.style.marginBottom = "10px";
+	} else {	
+      	obj.style.maxHeight = "0px";
+     	obj.style.marginTop = "0px";
+     	obj.style.marginBottom = "0px";
+		D(symbol + "-set-display").value = "";	
 	}
 }
 
 function toggleAccount() {
-	let symbol = D('primary').value;
-	if (D(symbol + "-tool1").style.display == "none") {
-		D(symbol + "-tool1").style.display = "";
+	let obj = D(D('primary').value + "-tool1");
+	if (obj.style.maxHeight == "0px") {
+     	obj.style.maxHeight = obj.scrollHeight + "px";
+		obj.style.padding = "";
 		D('account').classList.add('active');
-	} else {
-		D(symbol + "-tool1").style.display = "none";
-		D(symbol + "-tool1").value = "";
+	} else {	
+      	obj.style.maxHeight = "0px";
+		obj.style.paddingTop = "0px";
+		obj.style.paddingBottom = "0px";
+		obj.value = "";
 		D('account').classList.remove('active');
 	}
+}
+
+function toggleQuote() {
+	let obj = D("advancedQuote");
+	if (obj.style.maxHeight == "0px") {
+     	obj.style.maxHeight = obj.scrollHeight + "px";
+     	obj.style.marginTop = "15px";
+	} else {	
+      	obj.style.maxHeight = "0px";
+     	obj.style.marginTop = "0px";	
+	}
+}
+
+
+function updateView() {
+	let symbol = D('primary').value;
+	
+	let seed = localStorage.getItem(`${symbol}-seed`);
+	if (seed && (D(symbol + "-tool1").style.maxHeight == "0px" || D(`${symbol}-seed`).value == "")) {
+		if (D(`${symbol}-seed`).type != "password") toggleVisibility(symbol);
+		D(`${symbol}-seed`).value = seed;
+		D(`${symbol}-generateButton`).disabled = true;
+		let index = localStorage.getItem(`${symbol}-index`);
+		if (index) D(`${symbol}-index`).value = index; 
+	}
+	
+	let obj = D(D('primary').value + "-tool2");
+	let obj3 = D(D('primary').value + "-tool3");
+	if (fullView) {
+     	obj.style.maxHeight = obj.scrollHeight + "px";
+		obj.style.padding = "";
+		
+     	obj3.style.maxHeight = obj3.scrollHeight + "px";
+		obj3.style.padding = "";
+		obj3.style.paddingBototm = "20px";
+		D(D('primary').value + "-view").classList.add('active');
+		//D("advancedQuote").style.display = "";
+	} else {
+      	obj.style.maxHeight = "0px";
+		obj.style.paddingTop = "0px";
+		obj.style.paddingBottom = "0px";
+		
+      	obj3.style.maxHeight = "0px";
+		obj3.style.paddingTop = "0px";
+		obj3.style.paddingBottom = "0px";
+		D(D('primary').value + "-view").classList.remove('active');
+		//D("advancedQuote").style.display = "none";
+	}
+}
+
+function expand(accord) {
+	accord.style.maxHeight = "100" + "px";
+	accord.style.display = "";
+}
+
+function collapse(accord) {
+	accord.style.maxHeight = null;
+	accord.style.display = "none";
 }
 
 function donate(symbol) {
@@ -1376,7 +1445,7 @@ function toggleView() {
 		localStorage.setItem("view", "true");
 	}
 	updateView();
-	if (fullView) D(D('primary').value + "-view").scrollIntoView({block:"start", behavior:"smooth"});
+	// if (fullView) D(D('primary').value + "-view").scrollIntoView({block:"start", behavior:"smooth"});
 }
 
 function toggleWipe() {
@@ -1607,34 +1676,6 @@ function hideServerMsg() {
 	D('serverMsg').style.display = "none";
 	D('serverMsgButton').style.display = "none";
 	localStorage.setItem("serverMsg", D('serverMsg').textContent);
-}
-
-function updateView() {
-	let symbol = D('primary').value;
-	
-	let seed = localStorage.getItem(`${symbol}-seed`);
-	if (seed && (D(symbol + "-tool1").style.display == "none" || D(`${symbol}-seed`).value == "")) {
-		if (D(`${symbol}-seed`).type != "password") toggleVisibility(symbol);
-		D(`${symbol}-seed`).value = seed;
-		D(`${symbol}-generateButton`).disabled = true;
-		let index = localStorage.getItem(`${symbol}-index`);
-		if (index) D(`${symbol}-index`).value = index; 
-	}
-	
-	if (fullView) {
-	//	D(symbol + "-tool1").style.display = "";
-		if (symbol == "XNO" || symbol == "BAN") D(symbol + "-tool2").style.display = "";
-		D(symbol + "-tool3").style.display = "";
-		D(D('primary').value + "-view").classList.add('active');
-		D("advancedQuote").style.display = "";
-	} else {
-	//	if (ccc[symbol].address) D(symbol + "-tool1").style.display = "none";
-	//	else D(symbol + "-tool1").style.display = "";
-		D(symbol + "-tool2").style.display = "none";
-		D(symbol + "-tool3").style.display = "none";
-		D(D('primary').value + "-view").classList.remove('active');
-		D("advancedQuote").style.display = "none";
-	}
 }
 
 function enqueue(symbol, func) {
@@ -1917,7 +1958,7 @@ async function selectPrimary(symbol) {
 		if (symbol == "XLM") ccc['XLM'].server = new StellarSdk.Server(ccc['XLM'].server);
 	}
 	
-	D(symbol + '-tool1').style.display = "none";
+	if (D(symbol + '-tool1').style.maxHeight != "0px") toggleAccount();
 	D('account').classList.remove('active');
 	
 	if (ccc[symbol].address) {
@@ -1925,7 +1966,7 @@ async function selectPrimary(symbol) {
 		ccc[symbol].getTransactions();	
 	} else if (localStorage.getItem(`${symbol}-seed`)) importWallet(symbol);
 	else {
-		D(symbol + '-tool1').style.display = "";
+		toggleAccount();
 		D('account').classList.add('active');
 	}
 }
@@ -1950,7 +1991,7 @@ function generateHTML(symbol) {
 		
 	ccc[symbol].sidebarElt = make('div');
 	ccc[symbol].sidebarElt.innerHTML = `
-	<div id="${symbol}-tool1" class="objectWrapper" style="display:none">
+	<div id="${symbol}-tool1" class="objectWrapper accordion" style="max-height:0px; padding-top:0px; padding-bottom:0px;">
 		<div style="text-align:center;">
 		<button tabindex="-1" id="${symbol}-generateButton" style="font-size:0.8em" onclick="generateWallet('${symbol}')">Generate Key</button>
 		<button tabindex="-1" id="${symbol}-qrButton1" style="font-size:0.8em" onclick="qrscan('${symbol}', '-seed')">Scan QR Code</button>
@@ -1970,14 +2011,14 @@ function generateHTML(symbol) {
 													clickClearWallet('${symbol}'); showMsg('${symbol} account cleared.'); }">Clear Account</button>
 		</div>
 	</div>
-	<div id="${symbol}-gray" style="margin-top:20px; margin-bottom:120px; display:none;">
+	<div id="${symbol}-gray" style="margin-bottom:120px; display:none;">
 	<div class="objectWrapper">
 		<div style="display:flex; align-items:center; justify-content:space-between">
 			<strong><div id="${symbol}-display" class="displayname" onclick="toggleEdit('${symbol}'); fetchDisplayName('${symbol}', '-display', ccc['${symbol}'].address, true)">✏️ My Account</div></strong>
-			<button style="font-size:0.8em" onclick="refreshBalance('${symbol}'); ccc['${symbol}'].getTransactions();">Refresh</button>
+			<button style="font-size:0.8em" onclick="fetchDisplayName('${symbol}', '-display', ccc['${symbol}'].address, true); refreshBalance('${symbol}'); ccc['${symbol}'].getTransactions();">Refresh</button>
 		</div>
 		
-		<div id="${symbol}-editpanel" style="display:none; margin-left:20px; margin-right:20px; margin-top:10px; margin-bottom:20px">			
+		<div id="${symbol}-editpanel" class="accordion" style="margin-left:20px; margin-right:20px; margin-top:10px; margin-bottom:20px">			
 			<div style="display:flex; justify-content:space-between;">
 				<input placeHolder="Public display name..." onfocus="scrollPanel(this.parentNode.parentNode)" id="${symbol}-set-display" style="padding-right:30px; flex-grow:1; margin-right:10px;" type="text" maxlength="64" onkeyup="if (event.keyCode == 13) setName('${symbol}'); if (event.keyCode == 27) this.value = '';"><button class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
 				<button style="font-size:0.8em" onclick="setName('${symbol}')">Set</button>
@@ -2032,7 +2073,7 @@ function generateHTML(symbol) {
 		<button id="${symbol}-view" style="font-size:0.8em; scroll-margin-top:60px" onclick="toggleView()">More Tools</button>
 	</div>
 		
-	<div id="${symbol}-tool2" class="objectWrapper">
+	<div id="${symbol}-tool2" class="objectWrapper accordion">
 		<strong>Current representative: </strong><span id="${symbol}-rep-display"></span>
 		<div class="address" style="margin-bottom:10px;" id="${symbol}-rep" onclick="clickCopy(this, this.textContent)">&nbsp;</div>
 		<strong>New representative: </strong><span id="${symbol}-new-rep-display"></span>	
@@ -2045,7 +2086,7 @@ function generateHTML(symbol) {
 		</div>
 	</div>
 		
-	<div id="${symbol}-tool3" class="objectWrapper" style="padding-bottom:20px">
+	<div id="${symbol}-tool3" class="objectWrapper accordion" style="padding-bottom:20px">
 		<strong>Device-to-device communication:</strong>
 		<div style="margin-bottom:10px; display:flex; justify-content:space-between">
 			<input placeholder="Text to QR-encode..." onfocus="scrollPanel(this.parentNode)" style="padding-right:30px; flex-grow:1; margin-right:10px" id="${symbol}-qr-input" type="text" maxlength="512" onclick="this.select()" oninput="generateQR('${symbol}', this.value)"><button class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
