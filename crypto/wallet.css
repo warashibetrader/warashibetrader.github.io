@@ -36,6 +36,9 @@ body {
 
 .accordion {
 	overflow:hidden;
+	transition-property: max-height, padding, margin;
+	transition-duration: 0.1s;
+	transition-timing-function: ease-out;
 }
 
 .objectWrapper {
