@@ -1240,7 +1240,7 @@ function toggleVisibility(symbol) {
 function toggleEdit(symbol) {
 	let obj = D(symbol + "-editpanel");
 	if (obj.style.maxHeight == "0px") {
-     	obj.style.maxHeight = "";
+     	obj.style.maxHeight = obj.scrollHeight + "px";
      	obj.style.marginTop = "10px";
      	obj.style.marginBottom = "20px";
 	} else {	
@@ -1265,26 +1265,33 @@ function toggleAccount() {
 			if (index) D(`${symbol}-index`).value = index; 
 		}
 	
-     	obj.style.maxHeight = "";
+     	obj.style.maxHeight = obj.scrollHeight + "px";
 		obj.style.padding = "";
 		obj.style.marginBottom = "20px";
 		D('account').classList.add('active');
-		setTimeout(function() { obj.style.overflow = "visible"; }, 100);
+		setTimeout(function() { 
+			obj.style.overflow = "visible"; 
+			obj.style.maxHeight = "";
+		}, 100);
 	} else {	
-      	obj.style.maxHeight = "0px";
-		obj.style.paddingTop = "0px";
-		obj.style.paddingBottom = "0px";
-		obj.style.marginBottom = "0px";
-		obj.value = "";
-		D('account').classList.remove('active');
-		obj.style.overflow = "";
+		qrclose();
+		obj.style.maxHeight = obj.scrollHeight + "px";
+		setTimeout(function() {
+			obj.style.maxHeight = "0px";
+			obj.style.paddingTop = "0px";
+			obj.style.paddingBottom = "0px";
+			obj.style.marginBottom = "0px";
+			obj.value = "";
+			D('account').classList.remove('active');
+			obj.style.overflow = "";
+		}, 10);
 	}
 }
 
 function toggleQuote() {
 	let obj = D("advancedQuote");
 	if (obj.style.maxHeight == "0px") {
-     	obj.style.maxHeight = "";
+     	obj.style.maxHeight = obj.scrollHeight + "px";
      	obj.style.marginTop = "15px";
 	} else {	
       	obj.style.maxHeight = "0px";
@@ -1309,9 +1316,9 @@ function updateView() {
 	let obj = D(symbol + "-tool2");
 	let obj3 = D(symbol + "-tool3");
 	if (fullView) {
-     	obj.style.maxHeight = "";
+     	obj.style.maxHeight = obj.scrollHeight + "px";
 		obj.style.padding = "";		
-     	obj3.style.maxHeight = "";
+     	obj3.style.maxHeight = obj3.scrollHeight + "px";
 		obj3.style.padding = "";
 		obj3.style.paddingBottom = "20px";		
 		D(symbol + "-view").classList.add('active');
