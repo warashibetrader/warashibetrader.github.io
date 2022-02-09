@@ -1054,13 +1054,9 @@ function importWallet(symbol) {
 		addressQR(symbol);
 		D(symbol + "-gray").style.display = "";
 		D(symbol + "-gray2").style.display = "";
-		D(symbol + "-load").textContent = "Switch Account";	
 		D(symbol + "-clear").style.display = "";
-		if (!existingWallet) {
-			if (D(symbol + "-tool1").style.maxHeight != "0px") toggleAccount();
-			D('account').classList.remove('active');
-		}
-
+		D(symbol + "-load").textContent = "Switch Account";	
+		if (!existingWallet && D(symbol + "-tool1").style.maxHeight != "0px") toggleAccount();
 		updateView();	
 		
 		fetchDisplayName(symbol, "-display", ccc[symbol].address, true);
@@ -1256,8 +1252,19 @@ function toggleEdit(symbol) {
 }
 
 function toggleAccount() {
-	let obj = D(D('primary').value + "-tool1");
-	if (obj.style.maxHeight == "0px") {
+	let symbol = D('primary').value;
+	let obj = D(symbol + "-tool1");
+	let seed = localStorage.getItem(`${symbol}-seed`);
+	
+	if (obj.style.maxHeight == "0px") {	
+		if (seed) {
+			if (D(`${symbol}-seed`).type != "password") toggleVisibility(symbol);
+			D(`${symbol}-seed`).value = seed;
+			D(`${symbol}-generateButton`).disabled = true;
+			let index = localStorage.getItem(`${symbol}-index`);
+			if (index) D(`${symbol}-index`).value = index; 
+		}
+	
      	obj.style.maxHeight = "";
 		obj.style.padding = "";
 		obj.style.marginBottom = "20px";
@@ -1285,53 +1292,6 @@ function toggleQuote() {
 	}
 }
 
-
-function updateView() {
-	let symbol = D('primary').value;
-	
-	let seed = localStorage.getItem(`${symbol}-seed`);
-	if (seed && (D(symbol + "-tool1").style.maxHeight == "0px" || D(`${symbol}-seed`).value == "")) {
-		if (D(`${symbol}-seed`).type != "password") toggleVisibility(symbol);
-		D(`${symbol}-seed`).value = seed;
-		D(`${symbol}-generateButton`).disabled = true;
-		let index = localStorage.getItem(`${symbol}-index`);
-		if (index) D(`${symbol}-index`).value = index; 
-	}
-	
-	let obj = D(D('primary').value + "-tool2");
-	let obj3 = D(D('primary').value + "-tool3");
-	if (fullView) {
-     	obj.style.maxHeight = "";
-		obj.style.padding = "";
-		
-     	obj3.style.maxHeight = "";
-		obj3.style.padding = "";
-		obj3.style.paddingBottom = "20px";
-		D(D('primary').value + "-view").classList.add('active');
-		//D("advancedQuote").style.display = "";
-		setTimeout(function() { obj.style.overflow = "visible"; }, 100);
-		setTimeout(function() { obj3.style.overflow = "visible"; }, 100);
-	} else {
-      	obj.style.maxHeight = "0px";
-		obj.style.paddingTop = "0px";
-		obj.style.paddingBottom = "0px";
-		
-      	obj3.style.maxHeight = "0px";
-		obj3.style.paddingTop = "0px";
-		obj3.style.paddingBottom = "0px";
-		D(D('primary').value + "-view").classList.remove('active');
-		//D("advancedQuote").style.display = "none";
-		obj.style.overflow = "";
-		obj3.style.overflow = "";
-	}
-}
-
-function donate(symbol) {
-	D(symbol + "-dest").value = ccc[symbol].donation;
-	flash(D(symbol + "-dest"));
-	fetchDisplayName(symbol, '-dest-display', D(symbol + "-dest").value, true);
-}
-
 function toggleView() {
 	if (fullView) {
 		fullView = false;
@@ -1342,6 +1302,38 @@ function toggleView() {
 	}
 	updateView();
 	// if (fullView) D(D('primary').value + "-view").scrollIntoView({block:"start", behavior:"smooth"});
+}
+
+function updateView() {
+	let symbol = D('primary').value;	
+	let obj = D(symbol + "-tool2");
+	let obj3 = D(symbol + "-tool3");
+	if (fullView) {
+     	obj.style.maxHeight = "";
+		obj.style.padding = "";		
+     	obj3.style.maxHeight = "";
+		obj3.style.padding = "";
+		obj3.style.paddingBottom = "20px";		
+		D(symbol + "-view").classList.add('active');
+		setTimeout(function() { obj.style.overflow = "visible"; }, 100);
+		setTimeout(function() { obj3.style.overflow = "visible"; }, 100);
+	} else {
+      	obj.style.maxHeight = "0px";
+		obj.style.paddingTop = "0px";
+		obj.style.paddingBottom = "0px";		
+      	obj3.style.maxHeight = "0px";
+		obj3.style.paddingTop = "0px";
+		obj3.style.paddingBottom = "0px";
+		D(symbol + "-view").classList.remove('active');		
+		obj.style.overflow = "";
+		obj3.style.overflow = "";
+	}
+}
+
+function donate(symbol) {
+	D(symbol + "-dest").value = ccc[symbol].donation;
+	flash(D(symbol + "-dest"));
+	fetchDisplayName(symbol, '-dest-display', D(symbol + "-dest").value, true);
 }
 
 function toggleWipe() {
@@ -1405,7 +1397,6 @@ window.addEventListener('keydown', function(evt) {
 		npr();
 	}
 });
-
 
 function closeCopy(obj) {
 	if (obj.value.length > 0) {
@@ -1859,17 +1850,16 @@ async function selectPrimary(symbol) {
 		if (symbol == "XLM") ccc['XLM'].server = new StellarSdk.Server(ccc['XLM'].server);
 	}
 	
-	if (D(symbol + '-tool1').style.maxHeight != "0px") toggleAccount();
-	D('account').classList.remove('active');
-	
 	if (ccc[symbol].address) {
 		refreshBalance(symbol);
 		ccc[symbol].getTransactions();	
-	} else if (localStorage.getItem(`${symbol}-seed`)) importWallet(symbol);
-	else {
-		toggleAccount();
-		D('account').classList.add('active');
-	}
+		if (D(symbol + '-tool1').style.maxHeight != "0px") toggleAccount();
+	} else if (localStorage.getItem(`${symbol}-seed`)) {
+		D(`${symbol}-seed`).value = localStorage.getItem(`${symbol}-seed`);
+		let index = localStorage.getItem(`${symbol}-index`);
+		if (index) D(`${symbol}-index`).value = index; 
+		importWallet(symbol);
+	} else if (D(symbol + '-tool1').style.maxHeight == "0px") toggleAccount();
 }
 	
 function generateHTML(symbol) {
