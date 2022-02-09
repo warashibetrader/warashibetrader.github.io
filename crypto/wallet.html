@@ -237,7 +237,7 @@ ccc['BAN'].checkAddress = function(address) {
 	let nanoAddr = address.replace('ban_', 'nano_');
 	return (nanoAddr != address) && ccc['XNO'].checkAddress(nanoAddr);
 };
-ccc['SOL'].checkAddress = function(address) { return typeof address === "string" && /^[1-9A-HJ-NP-Za-km-z]{44}$/.test(address); };
+ccc['SOL'].checkAddress = function(address) { return typeof address === "string" && /^[1-9A-HJ-NP-Za-km-z]{43,44}$/.test(address); };
 ccc['XLM'].checkAddress = function(address) { return StellarSdk.StrKey.isValidEd25519PublicKey(address); };
 ccc['ALGO'].checkAddress = function(address) { return algosdk.isValidAddress(address); };
 
@@ -529,7 +529,7 @@ function displayTransaction(symbol, number, color, sign, address, time, amt) {
 	displayNameSpan.id = `${symbol}-${number}-display`;
 	displayNameSpan.style.borderRadius = '5px';
 	displayNameSpan.textContent = "Unknown";
-	displayNameSpan.onclick = function() {
+	if (ccc[symbol].checkAddress(address)) displayNameSpan.onclick = function() {
 		fetchDisplayName(symbol, "-" + number + "-display", address, true);
 	}
 
