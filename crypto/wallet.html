@@ -403,6 +403,7 @@ ccc['SOL'].getTransactions = function(start) {
 	return ccc[symbol].server.getSignaturesForAddress(ccc[symbol].publicKey, {limit:10, before: start}).then(async function(history) {
 	if (D(symbol + '-loadMore') && history && history.length > 0) {
 		handlePage(symbol, history.length > 9, history[history.length - 1].slot, history[history.length - 1].signature);
+		console.log(history);
 		let details = [];
 		for (let i = 0; i < history.length; i++) {
 			if (!D(symbol + '-' + history[i].slot)) {
@@ -413,6 +414,7 @@ ccc['SOL'].getTransactions = function(start) {
 		if (details.length > 0) {
 			let historyDetails = await ccc[symbol].server.getParsedConfirmedTransactions(details);
 			if (historyDetails.length > 0) {
+			console.log(historyDetails);
 				for (let i = 0; i < historyDetails.length; i++) {
 					if (D(symbol + '-' + historyDetails[i].slot)) {
 						let li = D(symbol + '-' + historyDetails[i].slot).parentNode.parentNode;
