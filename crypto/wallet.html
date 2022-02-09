@@ -379,48 +379,34 @@ ccc['ALGO'].getFee = function() {
 
 ccc['BAN'].getTransactions = function(start) {nanoDisplayTransactions('BAN', start);};
 ccc['XNO'].getTransactions = function(start) {nanoDisplayTransactions('XNO', start);};
+function nanoDisplayTransactions(symbol, start) {
+	post(ccc[symbol].server, { action: 'account_history', head:start, account: ccc[symbol].address, count:10 }).then(function(history) {
+	if (D(symbol + '-loadMore') && history && history.history) {
+		handlePage(symbol, history.previous, history.history[history.history.length - 1].height, history.previous);
+		for (let i = 0; i < history.history.length; i++) {
+			if (!D(symbol + '-' + history.history[i].height)) {
+				let sign = "+";
+				let color = "#097";				
+				if (history.history[i].type == "send") {
+					sign = "-";
+					color = "#B00";
+				}					
+				displayTransaction(symbol, history.history[i].height, color, sign, history.history[i].account, history.history[i].local_timestamp * 1000, history.history[i].amount);
+			}
+		}
+	}
+	});
+}
+	
 ccc['SOL'].getTransactions = function(start) {
 	let symbol = 'SOL';
 	return ccc[symbol].server.getSignaturesForAddress(ccc[symbol].publicKey, {limit:10, before: start}).then(async function(history) {
 	if (D(symbol + '-loadMore') && history && history.length > 0) {
-		flash(D(`${symbol}-heading`), "Transactions");
-		if (history.length > 9) {
-			D(symbol + '-loadMore').style.display = "";
-			D(symbol + '-gettingStarted').style.display = "none";
-			D(symbol + '-loadMore').onclick = function() {ccc[symbol].getTransactions(history[history.length - 1].signature);};
-		} else {
-			D(symbol + '-loadMore').style.display = "none";				
-			D(symbol + '-gettingStarted').style.display = "";
-		}
+		handlePage(symbol, history.length > 9, history[history.length - 1].slot, history[history.length - 1].signature);
 		let details = [];
 		for (let i = 0; i < history.length; i++) {
 			if (!D(symbol + '-' + history[i].slot)) {
-				let li = make('li');
-				let sign = "+";
-				let color = "#333";	
-				
-				let displayNameSpan = make('span');
-				displayNameSpan.id = `${symbol}-${history[i].slot}-display`;
-				displayNameSpan.textContent = "Unknown";
-				
-				li.innerHTML = "<div style='display:flex; justify-content:space-between'><strong style='margin-right:10px'></strong>"
-				+ "<strong style='text-align:right; overflow:hidden; text-overflow:ellipsis; color:" + color + "'>" + sign + "<span style='cursor:pointer;'></span> " + symbol + "</strong></div>"
-				+ "<div style='display:flex; justify-content:space-between'><span class='address' style='width:calc(100% - 180px); margin-top:4px' onclick='clickCopy(this, this.textContent)'></span>"
-				+ "<span style='text-align:right;'></span></div>";
-				
-				li.firstChild.firstChild.textContent = history[i].slot + ":\xa0";
-				li.firstChild.firstChild.appendChild(displayNameSpan);
-				li.firstChild.firstChild.nextSibling.firstElementChild.textContent = "0.00";
-				
-				li.firstChild.nextSibling.firstChild.textContent = history[i].signature;
-				li.firstChild.nextSibling.firstChild.id = symbol + '-' + history[i].slot;
-				li.firstChild.nextSibling.firstChild.nextSibling.textContent = convertTimestamp(new Date(history[i].blockTime * 1000));
-				
-				li.style.marginBottom = "15px";
-				li.title = history[i].slot;	
-				addOrdered(li, D(symbol + '-transactions'));
-				// fetchDisplayName(symbol, "-" + history[i].slot + "-display", history[i].signature);
-				flash(li);
+				displayTransaction(symbol, history[i].slot, "#333", "+", history[i].signature, history[i].blockTime * 1000, "0");				
 				details[i] = history[i].signature;  
 			}
 		}
@@ -433,22 +419,19 @@ ccc['SOL'].getTransactions = function(start) {
 						for (let j = 0; j < historyDetails[i].transaction.message.accountKeys.length; j++) {
 							if (historyDetails[i].transaction.message.accountKeys[j].pubkey.toBase58() == ccc[symbol].address) {
 								let change = historyDetails[i].meta.postBalances[j] - historyDetails[i].meta.preBalances[j];
+								let amtDisplay = li.firstChild.firstChild.nextSibling;
 								if (historyDetails[i].transaction.message.accountKeys[j].signer) {
 									change = -change;
-									li.firstChild.firstChild.nextSibling.innerHTML =  '-' + "<span style='cursor:pointer;'></span> " + symbol;
-									li.firstChild.firstChild.nextSibling.style.color = "#B00";
-								} else li.firstChild.firstChild.nextSibling.style.color = "#097";
-								li.firstChild.firstChild.nextSibling.firstElementChild.textContent = unitFromRaw(symbol, change);
+									amtDisplay.innerHTML =  '-' + "<span class='clickFlash'></span> " + symbol;
+									amtDisplay.style.color = "#B00";
+								} else amtDisplay.style.color = "#097";
+								amtDisplay.firstElementChild.textContent = unitFromRaw(symbol, change);
 							} else if (j < 2) {
-								li.firstChild.nextSibling.firstChild.textContent = historyDetails[i].transaction.message.accountKeys[j].pubkey.toBase58();
-								fetchDisplayName(symbol, "-" + historyDetails[i].slot + "-display", li.firstChild.nextSibling.firstChild.textContent);
-								
-								li.firstChild.firstChild.nextSibling.firstElementChild.onclick = function() {
-									clickCopy(li.firstChild.firstChild.nextSibling.firstElementChild, li.firstChild.firstChild.nextSibling.firstElementChild.textContent);
-								};
-								
+								let actualAddress = historyDetails[i].transaction.message.accountKeys[j].pubkey.toBase58()
+								li.firstChild.nextSibling.firstChild.textContent = actualAddress;
+								fetchDisplayName(symbol, "-" + historyDetails[i].slot + "-display", actualAddress);								
 								li.firstChild.firstChild.firstElementChild.onclick = function() {
-									fetchDisplayName(symbol, "-" + historyDetails[i].slot + "-display", li.firstChild.nextSibling.firstChild.textContent, true);
+									fetchDisplayName(symbol, "-" + historyDetails[i].slot + "-display", actualAddress, true);
 								}
 							}
 						}
@@ -470,26 +453,14 @@ ccc['XLM'].getTransactions = function(start) {
 	else caller = ccc[symbol].server.payments().forAccount(ccc[symbol].address).order("desc").limit(10).call();
 	caller.then(function(history) {
 	if (D(symbol + '-loadMore') && history) {
-		flash(D(`${symbol}-heading`), "Transactions");
-		if (history.records.length == 10) {
-			if (!D(symbol + '-' + history.records[history.records.length - 1].id)) {
-				D(symbol + '-loadMore').style.display = "";
-				D(symbol + '-gettingStarted').style.display = "none";
-				D(symbol + '-loadMore').onclick = function() { ccc['XLM'].getTransactions(history.next) };
-			}
-		} else {
-			D(symbol + '-loadMore').style.display = "none";				
-			D(symbol + '-gettingStarted').style.display = "";
-		}
-		
+		handlePage(symbol, history.records.length > 9, history.records[history.records.length - 1].id, history.next);
 		for (let i = 0; i < history.records.length; i++) {
-			if (!D(symbol + '-' + history.records[i].id)) {
-				let li = make('li');
+			if (!D(symbol + '-' + history.records[i].id)) {				
 				let sign = "+";
-				let color = "#097";	
-				
+				let color = "#097";								
 				let otherAccount = history.records[i].from;
 				if (!otherAccount) otherAccount = history.records[i].source_account;
+				
 				if (history.records[i].source_account == ccc[symbol].address) {
 					sign = "-";
 					color = "#B00";
@@ -500,104 +471,33 @@ ccc['XLM'].getTransactions = function(start) {
 				let amt = history.records[i].amount;
 				if (!amt) amt = history.records[i].starting_balance;
 				
-				let displayNameSpan = make('span');
-				displayNameSpan.id = `${symbol}-${history.records[i].id}-display`;
-				displayNameSpan.textContent = "Unknown";
-				displayNameSpan.onclick = function() {
-					fetchDisplayName(symbol, "-" + history.records[i].id + "-display", otherAccount, true);
-				}
-				
-				li.innerHTML = "<div style='display:flex; justify-content:space-between'><strong style='margin-right:10px'></strong>"
-				+ "<strong style='text-align:right; overflow:hidden; text-overflow:ellipsis; color:" + color + "'>" + sign + "<span style='cursor:pointer;'></span> " + symbol + "</strong></div>"
-				+ "<div style='display:flex; justify-content:space-between'><span class='address' style='width:calc(100% - 180px); margin-top:4px' onclick='clickCopy(this, this.textContent)'></span>"
-				+ "<span style='text-align:right;'></span></div>";
-				
-				li.firstChild.firstChild.textContent = history.records[i].id + ":\xa0";
-				li.firstChild.firstChild.appendChild(displayNameSpan);
-				li.firstChild.firstChild.nextSibling.firstElementChild.textContent = unitFromRaw(symbol, rawFromUnit(symbol, amt));
-				li.firstChild.firstChild.nextSibling.firstElementChild.onclick = function() {
-					clickCopy(li.firstChild.firstChild.nextSibling.firstElementChild, li.firstChild.firstChild.nextSibling.firstElementChild.textContent);
-				};
-				
-				li.firstChild.nextSibling.firstChild.textContent = otherAccount;
-				li.firstChild.nextSibling.firstChild.id = symbol + '-' + history.records[i].id;
-				li.firstChild.nextSibling.firstChild.nextSibling.textContent = convertTimestamp(new Date(history.records[i].created_at));
-				
-				li.style.marginBottom = "15px";
-				li.title = history.records[i].id;			
-				addOrdered(li, D(symbol + '-transactions'));
-				fetchDisplayName(symbol, "-" + history.records[i].id + "-display", otherAccount);
-				flash(li);
+				displayTransaction(symbol, history.records[i].id, color, sign, otherAccount, history.records[i].created_at, rawFromUnit(symbol, amt)); 	
 			}
 		}
 	}
 	}).catch(function(error) {});
 };
-
+				
 ccc['ALGO'].getTransactions = function(start) {
 	let symbol = 'ALGO';
 	if (!start) start = "";
 	fetch('https://algoindexer.testnet.algoexplorerapi.io/v2/transactions?limit=10&tx-type=pay&sig-type=sig&address=' + ccc[symbol].address + start).then(function(response) { 
 	response.json().then(function(history) {
 	if (D(symbol + '-loadMore') && history) {
-		flash(D(`${symbol}-heading`), "Transactions");
-		console.log(history);
-		
-		if (history.transactions.length > 9) {
-			if (!D(symbol + '-' + history.transactions[history.transactions.length - 1]['confirmed-round'])) {
-				D(symbol + '-loadMore').style.display = "";
-				D(symbol + '-gettingStarted').style.display = "none";
-				D(symbol + '-loadMore').onclick = function() { ccc['ALGO'].getTransactions("&next=" + history['next-token']) };
-			}
-		} else {
-			D(symbol + '-loadMore').style.display = "none";				
-			D(symbol + '-gettingStarted').style.display = "";
-		}
-		
+		handlePage(symbol, history.transactions.length > 9, history.transactions[history.transactions.length - 1]['confirmed-round'], "&next=" + history['next-token']);	
 		for (let i = 0; i < history.transactions.length; i++) {
-			if (!D(symbol + '-' + history.transactions[i]['confirmed-round'])) {
-				let amt = unitFromRaw(symbol, history.transactions[i]["payment-transaction"].amount);
-				
-				let li = make('li');
+			if (!D(symbol + '-' + history.transactions[i]['confirmed-round'])) {				
 				let sign = "+";
 				let color = "#097";					
-				let otherAccount = history.transactions[i].sender;
+				let otherAccount = history.transactions[i].sender;				
+				let amt = unitFromRaw(symbol, history.transactions[i]["payment-transaction"].amount);				
 				if (otherAccount == ccc[symbol].address) {
-					otherAccount = history.transactions[i]["payment-transaction"].receiver;
 					sign = "-";
 					color = "#B00";
+					otherAccount = history.transactions[i]["payment-transaction"].receiver;
 					amt = unitFromRaw(symbol, history.transactions[i]["payment-transaction"].amount + ccc[symbol].fee);
-				}
-				
-				
-				let displayNameSpan = make('span');
-				displayNameSpan.id = `${symbol}-${history.transactions[i]['confirmed-round']}-display`;
-				displayNameSpan.textContent = "Unknown";
-				displayNameSpan.onclick = function() {
-					fetchDisplayName(symbol, "-" + history.transactions[i]['confirmed-round'] + "-display", otherAccount, true);
-				}
-				
-				li.innerHTML = "<div style='display:flex; justify-content:space-between'><strong style='margin-right:10px'></strong>"
-				+ "<strong style='text-align:right; overflow:hidden; text-overflow:ellipsis; color:" + color + "'>" + sign + "<span style='cursor:pointer;'></span> " + symbol + "</strong></div>"
-				+ "<div style='display:flex; justify-content:space-between'><span class='address' style='width:calc(100% - 180px); margin-top:4px' onclick='clickCopy(this, this.textContent)'></span>"
-				+ "<span style='text-align:right;'></span></div>";
-				
-				li.firstChild.firstChild.textContent = history.transactions[i]['confirmed-round'] + ":\xa0";
-				li.firstChild.firstChild.appendChild(displayNameSpan);
-				li.firstChild.firstChild.nextSibling.firstElementChild.textContent = unitFromRaw(symbol, rawFromUnit(symbol, amt));
-				li.firstChild.firstChild.nextSibling.firstElementChild.onclick = function() {
-					clickCopy(li.firstChild.firstChild.nextSibling.firstElementChild, li.firstChild.firstChild.nextSibling.firstElementChild.textContent);
-				};
-				
-				li.firstChild.nextSibling.firstChild.textContent = otherAccount;
-				li.firstChild.nextSibling.firstChild.id = symbol + '-' + history.transactions[i]['confirmed-round'];
-				li.firstChild.nextSibling.firstChild.nextSibling.textContent = convertTimestamp(new Date(history.transactions[i]['round-time']*1000));
-				
-				li.style.marginBottom = "15px";
-				li.title = history.transactions[i]['confirmed-round'];			
-				addOrdered(li, D(symbol + '-transactions'));
-				fetchDisplayName(symbol, "-" + history.transactions[i]['confirmed-round'] + "-display", otherAccount);
-				flash(li);
+				}				
+				displayTransaction(symbol, history.transactions[i]['confirmed-round'], color, sign, otherAccount, history.transactions[i]['round-time']*1000, rawFromUnit(symbol, amt));
 			}
 		}
 	}
@@ -605,62 +505,54 @@ ccc['ALGO'].getTransactions = function(start) {
 	});
 };
 
-function nanoDisplayTransactions(symbol, start) {
-	post(ccc[symbol].server, { action: 'account_history', head:start, account: ccc[symbol].address, count:10 }).then(function(history) {
-		if (D(symbol + '-loadMore') && history && history.history) {		
-			flash(D(`${symbol}-heading`), "Transactions");
-			if (history.previous) {
-				if (!D(symbol + '-' + history.history[history.history.length - 1].height)) {
-					D(symbol + '-loadMore').style.display = "";
-					D(symbol + '-gettingStarted').style.display = "none";
-					D(symbol + '-loadMore').onclick = function() {ccc[symbol].getTransactions(history.previous);};
-				}
-			} else {
-				D(symbol + '-loadMore').style.display = "none";				
-				D(symbol + '-gettingStarted').style.display = "";
-			}
-			for (let i = 0; i < history.history.length; i++) {
-				if (!D(symbol + '-' + history.history[i].height)) {
-					let li = make('li');
-					let sign = "+";
-					let color = "#097";				
-					if (history.history[i].type == "send") {
-						sign = "-";
-						color = "#B00";
-					}
-					
-					let displayNameSpan = make('span');
-					displayNameSpan.id = `${symbol}-${history.history[i].height}-display`;
-					displayNameSpan.textContent = "Unknown";
-					displayNameSpan.onclick = function() {
-						fetchDisplayName(symbol, "-" + history.history[i].height + "-display", history.history[i].account, true);
-					}
-					
-					li.innerHTML = "<div style='display:flex; justify-content:space-between'><strong style='margin-right:10px'></strong>"
-					+ "<strong style='text-align:right; overflow:hidden; text-overflow:ellipsis; color:" + color + "'>" + sign + "<span style='cursor:pointer;'></span> " + symbol + "</strong></div>"
-					+ "<div style='display:flex; justify-content:space-between'><span class='address' style='width:calc(100% - 180px); margin-top:4px' onclick='clickCopy(this, this.textContent)'></span>"
-					+ "<span style='text-align:right;'></span></div>";
-					
-					li.firstChild.firstChild.textContent = history.history[i].height + ":\xa0";
-					li.firstChild.firstChild.appendChild(displayNameSpan);
-					li.firstChild.firstChild.nextSibling.firstElementChild.textContent = unitFromRaw(symbol, history.history[i].amount);
-					li.firstChild.firstChild.nextSibling.firstElementChild.onclick = function() {
-						clickCopy(li.firstChild.firstChild.nextSibling.firstElementChild, li.firstChild.firstChild.nextSibling.firstElementChild.textContent);
-					};
-					
-					li.firstChild.nextSibling.firstChild.textContent = history.history[i].account;
-					li.firstChild.nextSibling.firstChild.id = symbol + '-' + history.history[i].height;
-					li.firstChild.nextSibling.firstChild.nextSibling.textContent = convertTimestamp(new Date(history.history[i].local_timestamp * 1000));
-					
-					li.style.marginBottom = "15px";
-					li.title = history.history[i].height;			
-					addOrdered(li, D(symbol + '-transactions'));
-					fetchDisplayName(symbol, "-" + history.history[i].height + "-display", history.history[i].account);
-					flash(li);
-				}
-			}
+function handlePage(symbol, condition, lastNumber, restart) {		
+	flash(D(`${symbol}-heading`), "Transactions");			
+	if (condition) {
+		if (!D(symbol + '-' + lastNumber)) {
+			D(symbol + '-loadMore').style.display = "";
+			D(symbol + '-gettingStarted').style.display = "none";
+			D(symbol + '-loadMore').onclick = function() {ccc[symbol].getTransactions(restart);};
 		}
-	});
+	} else {
+		D(symbol + '-loadMore').style.display = "none";				
+		D(symbol + '-gettingStarted').style.display = "";
+	}
+}
+		
+function displayTransaction(symbol, number, color, sign, address, time, amt) {	
+	let li = make('li');			
+
+	li.style.borderRadius = "5px";
+	let displayNameSpan = make('span');
+	displayNameSpan.id = `${symbol}-${number}-display`;
+	displayNameSpan.style.borderRadius = '5px';
+	displayNameSpan.textContent = "Unknown";
+	displayNameSpan.onclick = function() {
+		fetchDisplayName(symbol, "-" + number + "-display", address, true);
+	}
+
+	li.innerHTML = "<div style='display:flex; justify-content:space-between'><strong style='margin-right:10px'></strong>"
+	+ "<strong style='text-align:right; overflow:hidden; text-overflow:ellipsis; color:" + color + "'>" + sign + "<span class='clickFlash'></span> " + symbol + "</strong></div>"
+	+ "<div style='display:flex; justify-content:space-between'><span class='address' style='width:calc(100% - 180px); margin-top:4px' onclick='clickCopy(this, this.textContent)'></span>"
+	+ "<span style='text-align:right;'></span></div>";
+	
+	li.firstChild.firstChild.textContent = number + ":\xa0";
+	li.firstChild.firstChild.appendChild(displayNameSpan);
+	li.firstChild.firstChild.nextSibling.firstElementChild.textContent = unitFromRaw(symbol, amt);
+	li.firstChild.firstChild.nextSibling.firstElementChild.onclick = function() {
+		clickCopy(li.firstChild.firstChild.nextSibling.firstElementChild, li.firstChild.firstChild.nextSibling.firstElementChild.textContent);
+	};
+	
+	li.firstChild.nextSibling.firstChild.textContent = address;
+	li.firstChild.nextSibling.firstChild.id = symbol + '-' + number;
+	li.firstChild.nextSibling.firstChild.nextSibling.textContent = convertTimestamp(new Date(time));
+	
+	li.style.marginBottom = "15px";
+	li.title = number;	
+	addOrdered(li, D(symbol + '-transactions'));
+	fetchDisplayName(symbol, "-" + number + "-display", address);
+	flash(li);
+	return li;
 }
 
 ccc['XNO'].getPending = function() {return post(ccc['XNO'].server, {action: 'pending', account: ccc['XNO'].address, source:true}); };
@@ -1299,9 +1191,11 @@ async function withdraw(symbol) {
 				} else showMsg("Minimum account balance is " + ccc[symbol].min + " " + symbol + ".");
 			} else showMsg("Insufficient funds.");
 		} else showMsg("Enter a positive amount.");
+		flash(D(`${symbol}-withdrawal-amount`));
 		D(`${symbol}-withdrawal-amount`).focus();
 	} else {
 		showMsg("Invalid address.");
+		flash(D(`${symbol}-dest`));
 		D(`${symbol}-dest`).focus();
 	}
 }
@@ -1348,7 +1242,7 @@ function toggleVisibility(symbol) {
 function toggleEdit(symbol) {
 	let obj = D(symbol + "-editpanel");
 	if (obj.style.maxHeight == "0px") {
-     	obj.style.maxHeight = obj.scrollHeight + "px";
+     	obj.style.maxHeight = "";
      	obj.style.marginTop = "10px";
      	obj.style.marginBottom = "20px";
 	} else {	
@@ -1362,7 +1256,7 @@ function toggleEdit(symbol) {
 function toggleAccount() {
 	let obj = D(D('primary').value + "-tool1");
 	if (obj.style.maxHeight == "0px") {
-     	obj.style.maxHeight = obj.scrollHeight + "px";
+     	obj.style.maxHeight = "";
 		obj.style.padding = "";
 		obj.style.marginBottom = "20px";
 		D('account').classList.add('active');
@@ -1381,7 +1275,7 @@ function toggleAccount() {
 function toggleQuote() {
 	let obj = D("advancedQuote");
 	if (obj.style.maxHeight == "0px") {
-     	obj.style.maxHeight = obj.scrollHeight + "px";
+     	obj.style.maxHeight = "";
      	obj.style.marginTop = "15px";
 	} else {	
       	obj.style.maxHeight = "0px";
@@ -1405,10 +1299,10 @@ function updateView() {
 	let obj = D(D('primary').value + "-tool2");
 	let obj3 = D(D('primary').value + "-tool3");
 	if (fullView) {
-     	obj.style.maxHeight = obj.scrollHeight + "px";
+     	obj.style.maxHeight = "";
 		obj.style.padding = "";
 		
-     	obj3.style.maxHeight = obj3.scrollHeight + "px";
+     	obj3.style.maxHeight = "";
 		obj3.style.padding = "";
 		obj3.style.paddingBottom = "20px";
 		D(D('primary').value + "-view").classList.add('active');
@@ -1981,7 +1875,7 @@ function generateHTML(symbol) {
 	ccc[symbol].transactionElt.innerHTML = `	
 	<div id="${symbol}-gray2" style="display:none;">
 		<div style="max-width:620px; margin-top:30px; display:flex; align-items:center; justify-content:space-between">
-			<strong id="${symbol}-heading" style="font-size:1.2em">Transactions</strong>
+			<strong id="${symbol}-heading" style="border-radius:5px; font-size:1.2em">Transactions</strong>
 			<button style="font-size:0.8em" onclick="refreshBalance('${symbol}'); ccc['${symbol}'].getTransactions();">Refresh</button>
 		</div>
 		<ul id="${symbol}-transactions" style="padding-left:0px; max-width:620px; list-style: none;"></ul>
@@ -2019,7 +1913,7 @@ function generateHTML(symbol) {
 	<div id="${symbol}-gray" style="margin-bottom:120px; display:none;">
 	<div class="objectWrapper">
 		<div style="display:flex; align-items:center; justify-content:space-between">
-			<strong><div id="${symbol}-display" class="displayname" onclick="toggleEdit('${symbol}'); fetchDisplayName('${symbol}', '-display', ccc['${symbol}'].address, true)">✏️ My Account</div></strong>
+			<strong><div id="${symbol}-display" style="font-size:1.2em;" class="clickFlash" onclick="toggleEdit('${symbol}'); fetchDisplayName('${symbol}', '-display', ccc['${symbol}'].address, true)">✏️ My Account</div></strong>
 			<button style="font-size:0.8em" onclick="fetchDisplayName('${symbol}', '-display', ccc['${symbol}'].address, true); refreshBalance('${symbol}'); ccc['${symbol}'].getTransactions();">Refresh</button>
 		</div>
 		
@@ -2038,13 +1932,13 @@ function generateHTML(symbol) {
 		<div style="display:flex; align-items:center; justify-content:space-between">
 			<div style="width:calc(100% - 15px); display:flex">
 				<strong>Balance:&nbsp;</strong> 
-				<span id="${symbol}-balance" style="cursor:pointer; max-width:min-content; overflow:hidden; text-overflow:ellipsis;" onclick="clickCopy(this, this.textContent)">0.00</span>&nbsp;${symbol}
+				<span id="${symbol}-balance" class="clickFlash" style="max-width:min-content; overflow:hidden; text-overflow:ellipsis;" onclick="clickCopy(this, this.textContent)">0.00</span>&nbsp;${symbol}
 			</div>
 		</div>
 		<div id="${symbol}-arriving-balance-panel" style="margin-top:10px; display:flex; align-items:center; justify-content:space-between">
 			<div style="width:calc(100% - 65px); display:flex">
 				<strong style="white-space:nowrap">Arriving balance:&nbsp;</strong> 
-				<span id="${symbol}-balance-pending" style="cursor:pointer; max-width:min-content; overflow:hidden; text-overflow:ellipsis;" onclick="clickCopy(this, this.textContent)">0.00</span>&nbsp;${symbol}&nbsp;
+				<span id="${symbol}-balance-pending" class="clickFlash" style="max-width:min-content; overflow:hidden; text-overflow:ellipsis;" onclick="clickCopy(this, this.textContent)">0.00</span>&nbsp;${symbol}&nbsp;
 			</div>
 			<button style="font-size:0.8em" onclick="cyclePending('${symbol}')">Collect</button>
 		</div>
