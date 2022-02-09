@@ -550,7 +550,7 @@ function displayTransaction(symbol, number, color, sign, address, time, amt) {
 	li.style.marginBottom = "15px";
 	li.title = number;	
 	addOrdered(li, D(symbol + '-transactions'));
-	fetchDisplayName(symbol, "-" + number + "-display", address);
+	if (ccc[symbol].checkAddress(address)) fetchDisplayName(symbol, "-" + number + "-display", address);
 	flash(li);
 	return li;
 }
