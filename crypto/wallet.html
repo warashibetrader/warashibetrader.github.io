@@ -485,7 +485,7 @@ ccc['ALGO'].getTransactions = function(start) {
 	if (!start) start = "";
 	fetch('https://algoindexer.testnet.algoexplorerapi.io/v2/transactions?limit=10&tx-type=pay&sig-type=sig&address=' + ccc[symbol].address + start).then(function(response) { 
 	response.json().then(function(history) {
-	if (D(symbol + '-loadMore') && history) {
+	if (D(symbol + '-loadMore') && history && history.transactions.length > 0) {
 		handlePage(symbol, history.transactions.length > 9, history.transactions[history.transactions.length - 1]['confirmed-round'], "&next=" + history['next-token']);	
 		for (let i = 0; i < history.transactions.length; i++) {
 			if (!D(symbol + '-' + history.transactions[i]['confirmed-round'])) {				
@@ -812,7 +812,7 @@ async function postBlock(symbol, subtype, workInput, previous, representative, b
 	post(ccc[symbol].server, formData);
 	let confirmation = confirmBlock(symbol, block.hash);
 	confirmation.then(function(theBlock) {
-		if (D(`${symbol}-rep`).textContent != theBlock.contents.representative) {
+		if (theBlock && D(`${symbol}-rep`).textContent != theBlock.contents.representative) {
 			flash(D(`${symbol}-rep`), theBlock.contents.representative);	
 			fetchDisplayName(symbol, "-rep-display", theBlock.contents.representative, true);
 		}			
