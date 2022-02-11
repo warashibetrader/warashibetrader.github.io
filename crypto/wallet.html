@@ -1752,6 +1752,11 @@ window.addEventListener('beforeinstallprompt', function (evt) {  // CODELAB: Add
 window.addEventListener('appinstalled', function (evt) {  // CODELAB: Add code to log the event  
     console.log('Wallet was installed.', evt);
 });
+
+navigator.registerProtocolHandler("web+nano",
+                                  "https://warashibetrader.github.io/crypto/wallet/?amount=%s",
+                                  "Nano handler"); // last title arg included for compatibility
+								  
  
 function npr() {
     if (D('audio').paused) {
