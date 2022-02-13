@@ -574,7 +574,7 @@ ccc['SOL'].sendTo = function(destination, amt) {
 			solanaWeb3.SystemProgram.transfer({fromPubkey: ccc['SOL'].publicKey, toPubkey: new solanaWeb3.PublicKey(destination), lamports: rawFromUnit('SOL', amt)})
 		);
 		console.log(transaction);
-		transaction.sign([ccc['SOL'].privateKey]);		
+		transaction.sign(...[ccc['SOL'].privateKey]);		
 		transaction = transaction.serialize();
 		console.log(transaction);
 		// Sign transaction, broadcast, and confirm
