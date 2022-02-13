@@ -1178,18 +1178,18 @@ function cyclePending(symbol, silent) {
 async function withdraw(symbol) {
 	if (ccc[symbol].checkAddress(ccc[symbol].address) && ccc[symbol].checkAddress(D(`${symbol}-dest`).value)) {
 		let amt = D(`${symbol}-withdrawal-amount`).value;
-		if ((amt.match(/\./g)||[]).length <= 1 && /^[0-9.]+$/.test(amt) && BigInt(rawFromUnit(symbol, amt)) > 0) {
-			amt = BigInt(rawFromUnit(symbol, amt));
+		let rawAmt = BigInt(rawFromUnit(symbol, amt));
+		if ((amt.match(/\./g)||[]).length <= 1 && /^[0-9.]+$/.test(amt) && rawAmt > 0) {
 			let balance = BigInt(rawFromUnit(symbol, D(`${symbol}-balance`).textContent));
-			if (amt <= balance) {
-				if (amt + BigInt(rawFromUnit(symbol, ccc[symbol].min)) <= balance) {				
-					amt = (amt - BigInt(ccc[symbol].fee)).toString();
+			if (rawAmt <= balance) {
+				if (rawAmt + BigInt(rawFromUnit(symbol, ccc[symbol].min)) <= balance) {				
+					rawAmt = (rawAmt - BigInt(ccc[symbol].fee)).toString();
 				
 					showMsg(symbol + " transfer initiated...", null, true);
-					let sendResp = await ccc[symbol].sendTo(D(`${symbol}-dest`).value, amt);
+					let sendResp = await ccc[symbol].sendTo(D(`${symbol}-dest`).value, rawAmt);
 					if (sendResp) {
 						console.log(sendResp);
-						showMsg(unitFromRaw(symbol, amt) + " " + symbol + " transferred.");
+						showMsg(amt + " " + symbol + " transferred.");
 						clearPayment(symbol);
 						ccc[symbol].getTransactions();
 					}
