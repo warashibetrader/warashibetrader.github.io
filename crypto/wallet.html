@@ -1160,13 +1160,17 @@ function cyclePending(symbol, silent) {
 		if (!silent) showMsg(`Collecting arriving ${symbol}...`, null,true);
 		ccc[symbol].getPending().then(async function(data) {
 			if (data) {
+				let count = 0;
 				for (const block in data.blocks) {
 					await ccc[symbol].receive(block);
+					count++;
 				}
-				ccc[symbol].getTransactions();	
-				refreshBalance(symbol);
-				D(`${symbol}-balance-pending`).textContent = "0.00";
-				if (!silent) showMsg("Arriving " + symbol + " collected.");	
+				if (count) {
+					ccc[symbol].getTransactions();	
+					refreshBalance(symbol);
+					D(`${symbol}-balance-pending`).textContent = "0.00";
+					if (!silent) showMsg("Arriving " + symbol + " collected.");	
+				} else if (!silent) showMsg("No arriving " + symbol + " found.");	
 			}
 		});		
 	} 
@@ -1176,9 +1180,10 @@ async function withdraw(symbol) {
 	if (ccc[symbol].checkAddress(ccc[symbol].address) && ccc[symbol].checkAddress(D(`${symbol}-dest`).value)) {
 		let amt = D(`${symbol}-withdrawal-amount`).value;
 		if ((amt.match(/\./g)||[]).length <= 1 && /^[0-9.]+$/.test(amt) && BigInt(rawFromUnit(symbol, amt)) > 0) {
+			amt = BigInt(rawFromUnit(symbol, amt));
 			if (amt <= BigInt(rawFromUnit(symbol, D(`${symbol}-balance`).textContent))) {
 				if (amt + BigInt(rawFromUnit(symbol, ccc[symbol].min)) <= BigInt(rawFromUnit(symbol, D(`${symbol}-balance`).textContent))) {				
-					amt = BigInt(rawFromUnit(symbol, amt)) - BigInt(ccc[symbol].fee);				
+					amt = amt - BigInt(ccc[symbol].fee);				
 					showMsg(symbol + " transfer initiated...", null, true);
 					let sendResp = await ccc[symbol].sendTo(D(`${symbol}-dest`).value, amt);
 					if (sendResp) {
