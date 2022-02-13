@@ -573,6 +573,9 @@ ccc['SOL'].sendTo = function(destination, amt) {
 		let transaction = new solanaWeb3.Transaction().add(
 			solanaWeb3.SystemProgram.transfer({fromPubkey: ccc['SOL'].publicKey, toPubkey: new solanaWeb3.PublicKey(destination), lamports: rawFromUnit('SOL', amt)})
 		);
+		ccc['SOL'].server.simulateTransaction(transaction, [ccc['SOL'].privateKey]).then(function(resp) {
+			console.log(resp);
+		});
 		console.log(transaction);
 		// Sign transaction, broadcast, and confirm
 		try { return solanaWeb3.sendAndConfirmTransaction(ccc['SOL'].server, transaction, [ccc['SOL'].privateKey]); } 
