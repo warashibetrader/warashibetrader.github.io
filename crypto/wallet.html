@@ -465,17 +465,19 @@ ccc['XLM'].getTransactions = function(start) {
 				let otherAccount = history.records[i].from;
 				if (!otherAccount) otherAccount = history.records[i].source_account;
 				
+				
+				let amt = history.records[i].amount;
+				if (!amt) amt = history.records[i].starting_balance;
+				
 				if (history.records[i].source_account == ccc[symbol].address) {
 					sign = "-";
 					color = "#B00";
 					otherAccount = history.records[i].to;
 					if (!otherAccount) otherAccount = history.records[i].account;
-				}
+					amt = (BigInt(rawFromUnit(symbol, amt)) + BigInt(ccc[symbol].fee)).toString();
+				} else amt = rawFromUnit(symbol, amt);
 				
-				let amt = history.records[i].amount;
-				if (!amt) amt = history.records[i].starting_balance;
-				
-				displayTransaction(symbol, history.records[i].id, color, sign, otherAccount, history.records[i].created_at, rawFromUnit(symbol, amt)); 	
+				displayTransaction(symbol, history.records[i].id, color, sign, otherAccount, history.records[i].created_at, amt); 	
 			}
 		}
 	}
@@ -571,7 +573,7 @@ ccc['XNO'].sendTo = function(destination, amt) { return enqueue('XNO', function(
 ccc['SOL'].sendTo = function(destination, amt) { 
 	return enqueue('SOL', function() {
 		let transaction = new solanaWeb3.Transaction().add(
-			solanaWeb3.SystemProgram.transfer({fromPubkey: ccc['SOL'].publicKey, toPubkey: new solanaWeb3.PublicKey(destination), lamports: rawFromUnit('SOL', amt)})
+			solanaWeb3.SystemProgram.transfer({fromPubkey: ccc['SOL'].publicKey, toPubkey: new solanaWeb3.PublicKey(destination), lamports: amt})
 		);
 		console.log(transaction);
 		// Sign transaction, broadcast, and confirm
@@ -589,15 +591,15 @@ ccc['XLM'].sendTo = function(destination, amt) {
 		
 		let macroFetch = ccc['XLM'].server.loadAccount(destination).then(function() {
 			return transactionFetch.then(function(transaction) {
-				return transaction.addOperation(StellarSdk.Operation.payment({destination: destination, asset: StellarSdk.Asset.native(), amount: amt})).build();
+				return transaction.addOperation(StellarSdk.Operation.payment({destination: destination, asset: StellarSdk.Asset.native(), amount: unitFromRaw('XLM', amt)})).build();
 			});
 		}).catch(function (error) {
 			if (error instanceof StellarSdk.NotFoundError) {
-				if (parseFloat(amt) < 1) {
+				if (parseFloat(unitFromRaw('XLM', amt)) < 1) {
 					showMsg("Destination is a new account. Minimum send: " + ccc['XLM'].min + " XLM.");
 					return false;
 				} else return transactionFetch.then(function(transaction) {
-					return transaction.addOperation(StellarSdk.Operation.createAccount({destination: destination, startingBalance: amt})).build();
+					return transaction.addOperation(StellarSdk.Operation.createAccount({destination: destination, startingBalance: unitFromRaw('XLM', amt)})).build();
 				});
 			} else return networkFailMsg();
 		});
@@ -625,7 +627,7 @@ ccc['ALGO'].sendTo = function(destination, amt) {
 			let txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
 				from: ccc['ALGO'].address, 
 				to: destination, 
-				amount: BigInt(rawFromUnit('ALGO', amt)), 
+				amount: BigInt(amt), 
 				note: note, 
 				suggestedParams: params
 			});
@@ -717,7 +719,7 @@ async function nanoSend(symbol, destination, amt) {
 	if (!frontierBlock) return false;
 	
 	return await postBlock(symbol, 'send', frontierBlock.hash, frontierBlock.hash, frontierBlock.representative, 
-		(BigInt(frontierBlock.balance) - BigInt(rawFromUnit(symbol, amt))).toString(), destination);
+		(BigInt(frontierBlock.balance) - BigInt(amt)).toString(), destination);
 }
 
 async function nanoReceive(symbol, hash) {
@@ -1178,14 +1180,16 @@ async function withdraw(symbol) {
 		let amt = D(`${symbol}-withdrawal-amount`).value;
 		if ((amt.match(/\./g)||[]).length <= 1 && /^[0-9.]+$/.test(amt) && BigInt(rawFromUnit(symbol, amt)) > 0) {
 			amt = BigInt(rawFromUnit(symbol, amt));
-			if (amt <= BigInt(rawFromUnit(symbol, D(`${symbol}-balance`).textContent))) {
-				if (amt + BigInt(rawFromUnit(symbol, ccc[symbol].min)) <= BigInt(rawFromUnit(symbol, D(`${symbol}-balance`).textContent))) {				
-					amt = amt - BigInt(ccc[symbol].fee);				
+			let balance = BigInt(rawFromUnit(symbol, D(`${symbol}-balance`).textContent));
+			if (amt <= balance) {
+				if (amt + BigInt(rawFromUnit(symbol, ccc[symbol].min)) <= balance) {				
+					amt = (amt - BigInt(ccc[symbol].fee)).toString();
+				
 					showMsg(symbol + " transfer initiated...", null, true);
 					let sendResp = await ccc[symbol].sendTo(D(`${symbol}-dest`).value, amt);
 					if (sendResp) {
 						console.log(sendResp);
-						showMsg(amt + " " + symbol + " transferred.");
+						showMsg(unitFromRaw(symbol, amt) + " " + symbol + " transferred.");
 						clearPayment(symbol);
 						ccc[symbol].getTransactions();
 					}
