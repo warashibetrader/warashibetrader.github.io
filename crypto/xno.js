@@ -27,26 +27,6 @@ function encodeNanoBase32(view) {
   return output
 }
 
-function byteArrayToHex(byteArray) {
-  if (!byteArray) return '';
-  let hexStr = '';
-  for (let i = 0; i < byteArray.length; i++) {
-    let hex = (byteArray[i] & 0xff).toString(16)
-    hex = hex.length === 1 ? `0${hex}` : hex;
-    hexStr += hex;
-  }
-  return hexStr.toUpperCase()
-}
-
-function hexToByteArray(hex) {
-  if (!hex) return new Uint8Array();
-  const a = [];
-  for (let i = 0; i < hex.length; i += 2) {
-    a.push(parseInt(hex.substr(i, 2), 16));
-  }
-  return new Uint8Array(a);
-}
-
 function readChar(character) {
   const idx = alphabet.indexOf(character);
   if (idx === -1) throw new Error(`Invalid character found: ${character}`);
