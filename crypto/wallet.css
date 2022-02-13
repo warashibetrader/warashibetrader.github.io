@@ -69,8 +69,10 @@ input[type=number]:focus, input[type=text]:focus, input[type=password]:focus {
 	overflow: hidden;
 }
 
-input[type=number]:disabled {
+input[type=number]:disabled, input[type=text]:disabled {
 	background-color:white;
+	border-bottom: 0px;
+	color: #333;
 }
 
 /* Firefox */
