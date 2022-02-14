@@ -1433,7 +1433,7 @@ function addTotal() {
 function addItem(elt) {
 	let symbol = D('primary').value;
 	if (elt.parentNode == D(symbol + "-itemize").lastElementChild) {
-		elt.innerHTML = '&#10761;';
+		elt.innerHTML = '&#128473;';
 		elt.setAttribute('onclick', 'remove(this.parentNode); addTotal();');
 		
 		let outerElt = make('div');
@@ -2089,13 +2089,13 @@ function generateHTML(symbol) {
 		
 		<div style="display:none; justify-content:space-between; margin-top:15px; align-items:baseline">
 			<input placeholder="Memo, item, tip..." onfocus="scrollPanel(this.parentNode)" onkeyup="if (event.keyCode == 27) this.value = '';" style="flex-grow:2; flex-basis:1px; margin-right:10px" type="text" maxlength="128" value="Network fee" disabled>
-			<input placeholder="0.00" onkeyup="addTotal(); if (event.keyCode == 27) { this.value = ''; addTotal(); } else if (event.keyCode == 13) addItem(this.nextElementSibling);" style="margin-right:10px; text-align:right; flex-grow:1; flex-basis:1px; overflow:hidden; text-overflow:ellipsis;" type="number" step="0.01" min="0" onfocus="scrollPanel(this.parentNode)" id="${symbol}-withdrawal-fee"><button tabindex="-1" style="font-size:0.8em; filter:opacity(0)" disabled>&#x1f7a2;</button>
+			<input placeholder="0.00" onkeyup="addTotal(); if (event.keyCode == 27) { this.value = ''; addTotal(); } else if (event.keyCode == 13) addItem(this.nextElementSibling);" style="margin-right:10px; text-align:right; flex-grow:1; flex-basis:1px; overflow:hidden; text-overflow:ellipsis;" type="number" step="0.01" min="0" onfocus="scrollPanel(this.parentNode)" id="${symbol}-withdrawal-fee"><button tabindex="-1" style="font-size:0.8em; filter:opacity(0)" disabled>&#128933;</button>
 		</div>
 		
 		
 		<div style="display:flex; justify-content:space-between; margin-top:15px; align-items:baseline">
 			<input placeholder="Memo, item, tip..." onfocus="scrollPanel(this.parentNode)" onkeyup="if (event.keyCode == 27) this.value = '';" style="flex-grow:2; flex-basis:1px; margin-right:10px" type="text" maxlength="128">
-			<input placeholder="0.00" onkeyup="addTotal(); if (event.keyCode == 27) { this.value = ''; addTotal(); } else if (event.keyCode == 13) addItem(this.nextElementSibling);" style="margin-right:10px; text-align:right; flex-grow:1; flex-basis:1px; overflow:hidden; text-overflow:ellipsis;" type="number" step="0.01" min="0"><button tabindex="-1" style="font-size:0.8em" onclick="addItem(this)">&#x1f7a2;</button>
+			<input placeholder="0.00" onkeyup="addTotal(); if (event.keyCode == 27) { this.value = ''; addTotal(); } else if (event.keyCode == 13) addItem(this.nextElementSibling);" style="margin-right:10px; text-align:right; flex-grow:1; flex-basis:1px; overflow:hidden; text-overflow:ellipsis;" type="number" step="0.01" min="0"><button tabindex="-1" style="font-size:0.8em" onclick="addItem(this)">&#128933;</button>
 		</div>
 		</div>
 		
@@ -2141,7 +2141,7 @@ function generateHTML(symbol) {
 }
 
 var itemString = `<input placeholder="Memo, item, tip..." onfocus="scrollPanel(this.parentNode)" onkeyup="if (event.keyCode == 27) this.value = '';" style="flex-grow:2; flex-basis:1px; margin-right:10px" type="text" maxlength="128">
-			<input placeholder="0.00" onkeyup="addTotal(); if (event.keyCode == 27) { this.value = ''; addTotal(); } else if (event.keyCode == 13) addItem(this.nextElementSibling);" style="margin-right:10px; text-align:right; flex-grow:1; flex-basis:1px; overflow:hidden; text-overflow:ellipsis;" type="number" step="0.01" min="0"><button tabindex="-1" style="font-size:0.8em" onclick="addItem(this)">&#x1f7a2;</button>`;
+			<input placeholder="0.00" onkeyup="addTotal(); if (event.keyCode == 27) { this.value = ''; addTotal(); } else if (event.keyCode == 13) addItem(this.nextElementSibling);" style="margin-right:10px; text-align:right; flex-grow:1; flex-basis:1px; overflow:hidden; text-overflow:ellipsis;" type="number" step="0.01" min="0"><button tabindex="-1" style="font-size:0.8em" onclick="addItem(this)">&#128933;</button>`;
 
 </script>
 </html>
