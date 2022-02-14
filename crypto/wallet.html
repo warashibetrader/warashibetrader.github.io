@@ -435,7 +435,7 @@ ccc['SOL'].getTransactions = function(start) {
 								amtDisplay.firstElementChild.textContent = unitFromRaw(symbol, change);
 							} else if (j < 2) {
 								let actualAddress = historyDetails[i].transaction.message.accountKeys[j].pubkey.toBase58()
-								li.firstChild.nextSibling.firstChild.textContent = actualAddress;
+								li.firstChild.nextSibling.firstChild.firstChild.textContent = actualAddress;
 								fetchDisplayName(symbol, "-" + historyDetails[i].slot + "-display", actualAddress);								
 								li.firstChild.firstChild.firstElementChild.onclick = function() {
 									fetchDisplayName(symbol, "-" + historyDetails[i].slot + "-display", actualAddress, true);
@@ -547,25 +547,47 @@ function displayTransaction(symbol, number, color, sign, address, time, amt, tx)
 	let memoType = "Invoice";
 	if (sign == "-") memoType = "Receipt";
 
-	li.innerHTML = "<div style='display:flex; justify-content:space-between'><strong style='margin-right:10px'></strong>"
+	li.innerHTML = "<div style='display:flex; justify-content:space-between'><strong style='margin-right:10px; overflow:hidden; text-overflow: ellipsis'></strong>"
 	+ "<strong style='text-align:right; overflow:hidden; text-overflow:ellipsis; color:" + color + "'>" + sign + "<span class='clickFlash'></span> " + symbol + "</strong></div>"
-	+ "<div style='display:flex; justify-content:space-between; margin-top:3px; margin-bottom:5px'><span class='address' style='margin-right:5px;' onclick='clickCopy(this, this.textContent)'></span>"
-	+ "<span style='text-align:right; font-size:0.8em; flex-grow:1; width:min-content'></span><button style='font-size:0.8em; margin-left:10px; color:" + color + "'>" + memoType + "</button></div>" 
+	+ "<div style='display:flex; justify-content:space-between; align-items:center; margin-top:3px; margin-bottom:5px'><div style='overflow:hidden'><div class='address' onclick='clickCopy(this, this.textContent)'></div>"
+	+ "<div style='font-size:0.8em; padding-left:3px; flex-grow:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis'></div></div><button style='font-size:0.8em; margin-left:10px; color:" + color + "'>" + memoType + "</button></div>" 
 	+ "<ul class='accordion' style='text-align:center; margin-left:20px; margin-right:20px; padding-left:0px; list-style: none;'></ul>";
 	
-	li.firstChild.firstChild.textContent = number + ":\xa0";
-	li.firstChild.firstChild.appendChild(displayNameSpan);
-	li.firstChild.firstChild.nextSibling.firstElementChild.textContent = unitFromRaw(symbol, amt);
-	li.firstChild.firstChild.nextSibling.firstElementChild.onclick = function() {
+	let topRow = li.firstChild.firstChild;
+	topRow.appendChild(displayNameSpan);
+	topRow.nextSibling.firstElementChild.textContent = unitFromRaw(symbol, amt);
+	topRow.nextSibling.firstElementChild.onclick = function() {
 		clickCopy(li.firstChild.firstChild.nextSibling.firstElementChild, li.firstChild.firstChild.nextSibling.firstElementChild.textContent);
 	};
 	
-	li.firstChild.nextSibling.firstChild.textContent = address;
-	li.firstChild.nextSibling.firstChild.id = symbol + '-' + number;
-	li.firstChild.nextSibling.firstChild.nextSibling.textContent = convertTimestamp(new Date(time));
+	let bottomRow = li.firstChild.nextSibling.firstChild.firstChild;
+	bottomRow.textContent = address;
+	bottomRow.id = symbol + '-' + number;
+	
+	let d = new Date(time);
+  //  let d = new Date(timestamp * 1000), // Convert the passed timestamp to milliseconds
+	let yyyy = d.getFullYear(),
+	mm = d.getMonth() + 1,  // Months are zero based. Add leading 0.
+	dd = d.getDate(),         // Add leading 0.
+	hh = d.getHours(),
+	h = hh,
+	min = ('0' + d.getMinutes()).slice(-2),     // Add leading 0.
+	ampm = 'AM';
+
+    if (hh > 12) {
+        h = hh - 12;
+        ampm = 'PM';
+    } else if (hh === 12) {
+        h = 12;
+        ampm = 'PM';
+    } else if (hh == 0) h = 12;
+
+    // ie: 2014-03-24, 3:00 PM
+    bottomRow.nextSibling.textContent = h + ':' + min + '\xa0' + ampm + ' ' + mm + '/' + dd + '/' + yyyy + ": #" + number;
+
 	
 	li.lastChild.previousElementSibling.lastChild.onclick = function() {
-		ws.emit('getReceiptCue', {currency:symbol, tx: tx, div: displayNameSpan.id });
+		if (!ws.emit('getReceiptCue', {currency:symbol, tx: tx, div: displayNameSpan.id })) showMsg("Unable to connect to directory.");
 	}
 	
 	li.title = number;	
@@ -986,26 +1008,50 @@ function setupWebsocket() {
 			let receipt = [];
 			let but = D(data.div).parentNode.parentNode.parentNode.lastElementChild.previousElementSibling.lastElementChild;
 			let ul = but.parentNode.nextElementSibling;
-			console.log("hi")
-			if (data.receipt) {
-				receipt = JSON.parse(data.receipt);
-				but.classList.add('active');
-				ul.style.maxHeight = "0px";
-				
-				but.onclick = function() {
-					if (ul.style.maxHeight != "0px") {
-						ul.style.maxHeight = "0px";
-						but.classList.remove('active');
-					} else {
-						ul.style.maxHeight = ul.scrollHeight + "px";
-						but.classList.remove('active');
-					}
-				};
-			} else {
+			if (data.receipt) receipt = JSON.parse(data.receipt);
+			else {
 				showMsg('No invoice or receipt found.');
-				but.disabled = true;
+				// but.disabled = true;
 				but.style.color = "";
 			}
+			
+			
+			but.classList.add('active');
+			ul.style.maxHeight = "0px";
+			
+			but.onclick = function() {
+				if (ul.style.maxHeight != "0px") {
+					ul.style.maxHeight = "0px";
+					but.classList.remove('active');
+				} else {
+					ul.style.maxHeight = ul.scrollHeight + "px";
+					but.classList.remove('active');
+				}
+			};
+			
+			
+			let li = make('li');
+			li.style = "display:flex; justify-content:space-between; margin-bottom:5px; border-radius:5px; padding-left:5px; padding-right:5px;";
+			
+			
+			let itemSpan = make('span');
+			itemSpan.textContent = "ID# ";
+			itemSpan.style.paddingRight = "5px";
+			itemSpan.style.fontSize = "0.8em";
+			
+			let amtSpan = make('span');
+			amtSpan.textContent = data.tx;
+			//amtSpan.style.fontSize = "0.9em";
+			
+			amtSpan.classList.add('address');
+			amtSpan.onclick = function() {
+				clickCopy(amtSpan, amtSpan.textContent);
+			}
+			
+			
+			li.appendChild(itemSpan);
+			li.appendChild(amtSpan);
+			D(data.div).parentNode.parentNode.parentNode.lastElementChild.appendChild(li);
 			
 			for (let i = 0; i < receipt.length; i++) {
 				let li = make('li');
@@ -1013,6 +1059,7 @@ function setupWebsocket() {
 				
 				let itemSpan = make('span');
 				itemSpan.textContent = receipt[i].item;
+				itemSpan.style.paddingRight = "5px";
 				
 				let amtSpan = make('span');
 				amtSpan.textContent = receipt[i].amt;
@@ -1813,30 +1860,6 @@ function hexToByteArray(hex) {
   return new Uint8Array(a);
 }
 
-function convertTimestamp(d) {
-  //  let d = new Date(timestamp * 1000), // Convert the passed timestamp to milliseconds
-        let yyyy = d.getFullYear(),
-        mm = ('0' + (d.getMonth() + 1)).slice(-2),  // Months are zero based. Add leading 0.
-        dd = ('0' + d.getDate()).slice(-2),         // Add leading 0.
-        hh = d.getHours(),
-        h = hh,
-        min = ('0' + d.getMinutes()).slice(-2),     // Add leading 0.
-        ampm = 'AM',
-        time;
-
-    if (hh > 12) {
-        h = hh - 12;
-        ampm = 'PM';
-    } else if (hh === 12) {
-        h = 12;
-        ampm = 'PM';
-    } else if (hh == 0) h = 12;
-
-    // ie: 2014-03-24, 3:00 PM
-    time = yyyy + '-' + mm + '-' + dd + ' ' + h + ':' + min + '\xa0' + ampm;
-    return time;
-}
-
 function post(url, params) {
     return new Promise((resolve, reject) => {
         let xhttp = new XMLHttpRequest();
@@ -2027,7 +2050,7 @@ function generateHTML(symbol) {
 			<button style="display:none" id="${symbol}-loadMore">Load More</button>
 			<div id="${symbol}-gettingStarted">
 				<span style="padding-right:30px"><a href="${ccc[symbol].gettingStarted}" rel="noopener" target="_blank">${symbol} Resources</a></span>
-				<span id="${symbol}-faucet" style="display:none"><a href="${ccc[symbol].faucet}" rel="noopener" target="_blank">Free Testing ${symbol}</a></span>
+				<span id="${symbol}-faucet" style="display:none"><a href="${ccc[symbol].faucet}" rel="noopener" target="_blank">Free ${symbol} Faucet</a></span>
 			</div>
 		</div>
 	</div>`;
@@ -2106,7 +2129,7 @@ function generateHTML(symbol) {
 		
 		
 		<div style="display:flex; justify-content:space-between; margin-top:15px; align-items:baseline">
-			<input placeholder="Memo, item, tip..." onfocus="scrollPanel(this.parentNode.parentNode)" onkeyup="if (event.keyCode == 27) this.value = '';" style="flex-grow:2; flex-basis:1px; margin-right:10px" type="text" maxlength="128">
+			<input placeholder="Memo, item, tip..." onkeyup="if (event.keyCode == 27) this.value = '';" style="flex-grow:2; flex-basis:1px; margin-right:10px" type="text" maxlength="128">
 			<input placeholder="0.00" onkeyup="addTotal(); if (event.keyCode == 27) { this.value = ''; addTotal(); } else if (event.keyCode == 13) addItem(this.nextElementSibling);" style="margin-right:10px; text-align:right; flex-grow:1; flex-basis:1px; overflow:hidden; text-overflow:ellipsis;" type="number" step="0.01" min="0"><button tabindex="-1" style="font-size:0.8em" onclick="addItem(this)">&#65291;</button>
 		</div>
 		</div>
