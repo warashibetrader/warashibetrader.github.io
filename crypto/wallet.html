@@ -1433,7 +1433,7 @@ function addTotal() {
 function addItem(elt) {
 	let symbol = D('primary').value;
 	if (elt.parentNode == D(symbol + "-itemize").lastElementChild) {
-		elt.innerHTML = '&#10761;';
+		elt.innerHTML = '&#x2715;';
 		elt.setAttribute('onclick', 'remove(this.parentNode); addTotal();');
 		
 		let outerElt = make('div');
