@@ -423,10 +423,12 @@ ccc['SOL'].getTransactions = function(start) {
 				for (let i = 0; i < historyDetails.length; i++) {
 					if (D(symbol + '-' + historyDetails[i].slot)) {
 						let li = D(symbol + '-' + historyDetails[i].slot).parentNode.parentNode;
+						console.log(li);
 						for (let j = 0; j < historyDetails[i].transaction.message.accountKeys.length; j++) {
 							if (historyDetails[i].transaction.message.accountKeys[j].pubkey.toBase58() == ccc[symbol].address) {
 								let change = historyDetails[i].meta.postBalances[j] - historyDetails[i].meta.preBalances[j];
 								let amtDisplay = li.firstChild.firstChild.nextSibling;
+								console.log(amtDisplay);
 								if (historyDetails[i].transaction.message.accountKeys[j].signer) {
 									change = -change;
 									amtDisplay.innerHTML =  '-' + "<span class='clickFlash'></span> " + symbol;
