@@ -96,7 +96,7 @@ option {
 	background-color: transparent !important;
 }
 .close-icon:after {
-	content: "🗙";
+	content: "\01F5D9";
 	z-index:1;
 	position: absolute;
 	right: 12px;
