@@ -426,14 +426,20 @@ ccc['SOL'].getTransactions = function(start) {
 						for (let j = 0; j < historyDetails[i].transaction.message.accountKeys.length; j++) {
 							if (historyDetails[i].transaction.message.accountKeys[j].pubkey.toBase58() == ccc[symbol].address) {
 								let change = historyDetails[i].meta.postBalances[j] - historyDetails[i].meta.preBalances[j];
-								let amtDisplay = li.firstChild.firstChild.nextSibling;
+								let amtDisplay = li.firstChild.firstChild.nextSibling;								
+								let but = D(symbol + '-' + historyDetails[i].slot).parentNode.parentNode.parentNode.lastElementChild.previousElementSibling.lastElementChild;
 								if (historyDetails[i].transaction.message.accountKeys[j].signer) {
 									change = -change;
 									amtDisplay.innerHTML =  '-' + "<span class='clickFlash'></span> " + symbol;
 									amtDisplay.style.color = "#B00";
-								} else amtDisplay.style.color = "#097";
+									but.textContent = receipt;
+									but.style.color = "#B00";
+								} else {
+									amtDisplay.style.color = "#097";
+									but.style.color = "#097";
+								}
 								amtDisplay.firstElementChild.textContent = unitFromRaw(symbol, change);
-								amtDisplay.firstElementChild.onclick = function() { clickCopy(this, this.textContent); };
+								amtDisplay.firstElementChild.onclick = function() { clickCopy(this, this.textContent); };			
 							} else if (j < 2) {
 								let actualAddress = historyDetails[i].transaction.message.accountKeys[j].pubkey.toBase58()
 								li.firstChild.nextSibling.firstChild.firstChild.textContent = actualAddress;
