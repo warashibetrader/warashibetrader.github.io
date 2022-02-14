@@ -96,7 +96,7 @@ option {
 	background-color: transparent !important;
 }
 .close-icon:after {
-	content: "\2A09";
+	content: "\2715"; /*\2A09*/
 	z-index:1;
 	position: absolute;
 	right: 12px;
