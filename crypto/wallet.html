@@ -1833,7 +1833,7 @@ function convertTimestamp(d) {
     } else if (hh == 0) h = 12;
 
     // ie: 2014-03-24, 3:00 PM
-    time = yyyy + '-' + mm + '-' + dd + '\xa0' + h + ':' + min + '\xa0' + ampm;
+    time = yyyy + '-' + mm + '-' + dd + ' ' + h + ':' + min + '\xa0' + ampm;
     return time;
 }
 
