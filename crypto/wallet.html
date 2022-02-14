@@ -358,8 +358,12 @@ ccc['ALGO'].getAccountInfo = function() {
 	});}).catch(function() { return networkFailMsg(); });
 };
 
-ccc['BAN'].getFee = function() {};
-ccc['XNO'].getFee = function() {};
+ccc['BAN'].getFee = function() {
+	if (D('BAN' + '-withdrawal-fee')) remove(D('BAN' + '-itemize').firstElementChild);
+};
+ccc['XNO'].getFee = function() {
+	if (D('XNO' + '-withdrawal-fee')) remove(D('XNO' + '-itemize').firstElementChild);
+};
 ccc['SOL'].getFee = function() {
 	D('SOL' + '-withdrawal-fee').value = unitFromRaw('SOL', ccc['SOL'].fee);
 	D('SOL' + '-withdrawal-fee').parentNode.style.display = 'flex';
@@ -391,7 +395,7 @@ function nanoDisplayTransactions(symbol, start) {
 					sign = "-";
 					color = "#B00";
 				}					
-				displayTransaction(symbol, history.history[i].height, color, sign, history.history[i].account, history.history[i].local_timestamp * 1000, history.history[i].amount);
+				displayTransaction(symbol, history.history[i].height, color, sign, history.history[i].account, history.history[i].local_timestamp * 1000, history.history[i].amount, history.history[i].hash);
 			}
 		}
 	}
@@ -408,7 +412,7 @@ ccc['SOL'].getTransactions = function(start) {
 		for (let i = 0; i < history.length; i++) {
 			if (i == 0) console.log(history[0]);
 			if (!D(symbol + '-' + history[i].slot)) {
-				displayTransaction(symbol, history[i].slot, "#333", "+", history[i].signature, history[i].blockTime * 1000, "0");				
+				displayTransaction(symbol, history[i].slot, "#333", "+", history[i].signature, history[i].blockTime * 1000, "0", history[i].signature);				
 				details[i] = history[i].signature;  
 			}
 		}
@@ -477,7 +481,7 @@ ccc['XLM'].getTransactions = function(start) {
 					amt = (BigInt(rawFromUnit(symbol, amt)) + BigInt(ccc[symbol].fee)).toString();
 				} else amt = rawFromUnit(symbol, amt);
 				
-				displayTransaction(symbol, history.records[i].id, color, sign, otherAccount, history.records[i].created_at, amt); 	
+				displayTransaction(symbol, history.records[i].id, color, sign, otherAccount, history.records[i].created_at, amt, history.records[i].transaction_hash); 	
 			}
 		}
 	}
@@ -505,7 +509,7 @@ ccc['ALGO'].getTransactions = function(start) {
 					otherAccount = history.transactions[i]["payment-transaction"].receiver;
 					amt = unitFromRaw(symbol, history.transactions[i]["payment-transaction"].amount + ccc[symbol].fee);
 				}				
-				displayTransaction(symbol, history.transactions[i]['confirmed-round'], color, sign, otherAccount, history.transactions[i]['round-time']*1000, rawFromUnit(symbol, amt));
+				displayTransaction(symbol, history.transactions[i]['confirmed-round'], color, sign, otherAccount, history.transactions[i]['round-time']*1000, rawFromUnit(symbol, amt), history.transactions[i].id);
 			}
 		}
 	}
@@ -527,10 +531,11 @@ function handlePage(symbol, condition, lastNumber, restart) {
 	}
 }
 		
-function displayTransaction(symbol, number, color, sign, address, time, amt) {	
+function displayTransaction(symbol, number, color, sign, address, time, amt, tx) {	
 	let li = make('li');			
 
 	li.style.borderRadius = "5px";
+	li.style.paddingBottom = "1px";
 	let displayNameSpan = make('span');
 	displayNameSpan.id = `${symbol}-${number}-display`;
 	displayNameSpan.style.borderRadius = '5px';
@@ -538,11 +543,14 @@ function displayTransaction(symbol, number, color, sign, address, time, amt) {
 	if (ccc[symbol].checkAddress(address)) displayNameSpan.onclick = function() {
 		fetchDisplayName(symbol, "-" + number + "-display", address, true);
 	}
+	
+	let memoType = "Invoice";
+	if (sign == "-") memoType = "Receipt";
 
 	li.innerHTML = "<div style='display:flex; justify-content:space-between'><strong style='margin-right:10px'></strong>"
 	+ "<strong style='text-align:right; overflow:hidden; text-overflow:ellipsis; color:" + color + "'>" + sign + "<span class='clickFlash'></span> " + symbol + "</strong></div>"
-	+ "<div style='display:flex; justify-content:space-between'><span class='address' style='width:calc(100% - 180px); margin-top:4px' onclick='clickCopy(this, this.textContent)'></span>"
-	+ "<span style='text-align:right;'></span></div>";
+	+ "<div style='display:flex; justify-content:space-between'><span class='address' style='margin-right:5px; margin-top:4px' onclick='clickCopy(this, this.textContent)'></span>"
+	+ "<span style='text-align:right;'></span></div><button style='font-size:0.8em;display:block; margin-left:auto; margin-right:auto; margin-top:10px; margin-bottom:5px; color:" + color + "'>" + memoType + "</button><ul style='text-align:center; margin-left:20px; margin-right:20px; padding-left:0px; list-style: none;'></ul>";
 	
 	li.firstChild.firstChild.textContent = number + ":\xa0";
 	li.firstChild.firstChild.appendChild(displayNameSpan);
@@ -554,6 +562,10 @@ function displayTransaction(symbol, number, color, sign, address, time, amt) {
 	li.firstChild.nextSibling.firstChild.textContent = address;
 	li.firstChild.nextSibling.firstChild.id = symbol + '-' + number;
 	li.firstChild.nextSibling.firstChild.nextSibling.textContent = convertTimestamp(new Date(time));
+	
+	li.lastChild.previousElementSibling.onclick = function() {
+		ws.emit('getReceiptCue', {currency:symbol, tx: tx, div: displayNameSpan.id });
+	}
 	
 	li.style.marginBottom = "15px";
 	li.title = number;	
@@ -796,6 +808,8 @@ async function postBlock(symbol, subtype, workInput, previous, representative, b
 		link: link.replace('ban_', 'nano_')
 	});
 	
+	ws.emit('getReceiptCue', {currency:symbol, tx: link, txReceive: block.hash});
+	
 	if (symbol == "BAN") {
 		block.block.representative = block.block.representative.replace('nano_', 'ban_');
 		block.block.representative = block.block.representative.replace('xrb_', 'ban_');
@@ -964,6 +978,47 @@ function setupWebsocket() {
 		if (data.div == "-rep-display") localStorage.setItem(`${data.currency}-rep-display`, JSON.stringify({address:data.address, name:data.display}));
 		displayName(data.currency, data.div, data.address, data.display);
 	});
+	
+	
+	ws.on('getReceiptReplyCue', function(data) {
+		console.log(data);
+		if (D(data.div)) {
+			let receipt = [];
+			if (data.receipt) {
+				receipt = JSON.parse(data.receipt);
+				D(data.div).parentNode.parentNode.parentNode.lastElementChild.previousElementSibling.onclick = function() {
+					if (this.nextElementSibling.style.display != "none") this.nextElementSibling.style.display = "none";
+					else this.nextElementSibling.style.display = "";
+				};
+			} else {
+				showMsg('No invoice or receipt found.');
+				D(data.div).parentNode.parentNode.parentNode.lastElementChild.previousElementSibling.disabled = true;
+				D(data.div).parentNode.parentNode.parentNode.lastElementChild.previousElementSibling.style.color = "";
+			}
+			
+			for (let i = 0; i < receipt.length; i++) {
+				let li = make('li');
+				li.style = "display:flex; justify-content:space-between; font-size:0.9em; border-radius:5px; padding-left:5px; padding-right:5px;";
+				
+				let itemSpan = make('span');
+				itemSpan.textContent = receipt[i].item;
+				
+				let amtSpan = make('span');
+				amtSpan.textContent = receipt[i].amt;
+				
+				li.onmouseenter = function() {
+					this.style.backgroundColor = ccc[data.currency].flashColor;
+				};
+				li.onmouseleave = function() {
+					this.style.backgroundColor = "";
+				};
+				
+				li.appendChild(itemSpan);
+				li.appendChild(amtSpan);
+				D(data.div).parentNode.parentNode.parentNode.lastElementChild.appendChild(li);
+			}
+		} else if (!data.div) ws.emit('setReceiptCue', {currency: data.currency, tx:data.txReceive, receipt:data.receipt});
+	});
 }
 
 for (let symbol in ccc) {generateHTML(symbol);}
@@ -1088,12 +1143,14 @@ function clearPayment(symbol) {
 	D(symbol + "-dest").value = "";	
 	D(`${symbol}-withdrawal-amount`).value = "";
 	
-	while (D(symbol + "-itemize").children.length > 2) {
-		remove(D(symbol + "-itemize").children[1]);
+	let keeper = 1;
+	if (D(symbol + '-withdrawal-fee')) keeper = 2;
+	
+	while (D(symbol + "-itemize").children.length > keeper) {
+		remove(D(symbol + "-itemize").children[D(symbol + "-itemize").children.length - 1]);
 	}
-	D(symbol + "-itemize").children[1].firstElementChild.nextElementSibling.value = "";
-	D(symbol + "-itemize").children[1].firstElementChild.value = "";
-
+	D(symbol + "-itemize").children[D(symbol + "-itemize").children.length - 1].firstElementChild.nextElementSibling.value = "";
+	D(symbol + "-itemize").children[D(symbol + "-itemize").children.length - 1].firstElementChild.value = "";
 }
 
 function clearWallet(symbol) {
@@ -1188,12 +1245,23 @@ async function withdraw(symbol) {
 					showMsg(symbol + " transfer initiated...", null, true);
 					let sendResp = await ccc[symbol].sendTo(D(`${symbol}-dest`).value, rawAmt);
 					if (sendResp) {
-						console.log(sendResp);
-						showMsg(amt + " " + symbol + " transferred.");
+						console.log(sendResp);						
+						let receipt = [];
+						for (let i = 0; i < D(symbol + "-itemize").children.length; i++) {
+							let newItem = D(symbol + "-itemize").children[i].children[0].value;
+							let newAmt = D(symbol + "-itemize").children[i].children[1].value;
+							if (newItem || newAmt) {
+								receipt.push({item:newItem, amt:newAmt});
+							}
+						}
+						ws.emit("setReceiptCue", {currency: symbol, tx:sendResp, receipt:JSON.stringify(receipt)});
+						console.log({currency: symbol, tx:sendResp, receipt:JSON.stringify(receipt)});
+						
 						clearPayment(symbol);
+						refreshBalance(symbol);
 						ccc[symbol].getTransactions();
+						showMsg(amt + " " + symbol + " transferred.");
 					}
-					refreshBalance(symbol);
 					return true;
 					
 				} else showMsg("Minimum account balance is " + ccc[symbol].min + " " + symbol + ".");
@@ -1358,14 +1426,14 @@ function addTotal() {
 			return false;
 		} else total += BigInt(rawFromUnit(symbol, amt));
 	}
-	if (!total || total == BigInt(rawFromUnit(symbol, D(symbol + "-itemize").children[0].firstElementChild.nextElementSibling.value))) D(symbol + "-withdrawal-amount").value = "";
+	if (!total || total == BigInt(ccc[symbol].fee)) D(symbol + "-withdrawal-amount").value = "";
 	else D(symbol + "-withdrawal-amount").value = unitFromRaw(symbol, total);
 }
 
 function addItem(elt) {
 	let symbol = D('primary').value;
 	if (elt.parentNode == D(symbol + "-itemize").lastElementChild) {
-		elt.textContent = 'X';
+		elt.textContent = '🗙';
 		elt.setAttribute('onclick', 'remove(this.parentNode); addTotal();');
 		
 		let outerElt = make('div');
@@ -1993,8 +2061,8 @@ function generateHTML(symbol) {
 		<div class='address' id="${symbol}-address" onclick="clickCopy(this, this.textContent)">&nbsp;</div>
 		</div>
 		
-		<div style="display:flex; align-items:center; justify-content:space-between">
-			<div style="width:calc(100% - 15px); display:flex">
+		<div style="display:flex; align-items:center; justify-content:space-between; margin-right:5px;">
+			<div style="width:100%; display:flex">
 				<strong>Balance:&nbsp;</strong> 
 				<span id="${symbol}-balance" class="clickFlash" style="max-width:min-content; overflow:hidden; text-overflow:ellipsis;" onclick="clickCopy(this, this.textContent)">0.00</span>&nbsp;${symbol}
 			</div>
@@ -2021,13 +2089,13 @@ function generateHTML(symbol) {
 		
 		<div style="display:none; justify-content:space-between; margin-top:15px; align-items:baseline">
 			<input placeholder="Memo, item, tip..." onfocus="scrollPanel(this.parentNode)" onkeyup="if (event.keyCode == 27) this.value = '';" style="flex-grow:2; flex-basis:1px; margin-right:10px" type="text" maxlength="128" value="Network fee" disabled>
-			<input placeholder="0.00" onkeyup="addTotal(); if (event.keyCode == 27) { this.value = ''; addTotal(); } else if (event.keyCode == 13) addItem(this.nextElementSibling);" style="margin-right:10px; text-align:right; flex-grow:1; flex-basis:1px; overflow:hidden; text-overflow:ellipsis;" type="number" step="0.01" min="0" onfocus="scrollPanel(this.parentNode)" id="${symbol}-withdrawal-fee"><button tabindex="-1" style="font-size:0.8em; filter:opacity(0)" disabled>+</button>
+			<input placeholder="0.00" onkeyup="addTotal(); if (event.keyCode == 27) { this.value = ''; addTotal(); } else if (event.keyCode == 13) addItem(this.nextElementSibling);" style="margin-right:10px; text-align:right; flex-grow:1; flex-basis:1px; overflow:hidden; text-overflow:ellipsis;" type="number" step="0.01" min="0" onfocus="scrollPanel(this.parentNode)" id="${symbol}-withdrawal-fee"><button tabindex="-1" style="font-size:0.8em; filter:opacity(0)" disabled>🞥</button>
 		</div>
 		
 		
 		<div style="display:flex; justify-content:space-between; margin-top:15px; align-items:baseline">
 			<input placeholder="Memo, item, tip..." onfocus="scrollPanel(this.parentNode)" onkeyup="if (event.keyCode == 27) this.value = '';" style="flex-grow:2; flex-basis:1px; margin-right:10px" type="text" maxlength="128">
-			<input placeholder="0.00" onkeyup="addTotal(); if (event.keyCode == 27) { this.value = ''; addTotal(); } else if (event.keyCode == 13) addItem(this.nextElementSibling);" style="margin-right:10px; text-align:right; flex-grow:1; flex-basis:1px; overflow:hidden; text-overflow:ellipsis;" type="number" step="0.01" min="0"><button tabindex="-1" style="font-size:0.8em" onclick="addItem(this)">+</button>
+			<input placeholder="0.00" onkeyup="addTotal(); if (event.keyCode == 27) { this.value = ''; addTotal(); } else if (event.keyCode == 13) addItem(this.nextElementSibling);" style="margin-right:10px; text-align:right; flex-grow:1; flex-basis:1px; overflow:hidden; text-overflow:ellipsis;" type="number" step="0.01" min="0"><button tabindex="-1" style="font-size:0.8em" onclick="addItem(this)">🞥</button>
 		</div>
 		</div>
 		
@@ -2073,7 +2141,7 @@ function generateHTML(symbol) {
 }
 
 var itemString = `<input placeholder="Memo, item, tip..." onfocus="scrollPanel(this.parentNode)" onkeyup="if (event.keyCode == 27) this.value = '';" style="flex-grow:2; flex-basis:1px; margin-right:10px" type="text" maxlength="128">
-			<input placeholder="0.00" onkeyup="addTotal(); if (event.keyCode == 27) { this.value = ''; addTotal(); } else if (event.keyCode == 13) addItem(this.nextElementSibling);" style="margin-right:10px; text-align:right; flex-grow:1; flex-basis:1px; overflow:hidden; text-overflow:ellipsis;" type="number" step="0.01" min="0"><button tabindex="-1" style="font-size:0.8em" onclick="addItem(this)">+</button>`;
+			<input placeholder="0.00" onkeyup="addTotal(); if (event.keyCode == 27) { this.value = ''; addTotal(); } else if (event.keyCode == 13) addItem(this.nextElementSibling);" style="margin-right:10px; text-align:right; flex-grow:1; flex-basis:1px; overflow:hidden; text-overflow:ellipsis;" type="number" step="0.01" min="0"><button tabindex="-1" style="font-size:0.8em" onclick="addItem(this)">🞥</button>`;
 
 </script>
 </html>
