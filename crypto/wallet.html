@@ -433,6 +433,7 @@ ccc['SOL'].getTransactions = function(start) {
 									amtDisplay.style.color = "#B00";
 								} else amtDisplay.style.color = "#097";
 								amtDisplay.firstElementChild.textContent = unitFromRaw(symbol, change);
+								amtDisplay.firstElementChild.onclick = function() { clickCopy(this, this.textContent); };
 							} else if (j < 2) {
 								let actualAddress = historyDetails[i].transaction.message.accountKeys[j].pubkey.toBase58()
 								li.firstChild.nextSibling.firstChild.firstChild.textContent = actualAddress;
@@ -556,9 +557,7 @@ function displayTransaction(symbol, number, color, sign, address, time, amt, tx)
 	let topRow = li.firstChild.firstChild;
 	topRow.appendChild(displayNameSpan);
 	topRow.nextSibling.firstElementChild.textContent = unitFromRaw(symbol, amt);
-	topRow.nextSibling.firstElementChild.onclick = function() {
-		clickCopy(li.firstChild.firstChild.nextSibling.firstElementChild, li.firstChild.firstChild.nextSibling.firstElementChild.textContent);
-	};
+	topRow.nextSibling.firstElementChild.onclick = function() { clickCopy(this, this.textContent); };
 	
 	let bottomRow = li.firstChild.nextSibling.firstChild.firstChild;
 	bottomRow.textContent = address;
