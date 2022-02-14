@@ -535,7 +535,7 @@ function displayTransaction(symbol, number, color, sign, address, time, amt, tx)
 	let li = make('li');			
 
 	li.style.borderRadius = "5px";
-	li.style.paddingBottom = "1px";
+	li.style.marginTop = "15px";
 	let displayNameSpan = make('span');
 	displayNameSpan.id = `${symbol}-${number}-display`;
 	displayNameSpan.style.borderRadius = '5px';
@@ -549,9 +549,9 @@ function displayTransaction(symbol, number, color, sign, address, time, amt, tx)
 
 	li.innerHTML = "<div style='display:flex; justify-content:space-between'><strong style='margin-right:10px'></strong>"
 	+ "<strong style='text-align:right; overflow:hidden; text-overflow:ellipsis; color:" + color + "'>" + sign + "<span class='clickFlash'></span> " + symbol + "</strong></div>"
-	+ "<div style='display:flex; justify-content:space-between; align-items:center; margin-top:3px; margin-bottom:3px'><span class='address' style='margin-right:5px;' onclick='clickCopy(this, this.textContent)'></span>"
+	+ "<div style='display:flex; justify-content:space-between; align-items:center; margin-top:3px; margin-bottom:5px'><span class='address' style='margin-right:5px;' onclick='clickCopy(this, this.textContent)'></span>"
 	+ "<span style='text-align:right; font-size:0.8em'></span><button style='font-size:0.8em; margin-left:10px; color:" + color + "'>" + memoType + "</button></div>" 
-	+ "<ul class='accordion' style='text-align:center; margin-left:20px; margin-right:20px; margin-top:5px; padding-left:0px; list-style: none;'></ul>";
+	+ "<ul class='accordion' style='text-align:center; margin-left:20px; margin-right:20px; padding-left:0px; list-style: none;'></ul>";
 	
 	li.firstChild.firstChild.textContent = number + ":\xa0";
 	li.firstChild.firstChild.appendChild(displayNameSpan);
@@ -568,7 +568,6 @@ function displayTransaction(symbol, number, color, sign, address, time, amt, tx)
 		ws.emit('getReceiptCue', {currency:symbol, tx: tx, div: displayNameSpan.id });
 	}
 	
-	li.style.marginBottom = "15px";
 	li.title = number;	
 	addOrdered(li, D(symbol + '-transactions'));
 	if (ccc[symbol].checkAddress(address)) fetchDisplayName(symbol, "-" + number + "-display", address);
@@ -2023,7 +2022,7 @@ function generateHTML(symbol) {
 			<strong id="${symbol}-heading" style="border-radius:5px; font-size:1.2em">Transactions</strong>
 			<button style="font-size:0.8em" onclick="refreshBalance('${symbol}'); ccc['${symbol}'].getTransactions();">Refresh</button>
 		</div>
-		<ul id="${symbol}-transactions" style="padding-left:0px; max-width:620px; list-style: none;"></ul>
+		<ul id="${symbol}-transactions" style="padding-left:0px; max-width:620px; list-style: none; margin-top:25px"></ul>
 		<div style="max-width:620px; margin-top:30px; margin-bottom:70px; text-align:center">
 			<button style="display:none" id="${symbol}-loadMore">Load More</button>
 			<div id="${symbol}-gettingStarted">
