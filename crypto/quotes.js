@@ -6573,6 +6573,7 @@ if (typeof(Storage) !== "undefined") {
 	authorSpan.textContent = ' -\xa0' + quoteData.author;
 	//authorSpan.innerHTML += '\xa0(<a rel="noopener" href="https://warashibetrader.github.io/2022/02/02/security-quote-protocol" target="_blank">?</a>)';
 	authorSpan.style.textAlign = "right";
+	authorSpan.style.marginTop = "5px";
 	quoteElt.appendChild(quoteSpan);
 	quoteElt.appendChild(authorSpan);
 }
