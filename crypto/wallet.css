@@ -96,7 +96,7 @@ option {
 	background-color: transparent !important;
 }
 .close-icon:after {
-	content: "\2715";
+	content: "🗙";
 	z-index:1;
 	position: absolute;
 	right: 12px;
@@ -166,11 +166,15 @@ a:hover {
 	text-overflow:ellipsis;
 	max-width:min-content;
 	border-radius:5px;
+	padding-left:3px;
+	padding-right:3px;
 }
 
 .clickFlash {
 	cursor:pointer;
 	border-radius:5px;
+	padding-left:2px;
+	padding-right:2px;
 }
 
 /*-----------*/
