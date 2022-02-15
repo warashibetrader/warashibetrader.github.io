@@ -1017,10 +1017,8 @@ function setupWebsocket() {
 			if (data.receipt) receipt = JSON.parse(data.receipt);
 			else {
 				showMsg('No invoice or receipt found.');
-				// but.disabled = true;
 				but.style.color = "";
 			}
-			
 			
 			but.classList.add('active');
 			ul.style.maxHeight = "0px";
@@ -1035,10 +1033,8 @@ function setupWebsocket() {
 				}
 			};
 			
-			
 			let li = make('li');
-			li.style = "margin-bottom:5px;";
-			
+			li.style = "margin-bottom:5px; overflow:hidden; text-overflow:ellipsis;";
 			
 			let itemSpan = make('span');
 			itemSpan.textContent = "ID:\xa0";
@@ -1046,13 +1042,9 @@ function setupWebsocket() {
 			
 			let amtSpan = make('span');
 			amtSpan.textContent = data.tx;
-			//amtSpan.style.fontSize = "0.9em";
 			
 			amtSpan.classList.add('address');
-			amtSpan.onclick = function() {
-				clickCopy(amtSpan, amtSpan.textContent);
-			}
-			
+			amtSpan.onclick = function() { clickCopy(amtSpan, amtSpan.textContent);	};			
 			
 			li.appendChild(itemSpan);
 			li.appendChild(amtSpan);
