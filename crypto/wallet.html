@@ -1102,8 +1102,10 @@ selectPrimary(D('primary').value);
 window.addEventListener("message", function(event) { 
 	if (event.source == window.opener && event.data && event.data.cue == "replyCue") {
 		paymentWindow = true;
-		D('firstDiv').parentNode.style.justifyContent = "center";
-		D('firstDiv').style.width = "initial";
+		if (screen.width <= 550 || screen.height <= 550) {
+			D('firstDiv').parentNode.style.justifyContent = "center";
+			D('firstDiv').style.width = "initial";
+		}
 		let symbol = event.data.preferred;
 		let address = event.data.addresses[symbol];
 		D('primary').value = symbol;
