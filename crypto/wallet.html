@@ -328,8 +328,9 @@ function nanoGetAccountInfo(symbol) {
 	return post(ccc[symbol].server, {action: 'account_info', pending: true, representative: true, account: ccc[symbol].address}).then(function(accountInfo) {
 		if (accountInfo && !accountInfo.frontier) {
 			accountInfo.balance = "0";
-			cyclePending(symbol, true);
-		} return accountInfo;
+			accountInfo.detail = "Unopened account.";
+		} 
+		return accountInfo;
 	});
 }
 ccc['SOL'].getAccountInfo = function() {
@@ -754,7 +755,7 @@ ccc['BAN'].createBlock = ccc['XNO'].createBlock;
 
 async function nanoSend(symbol, destination, amt) {
 	// check frontier
-	let frontierBlock = await fetchFrontier(symbol, await refreshBalance(symbol));
+	let frontierBlock = await fetchFrontier(symbol, await ccc[symbol].getAccountInfo());
 	if (!frontierBlock) return false;
 	
 	return await postBlock(symbol, 'send', frontierBlock.hash, frontierBlock.hash, frontierBlock.representative, 
@@ -768,7 +769,7 @@ async function nanoReceive(symbol, hash) {
 	let representative = ccc[symbol].representative;
 	let workInput = ccc[symbol].publicKey;
 	
-	let frontierBlock = await fetchFrontier(symbol, await refreshBalance(symbol));
+	let frontierBlock = await fetchFrontier(symbol, await ccc[symbol].getAccountInfo());
 	if (frontierBlock) {
 		oldBalance = frontierBlock.balance;
 		previous = frontierBlock.hash;
@@ -788,7 +789,7 @@ async function nanoReceive(symbol, hash) {
 
 async function nanoChange(symbol, newrep) {
 	// check frontier
-	let frontierBlock = await fetchFrontier(symbol, await refreshBalance(symbol));
+	let frontierBlock = await fetchFrontier(symbol, await ccc[symbol].getAccountInfo());
 	if (!frontierBlock) return false;
 	
 	return await postBlock(symbol, 'change', frontierBlock.hash, frontierBlock.hash, newrep, frontierBlock.balance, '0'.padStart(64, '0'));
@@ -1040,7 +1041,7 @@ function setupWebsocket() {
 			
 			
 			let itemSpan = make('span');
-			itemSpan.textContent = "ID: ";
+			itemSpan.textContent = "ID:\xa0";
 			itemSpan.style.fontSize = "0.8em";
 			
 			let amtSpan = make('span');
@@ -1249,32 +1250,35 @@ function clearWallet(symbol) {
 }
 
 function refreshBalance(symbol, confirm) {
-	if (ccc[symbol].address) {
-		return ccc[symbol].getAccountInfo().then(function(accountInfo) {
-			if (accountInfo) {
-				if (confirm) showMsg(`${symbol} account loaded.`);
-				else if (D('msg').textContent.indexOf('Unable to connect to network.') != -1) showMsg(`Connected.`);
-				localStorage.setItem(`${symbol}-info`, JSON.stringify(accountInfo));	
-			} else {
-				if (ccc[symbol].address == localStorage.getItem(`${symbol}-address`)) accountInfo = localStorage.getItem(`${symbol}-info`);
-				if (accountInfo) accountInfo = JSON.parse(accountInfo);
+	return ccc[symbol].getAccountInfo().then(function(accountInfo) {
+		if (accountInfo) {
+			if (confirm) showMsg(`${symbol} account loaded.`);
+			else if (D('msg').textContent.indexOf('Unable to connect to network.') != -1) showMsg(`Connected.`);
+			localStorage.setItem(`${symbol}-info`, JSON.stringify(accountInfo));	
+		} else {
+			if (ccc[symbol].address == localStorage.getItem(`${symbol}-address`)) accountInfo = localStorage.getItem(`${symbol}-info`);
+			if (accountInfo) accountInfo = JSON.parse(accountInfo);
+		}
+		
+		if (accountInfo) {
+			if (accountInfo.representative && D(`${symbol}-rep`) && D(`${symbol}-rep`).textContent != accountInfo.representative) {
+				flash(D(`${symbol}-rep`), accountInfo.representative);	
+				fetchDisplayName(symbol, "-rep-display", accountInfo.representative, true);
 			}
+			if (accountInfo.balance !== undefined) flash(D(`${symbol}-balance`), unitFromRaw(symbol, accountInfo.balance));
+			if (accountInfo.pending !== undefined) flash(D(`${symbol}-balance-pending`), unitFromRaw(symbol, accountInfo.pending));
 			
-			if (accountInfo) {
-				if (accountInfo.representative && D(`${symbol}-rep`) && D(`${symbol}-rep`).textContent != accountInfo.representative) {
-					flash(D(`${symbol}-rep`), accountInfo.representative);	
-					fetchDisplayName(symbol, "-rep-display", accountInfo.representative, true);
-				}
-				if (accountInfo.balance !== undefined) flash(D(`${symbol}-balance`), unitFromRaw(symbol, accountInfo.balance));
-				if (accountInfo.pending !== undefined) flash(D(`${symbol}-balance-pending`), unitFromRaw(symbol, accountInfo.pending));
+			if (accountInfo.detail == "Unopened account.") {
+				if (symbol == "XNO" || symbol == "BAN") cyclePending(symbol, true);
 			}
-			
-			return accountInfo;
-		});	
-	} else return false;
+		}
+		
+		return accountInfo;
+	});	
 }
 
 function cyclePending(symbol, silent) {
+	console.log("Cycling");
 	if (ccc[symbol].address) {
 		if (!silent) showMsg(`Collecting arriving ${symbol}...`, null,true);
 		ccc[symbol].getPending().then(async function(data) {
