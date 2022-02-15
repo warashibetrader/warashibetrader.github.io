@@ -125,6 +125,10 @@ select:hover {
 	background-color: #d4d7d7;
 }
 
+select:disabled:hover {	
+	background-color: #f1f4f4;
+}
+
 button {
 	outline: none;
 	padding: 5px 10px;
