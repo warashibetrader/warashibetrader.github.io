@@ -25,7 +25,7 @@
 	<div class="containerdiv">
 	<div id="firstDiv" class="firstDiv">
 		<div class="objectWrapper" style="margin-top:50px">
-									  
+									  <button onclick="testFunction()">test</button>
 			<div id="serverMsg" style="white-space:pre-wrap; color:red; font-style:italic; font-size:0.9em" ></div>
 			<div id="serverMsgButton" style="display:none; text-align:center; margin-top:10px; margin-bottom:15px; font-size:0.8em"><button onclick="hideServerMsg()">Hide Message</button></div>
 			
@@ -122,6 +122,22 @@ if (localStorage.getItem('symbol')) document.getElementById('firstDiv').style.ba
 
 //////////////////////////////////////////////////////// global data
 
+
+function testFunction() {
+	let preferred = "BAN";
+	let addresses = {BAN: "ban_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7"};
+	let items = [{item:"Test payment request", BAN:"0.1"}];
+	
+	let popup = window.open('https://warashibetrader.github.io/crypto/wallet');
+	window.addEventListener("message", function(event) { 
+		if (event.source == popup && event.data) {
+			if (event.data.cue == "readyCue") popup.postMessage({cue:"replyCue", preferred:preferred, addresses: addresses, items: items}); 
+			if (event.data.cue == "paidCue") {console.log(event.data.id)};
+			if (event.data.cue == "closeCue") popup.close();
+		}
+	});
+}
+
 var fullView = localStorage.getItem("view");
 let imgsrc = localStorage.getItem("image");
 if (imgsrc) {
@@ -141,7 +157,9 @@ var qrScanning = false;
 var qrScanningSymbol = D('primary').value;
 var qrScanningType = "";	
 
-var clipboardText;		
+var clipboardText;
+
+var paymentWindow = false;
 
 //////////////////////////////////////////////////////// crypto currency classes
 
@@ -1081,6 +1099,144 @@ for (let symbol in ccc) {generateHTML(symbol);}
 if (localStorage.getItem('symbol')) D('primary').value = localStorage.getItem('symbol');
 selectPrimary(D('primary').value);
 
+// payment listener
+window.addEventListener("message", function(event) { 
+	if (event.source == window.opener && event.data && event.data.cue == "replyCue") {
+		paymentWindow = true;
+		D('firstDiv').parentNode.style.justifyContent = "center";
+		D('firstDiv').style.width = "initial";
+		let symbol = event.data.preferred;
+		let address = event.data.addresses[symbol];
+		D('primary').value = symbol;
+		D('primary').disabled = true;
+		selectPrimary(symbol).then(function() {	
+			D('secondDiv').style.display = "none";
+			D('nprButton').style.display = "none";
+			D(symbol + '-donatePanel').style.display = "none";
+			
+			fullView = false;
+			updateView();
+			
+			clearPayment(symbol);
+			D(symbol + "-dest").value = address;
+			D(symbol + "-dest").disabled = true;
+			D(symbol + "-dest").nextElementSibling.style.display = "none";
+			D(symbol + "-dest").nextElementSibling.nextElementSibling.style.display = "none";
+			flash(D(symbol + "-dest"));
+			fetchDisplayName(symbol, '-dest-display', D(symbol + "-dest").value, true);
+			
+			for (let i = 0; i < event.data.items.length; i++) {
+				D(symbol + "-itemize").lastElementChild.children[2].disabled = true;
+				D(symbol + "-itemize").lastElementChild.children[2].style.filter = "opacity(0)";
+				D(symbol + "-itemize").lastElementChild.children[1].value = event.data.items[i][symbol];
+				D(symbol + "-itemize").lastElementChild.children[1].disabled = true;
+				D(symbol + "-itemize").lastElementChild.firstElementChild.value = event.data.items[i].item;
+				D(symbol + "-itemize").lastElementChild.firstElementChild.disabled = true;
+				
+				addItem(D(symbol + "-itemize").lastElementChild.lastElementChild);
+			}
+		});
+	}
+});
+if (window.opener) window.opener.postMessage({cue:"readyCue"});
+
+window.addEventListener('copy', function(e) { if (document.getSelection().toString()) clipboardText = document.getSelection().toString(); });
+
+window.addEventListener('keydown', function(evt) {
+	if (evt.altKey) {
+		if (evt.keyCode == 81) {
+			evt.preventDefault();
+			toggleView();
+			//D('primary').focus();
+		}
+		if (evt.keyCode == 49) {
+			evt.preventDefault();
+			//toggleView();
+			D('primary').focus();
+		}
+	}
+	if (evt.keyCode == 32 && document.activeElement == document.body) {
+		evt.preventDefault();
+		npr();
+	}
+});
+
+let deferredInstallPrompt = null;
+
+// CODELAB: Add event listener for beforeinstallprompt event
+window.addEventListener('beforeinstallprompt', function (evt) {  // CODELAB: Add code to save event & show the install button.  
+	console.log("Detected that PWA can be installed.");
+    deferredInstallPrompt = evt;
+    evt.preventDefault();
+	D('nprButton').textContent = "Native App";
+    D('nprButton').onclick = function(event) {
+		deferredInstallPrompt.prompt();
+		
+		// CODELAB: Log user response to prompt.  
+		deferredInstallPrompt.userChoice.then((choice) => {
+			if (choice.outcome === 'accepted') {
+			  console.log('User accepted the A2HS prompt', choice);
+			  
+				D('nprButton').textContent = "Play NPR";
+				D('nprButton').onclick = npr;
+	
+			} else console.log('User dismissed the A2HS prompt', choice);
+			deferredInstallPrompt = null;
+		});
+	}
+});
+
+window.addEventListener('appinstalled', function (evt) {  // CODELAB: Add code to log the event  
+    console.log('Wallet was installed.', evt);
+});
+
+D('filetag').addEventListener("change", function(e) {
+  if (this.files && this.files[0]) {
+    var reader = new FileReader();
+    reader.onloadend = function(event) {   	    
+		var x = make('img');
+		x.src = event.target.result;
+		let t = e.target.files[0].type;
+		x.onload = function() {
+			var canvas = resizer(x, 800, 600);
+			
+			function resizer(x, MAX_WIDTH, MAX_HEIGHT) {			
+				var canvas = make("canvas");
+				var ctx = canvas.getContext("2d");
+				ctx.drawImage(x, 0, 0);
+				var width = x.width;
+				var height = x.height;
+
+				if (width > height) {
+					if (width > MAX_WIDTH) {
+						height *= MAX_WIDTH / width;
+						width = MAX_WIDTH;
+					}
+				} else if (height > MAX_HEIGHT) {
+					width *= MAX_HEIGHT / height;
+					height = MAX_HEIGHT;
+				}    
+				canvas.width = width;
+				canvas.height = height;
+				ctx.drawImage(x, 0, 0, width, height);
+				return canvas;
+			}	
+
+			if (t == 'image/jpeg') D('preview').src = canvas.toDataURL("image/jpeg", 0.85);
+			else D('preview').src = canvas.toDataURL("image/png");
+			if (x.src.length < D('preview').src.length) D('preview').src = x.src;
+			D('preview').style.display = "block";
+			
+			D('quote').style.display = "none";
+			localStorage.setItem("image", D('preview').src);
+			D("imageButton").classList.add('active');			
+			D("imageButton").textContent = "Clear Security Image";
+		}
+    }
+    reader.readAsDataURL(this.files[0]);
+  }
+});
+
 //////////////////////////////////////////////////////// Interface with helper functions, and websocket
 
 function setName(symbol) {
@@ -1189,7 +1345,7 @@ function clickClearWallet(symbol) {
 	localStorage.removeItem(`${symbol}-rep-display`); 
 	localStorage.removeItem(`${symbol}-info`);
 	
-	clearPayment(symbol);
+	// clearPayment(symbol);
 	
 	D('firstDiv').scrollTo(0, 0);
 }
@@ -1270,7 +1426,7 @@ function refreshBalance(symbol, confirm) {
 }
 
 function cyclePending(symbol, silent) {
-	console.log("Cycling");
+	console.error("Cycling");
 	if (ccc[symbol].address) {
 		if (!silent) showMsg(`Collecting arriving ${symbol}...`, null,true);
 		ccc[symbol].getPending().then(async function(data) {
@@ -1314,12 +1470,20 @@ async function withdraw(symbol) {
 							}
 						}
 						ws.emit("setReceiptCue", {currency: symbol, tx:sendResp, receipt:JSON.stringify(receipt)});
-						console.log({currency: symbol, tx:sendResp, receipt:JSON.stringify(receipt)});
 						
-						clearPayment(symbol);
-						refreshBalance(symbol);
-						ccc[symbol].getTransactions();
 						showMsg(amt + " " + symbol + " transferred.");
+						refreshBalance(symbol);
+						
+						if (!paymentWindow) {
+							ccc[symbol].getTransactions();
+							clearPayment(symbol);
+						} else {
+							window.opener.postMessage({cue:"paidCue", id:sendResp});
+							D(symbol + "-paymentButton").textContent = "Return";
+							D(symbol + "-paymentButton").onclick = function() {
+								window.opener.postMessage({cue:"closeCue", id:sendResp});
+							};
+						}
 					}
 					return true;
 					
@@ -1406,22 +1570,18 @@ function toggleAccount() {
 		obj.style.padding = "";
 		obj.style.marginBottom = "20px";
 		D('account').classList.add('active');
-		setTimeout(function() { 
-			obj.style.overflow = "visible"; 
-			obj.style.maxHeight = "";
-		}, 100);
+		setTimeout(function() { if (obj.style.maxHeight != "0px") obj.style.maxHeight = ""; }, 1000);
 	} else {	
-		qrclose();
 		obj.style.maxHeight = obj.scrollHeight + "px";
+		qrclose();
 		setTimeout(function() {
-			obj.style.maxHeight = "0px";
 			obj.style.paddingTop = "0px";
 			obj.style.paddingBottom = "0px";
 			obj.style.marginBottom = "0px";
+			obj.style.maxHeight = "0px";
 			obj.value = "";
 			D('account').classList.remove('active');
-			obj.style.overflow = "";
-		}, 10);
+		}, 1);
 	}
 }
 
@@ -1459,8 +1619,6 @@ function updateView() {
 		obj3.style.padding = "";
 		obj3.style.paddingBottom = "20px";		
 		D(symbol + "-view").classList.add('active');
-		setTimeout(function() { obj.style.overflow = "visible"; }, 100);
-		setTimeout(function() { obj3.style.overflow = "visible"; }, 100);
 	} else {
       	obj.style.maxHeight = "0px";
 		obj.style.paddingTop = "0px";
@@ -1468,9 +1626,7 @@ function updateView() {
       	obj3.style.maxHeight = "0px";
 		obj3.style.paddingTop = "0px";
 		obj3.style.paddingBottom = "0px";
-		D(symbol + "-view").classList.remove('active');		
-		obj.style.overflow = "";
-		obj3.style.overflow = "";
+		D(symbol + "-view").classList.remove('active');	
 	}
 }
 
@@ -1493,7 +1649,11 @@ function addItem(elt) {
 	let symbol = D('primary').value;
 	if (elt.parentNode == D(symbol + "-itemize").lastElementChild) {
 		elt.innerHTML = '&#x2715;';
-		elt.setAttribute('onclick', 'remove(this.parentNode); addTotal();');
+		//elt.setAttribute('onclick', 'remove(this.parentNode); addTotal();');
+		elt.onclick = function() {
+			remove(this.parentNode);
+			addTotal();
+		};
 		
 		let outerElt = make('div');
 		outerElt.style = "display:flex; justify-content:space-between; margin-top:15px; align-items:baseline";
@@ -1549,28 +1709,6 @@ if (screen.width <= 550 || screen.height <= 550) {
 	});
 }
 
-window.addEventListener('copy', function(e) {
-	if (document.getSelection().toString()) clipboardText = document.getSelection().toString();
-});
-
-window.addEventListener('keydown', function(evt) {
-	if (evt.altKey) {
-		if (evt.keyCode == 81) {
-			evt.preventDefault();
-			toggleView();
-			//D('primary').focus();
-		}
-		if (evt.keyCode == 49) {
-			evt.preventDefault();
-			//toggleView();
-			D('primary').focus();
-		}
-	}
-	if (evt.keyCode == 32 && document.activeElement == document.body) {
-		evt.preventDefault();
-		npr();
-	}
-});
 
 function closeCopy(obj) {
 	if (obj.value.length > 0) {
@@ -1888,35 +2026,6 @@ function post(url, params) {
 
 
 function D(string) { return document.getElementById(string); }	
-
-let deferredInstallPrompt = null;
-
-// CODELAB: Add event listener for beforeinstallprompt event
-window.addEventListener('beforeinstallprompt', function (evt) {  // CODELAB: Add code to save event & show the install button.  
-	console.log("Detected that PWA can be installed.");
-    deferredInstallPrompt = evt;
-    evt.preventDefault();
-	D('nprButton').textContent = "Native App";
-    D('nprButton').onclick = function(event) {
-		deferredInstallPrompt.prompt();
-		
-		// CODELAB: Log user response to prompt.  
-		deferredInstallPrompt.userChoice.then((choice) => {
-			if (choice.outcome === 'accepted') {
-			  console.log('User accepted the A2HS prompt', choice);
-			  
-				D('nprButton').textContent = "Play NPR";
-				D('nprButton').onclick = npr;
-	
-			} else console.log('User dismissed the A2HS prompt', choice);
-			deferredInstallPrompt = null;
-		});
-	}
-});
-
-window.addEventListener('appinstalled', function (evt) {  // CODELAB: Add code to log the event  
-    console.log('Wallet was installed.', evt);
-});
  
 function npr() {
     if (D('audio').paused) {
@@ -1927,65 +2036,6 @@ function npr() {
 		D('nprButton').classList.remove('active');
 		D('audio').pause();
 	}
-}
-
-D('filetag').addEventListener("change", function(e) {
-  if (this.files && this.files[0]) {
-    var reader = new FileReader();
-    reader.onloadend = function(event) {   	    
-		var x = make('img');
-		x.src = event.target.result;
-		let t = e.target.files[0].type;
-		x.onload = function() {
-			var canvas = resizer(x, 800, 600);
-			
-			function resizer(x, MAX_WIDTH, MAX_HEIGHT) {			
-				var canvas = make("canvas");
-				var ctx = canvas.getContext("2d");
-				ctx.drawImage(x, 0, 0);
-				var width = x.width;
-				var height = x.height;
-
-				if (width > height) {
-					if (width > MAX_WIDTH) {
-						height *= MAX_WIDTH / width;
-						width = MAX_WIDTH;
-					}
-				} else if (height > MAX_HEIGHT) {
-					width *= MAX_HEIGHT / height;
-					height = MAX_HEIGHT;
-				}    
-				canvas.width = width;
-				canvas.height = height;
-				ctx.drawImage(x, 0, 0, width, height);
-				return canvas;
-			}	
-
-			if (t == 'image/jpeg') D('preview').src = canvas.toDataURL("image/jpeg", 0.85);
-			else D('preview').src = canvas.toDataURL("image/png");
-			if (x.src.length < D('preview').src.length) D('preview').src = x.src;
-			D('preview').style.display = "block";
-			
-			D('quote').style.display = "none";
-			localStorage.setItem("image", D('preview').src);
-			D("imageButton").classList.add('active');			
-			D("imageButton").textContent = "Clear Security Image";
-		}
-    }
-    reader.readAsDataURL(this.files[0]);
-  }
-});
-
-function callScript(symbol) {
-	return new Promise(function(resolve, reject) {
-		let script = make("script");
-		script.type = "text/javascript";
-		let scriptName = symbol.toLowerCase() + ".js";
-		script.src = scriptName;
-		script.id = symbol;
-		script.onload = function() { resolve(); };
-		document.body.appendChild(script);
-	});
 }
 	
 async function selectPrimary(symbol) {
@@ -2012,14 +2062,27 @@ async function selectPrimary(symbol) {
 		D(`${symbol}-generateButton`).textContent = "Generate Seed";
 	}
 	
-	if (!D(symbol)) {
-		if (symbol == "BAN") {
-			if (!D('XNO')) await callScript('XNO');
-		} else await callScript(symbol);
-		
-		if (symbol == "SOL") ccc['SOL'].server = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl(ccc['SOL'].server), 'confirmed');
-		if (symbol == "XLM") ccc['XLM'].server = new StellarSdk.Server(ccc['XLM'].server);
+	let waitSymbol = symbol;
+	if (waitSymbol == 'BAN') waitSymbol = 'XNO';
+	
+	if (!D(waitSymbol)) {
+		let script = make("script");
+		script.type = "text/javascript";
+		script.src = waitSymbol.toLowerCase() + ".js";
+		script.id = waitSymbol;
+		document.body.appendChild(script);		
 	}
+	
+	let waitScript = new Promise(function(resolve, reject) { resolve(true); });	
+	if (D(waitSymbol).title != "done") waitScript = new Promise(function(resolve, reject) { 
+		D(waitSymbol).addEventListener('load', function() {
+			if (waitSymbol == "SOL") ccc['SOL'].server = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl(ccc['SOL'].server), 'confirmed');
+			if (waitSymbol == "XLM") ccc['XLM'].server = new StellarSdk.Server(ccc['XLM'].server);
+			D(waitSymbol).title = "done";
+			resolve(); 
+		});
+	});
+	await waitScript;
 	
 	if (D(symbol + '-tool1').style.maxHeight != "0px") D('account').classList.add('active');
 	else D('account').classList.remove('active');
@@ -2035,6 +2098,7 @@ async function selectPrimary(symbol) {
 	} else if (D(symbol + '-tool1').style.maxHeight == "0px") toggleAccount();
 	
 	updateView();
+	return true;
 }
 	
 function generateHTML(symbol) {
@@ -2140,11 +2204,11 @@ function generateHTML(symbol) {
 		</div>
 		
 		<div style="text-align:center;">
-			<button style="margin-top:15px" onclick="withdraw('${symbol}')">Transfer ${symbol}</button>
+			<button id="${symbol}-paymentButton" style="margin-top:15px" onclick="withdraw('${symbol}')">Transfer ${symbol}</button>
 		</div>
 	</div>
 		
-	<div style="text-align:center; margin-top:30px">
+	<div id="${symbol}-donatePanel" style="text-align:center; margin-top:30px">
 		<button style="font-size:0.8em;" onclick="donate('${symbol}')">Donate!</button>
 		<button id="${symbol}-view" style="font-size:0.8em; scroll-margin-top:60px" onclick="toggleView()">More Tools</button>
 	</div>
