@@ -444,9 +444,9 @@ ccc['SOL'].getTransactions = function(start) {
 								let but = D(symbol + '-' + historyDetails[i].slot).parentNode.parentNode.parentNode.lastElementChild.previousElementSibling.lastElementChild;
 								if (historyDetails[i].transaction.message.accountKeys[j].signer) {
 									change = -change;
-									amtDisplay.innerHTML =  '-' + "<span class='clickFlash'></span> " + symbol;
-									but.textContent = "Receipt";
 								} else {
+									amtDisplay.innerHTML =  '+' + "<span class='clickFlash'></span> " + symbol;
+									but.textContent = "Invoice";
 									amtDisplay.style.color = "#097";
 									but.style.color = "#097";
 								}
