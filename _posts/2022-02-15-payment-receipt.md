@@ -34,7 +34,7 @@ I added some features to my [crypto wallet](https://warashibetrader.github.io/cr
 
 Below is the javascript code that is triggered by clicking the donation button. The code runs in any javascript-enabled context, with no dependencies or installation required of you or your clients. 
   
-
+<br>
 		
 	// Currently only the preferred currency will be accepted
 	let preferred = "XNO";
