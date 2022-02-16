@@ -1512,7 +1512,7 @@ async function withdraw(symbol) {
 							let sp = make('div');
 							sp.textContent = "Thank you!";
 							sp.style.marginTop = "15px";
-							D(symbol + "-paymentButton").insertBefore(sp, D(symbol + "-paymentButton"));
+							D(symbol + "-paymentButton").parentNode.insertBefore(sp, D(symbol + "-paymentButton"));
 							
 							if (window.opener) {
 								window.opener.postMessage({cue:"paidCue", id:sendResp});
