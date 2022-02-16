@@ -10,8 +10,11 @@ I added some features to my crypto wallet (https://warashibetrader.github.io/cry
 
 3. Support for click to pay, programmatically populating out the wallet payment form with an invoice. For instance:
 
-<button style="margin:20px" onclick='let preferred = "XNO"; let addresses = {XNO: "nano_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7"};
-	let items = [{item:"Donation", XNO:"1"}]; let popup = window.open("https://warashibetrader.github.io/crypto/wallet");
+<button style="margin:20px" onclick='
+	let preferred = "XNO";
+	let addresses = {XNO: "nano_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7"};
+	let items = [{item:"Donation to the developer", XNO:"1"}]; 
+	let popup = window.open("https://warashibetrader.github.io/crypto/wallet");
 	window.addEventListener("message", function(event) {
 		if (event.source == popup && event.data) {
 			if (event.data.cue == "readyCue") popup.postMessage({cue:"replyCue", preferred:preferred, addresses: addresses, items: items}); 
