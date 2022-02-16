@@ -122,21 +122,6 @@ if (localStorage.getItem('symbol')) document.getElementById('firstDiv').style.ba
 //////////////////////////////////////////////////////// global data
 
 
-function testFunction() {
-	let preferred = "BAN";
-	let addresses = {BAN: "ban_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7"};
-	let items = [{item:"Test payment request", BAN:"0.1"}];
-	
-	let popup = window.open('https://warashibetrader.github.io/crypto/wallet');
-	window.addEventListener("message", function(event) { 
-		if (event.source == popup && event.data) {
-			if (event.data.cue == "readyCue") popup.postMessage({cue:"replyCue", preferred:preferred, addresses: addresses, items: items}); 
-			if (event.data.cue == "paidCue") {console.log(event.data.id)};
-			if (event.data.cue == "closeCue") popup.close();
-		}
-	});
-}
-
 var fullView = localStorage.getItem("view");
 let imgsrc = localStorage.getItem("image");
 if (imgsrc) {
@@ -867,7 +852,7 @@ async function postBlock(symbol, subtype, workInput, previous, representative, b
 }
 
 
-//////////////////////////////////////////////////////// Exchange websocket and other setup
+//////////////////////////////////////////////////////// Exchange websocket set and public username fetch
 
 let nanoCount = 0;
 let ninjaPromise = fetch('https://mynano.ninja/api/accounts/aliases').then(function(response) { response.json().then(function(data) { 
@@ -1085,62 +1070,92 @@ function setupWebsocket() {
 	});
 }
 
-for (let symbol in ccc) {generateHTML(symbol);}
-if (localStorage.getItem('symbol')) D('primary').value = localStorage.getItem('symbol');
-selectPrimary(D('primary').value);
 
-// payment listener
-window.addEventListener("message", function(event) { 
-	if (event.source == window.opener && event.data && event.data.cue == "replyCue") {
-		paymentWindow = true;
-		let symbol = event.data.preferred;
-		let address = event.data.addresses[symbol];
-		D('primary').value = symbol;
-		D('primary').disabled = true;
-		D('secondDiv').style.display = "none";
-		D('nprButton').style.display = "none";
-		if (screen.width <= 550 || screen.height <= 550) D('firstDiv').parentNode.style.width = "100%";
-		else {
-			D('firstDiv').parentNode.style.justifyContent = "center";
-			D('firstDiv').parentNode.style.backgroundColor = ccc[symbol].bgColor;
-			D('firstDiv').parentNode.style.height = "initial";
-			D('firstDiv').parentNode.style.minHeight = "100%";
-			
-			D('firstDiv').style.boxShadow = "initial";
-			D('firstDiv').style.overflow = "initial";
-			D('firstDiv').style.width = "initial";
-			D('firstDiv').style.maxWidth = "620px";
-			D('firstDiv').style.minWidth = "350px";
-		}
-		
-		selectPrimary(symbol).then(function() {			
-			if (screen.width <= 550 || screen.height <= 550) D(symbol + "-dest").style.textOverflow = "ellipsis";			
-			D(symbol + '-donatePanel').style.display = "none";			
-			fullView = false;
-			updateView();			
-			clearPayment(symbol);
-			
-			D(symbol + "-dest").value = address;
-			D(symbol + "-dest").disabled = true;
-			D(symbol + "-dest").nextElementSibling.style.display = "none";
-			D(symbol + "-dest").nextElementSibling.nextElementSibling.style.display = "none";
-			flash(D(symbol + "-dest"));
-			fetchDisplayName(symbol, '-dest-display', D(symbol + "-dest").value, true);
-			
-			for (let i = 0; i < event.data.items.length; i++) {
-				D(symbol + "-itemize").lastElementChild.children[2].disabled = true;
-				D(symbol + "-itemize").lastElementChild.children[2].style.filter = "opacity(0)";
-				D(symbol + "-itemize").lastElementChild.children[1].value = event.data.items[i][symbol];
-				D(symbol + "-itemize").lastElementChild.children[1].disabled = true;
-				D(symbol + "-itemize").lastElementChild.firstElementChild.value = event.data.items[i].item;
-				D(symbol + "-itemize").lastElementChild.firstElementChild.disabled = true;
-				
-				addItem(D(symbol + "-itemize").lastElementChild.lastElementChild);
-			}
-		});
-	}
-});
+//////////////////////////////////////////////////////// Final display setup
+
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.has('preferred') && urlParams.has('addresses') && urlParams.has('items')) {
+	generateHTML(urlParams.get('preferred'));
+	loadPaymentsPage({preferred: urlParams.get('preferred'), 
+						addresses: JSON.parse(decodeURIComponent(urlParams.get('addresses'))), 
+						items: JSON.parse(decodeURIComponent(urlParams.get('items')))});
+} else {
+	for (let symbol in ccc) {generateHTML(symbol);}
+	if (localStorage.getItem('symbol')) D('primary').value = localStorage.getItem('symbol');
+	selectPrimary(D('primary').value);
+}
+window.addEventListener("message", function(event) { if (event.source == window.opener && event.data && event.data.cue == "replyCue") loadPaymentsPage(event.data); });
 if (window.opener) window.opener.postMessage({cue:"readyCue"});
+
+function makePaymentURL(preferred, addresses, items) {
+    const url = new URL('https://warashibetrader.github.io/crypto/wallet');
+    url.search = new URLSearchParams({preferred:preferred, addresses:encodeURIComponent(JSON.stringify(addresses)), items:encodeURIComponent(JSON.stringify(items))});
+    return url;
+}
+
+function startPayment(preferred, addresses, items) {	
+	let popup = window.open('https://warashibetrader.github.io/crypto/wallet');
+	window.addEventListener("message", function(event) { 
+		if (event.source == popup && event.data) {
+			if (event.data.cue == "readyCue") popup.postMessage({cue:"replyCue", preferred:preferred, addresses: addresses, items: items}); 
+			if (event.data.cue == "paidCue") console.log(event.data.id);
+			if (event.data.cue == "closeCue") popup.close();
+		}
+	});
+}
+
+function loadPaymentsPage(data) {
+	paymentWindow = true;
+	let symbol = data.preferred;
+	let address = data.addresses[symbol];
+	D('primary').value = symbol;
+	D('primary').disabled = true;
+	D('secondDiv').style.display = "none";
+	D('nprButton').style.display = "none";
+	if (screen.width <= 550 || screen.height <= 550) D('firstDiv').parentNode.style.width = "100%";
+	else {
+		D('firstDiv').parentNode.style.justifyContent = "center";
+		D('firstDiv').parentNode.style.backgroundColor = ccc[symbol].bgColor;
+		D('firstDiv').parentNode.style.height = "initial";
+		D('firstDiv').parentNode.style.minHeight = "100%";
+		
+		D('firstDiv').style.boxShadow = "initial";
+		D('firstDiv').style.overflow = "initial";
+		D('firstDiv').style.width = "initial";
+		D('firstDiv').style.maxWidth = "620px";
+		D('firstDiv').style.minWidth = "350px";
+	}
+	
+	selectPrimary(symbol).then(function() {			
+		if (screen.width <= 550 || screen.height <= 550) D(symbol + "-dest").style.textOverflow = "ellipsis";			
+		D(symbol + '-donatePanel').style.display = "none";			
+		fullView = false;
+		updateView();			
+		clearPayment(symbol);
+		
+		D(symbol + "-dest").value = address;
+		D(symbol + "-dest").disabled = true;
+		D(symbol + "-dest").nextElementSibling.style.display = "none";
+		D(symbol + "-dest").nextElementSibling.nextElementSibling.style.display = "none";
+		flash(D(symbol + "-dest"));
+		fetchDisplayName(symbol, '-dest-display', D(symbol + "-dest").value, true);
+		
+		for (let i = 0; i < data.items.length; i++) {
+			D(symbol + "-itemize").lastElementChild.children[2].disabled = true;
+			D(symbol + "-itemize").lastElementChild.children[2].style.filter = "opacity(0)";
+			if (data.items[i][symbol]) D(symbol + "-itemize").lastElementChild.children[1].value = data.items[i][symbol];
+			else D(symbol + "-itemize").lastElementChild.children[1].placeholder = "-";
+			D(symbol + "-itemize").lastElementChild.children[1].disabled = true;
+			if (data.items[i].item) D(symbol + "-itemize").lastElementChild.firstElementChild.value = data.items[i].item;
+			else D(symbol + "-itemize").lastElementChild.firstElementChild.placeholder = "-";
+			D(symbol + "-itemize").lastElementChild.firstElementChild.disabled = true;
+			
+			addItem(D(symbol + "-itemize").lastElementChild.lastElementChild);
+		}
+	});
+}
+
+//////////////////////////////////////////////////////// Other global eventlisteners
 
 window.addEventListener('copy', function(e) { if (document.getSelection().toString()) clipboardText = document.getSelection().toString(); });
 
@@ -1239,7 +1254,7 @@ D('filetag').addEventListener("change", function(e) {
   }
 });
 
-//////////////////////////////////////////////////////// Interface with helper functions, and websocket
+//////////////////////////////////////////////////////// Interface with display database websocket
 
 function setName(symbol) {
 	if (D(symbol + "-set-display").value.length > 64) showMsg("64 characters or fewer.");
@@ -1484,6 +1499,13 @@ async function withdraw(symbol) {
 							D(symbol + "-paymentButton").textContent = "Return";
 							D(symbol + "-paymentButton").onclick = function() {
 								window.opener.postMessage({cue:"closeCue", id:sendResp});
+								setTimeout(function() { 
+									let sp = make('div');
+									sp.textContent = " You may now close this window.";
+									sp.style.marginTop = "15px";
+									D(symbol + "-paymentButton").parentNode.appendChild(sp);
+									D(symbol + "-paymentButton").style.display = "none";
+								}, 1500);
 							};
 						}
 					}
@@ -2211,7 +2233,7 @@ function generateHTML(symbol) {
 	</div>
 		
 	<div id="${symbol}-donatePanel" style="text-align:center; margin-top:30px">
-		<button style="font-size:0.8em;" onclick="donate('${symbol}')">Donate!</button>
+		<button style="font-size:0.8em;" onclick="donate('${symbol}')">Donate</button>
 		<button id="${symbol}-view" style="font-size:0.8em; scroll-margin-top:60px" onclick="toggleView()">More Tools</button>
 	</div>
 		
@@ -2234,8 +2256,8 @@ function generateHTML(symbol) {
 			<input placeholder="Text to QR-encode..." onfocus="scrollPanel(this.parentNode)" style="padding-right:30px; flex-grow:1; margin-right:10px" id="${symbol}-qr-input" type="text" maxlength="512" onclick="this.select()" oninput="generateQR('${symbol}', this.value)"><button tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
 			<button style="font-size:0.8em" onclick="addressQR('${symbol}')">My Address</button>
 		</div>				
-		<strong>Owner: </strong><span id="${symbol}-directory-display"></span>	
-		<br><strong>Type: </strong><span id="${symbol}-type-display"></span>	
+		<strong>Type: </strong><span id="${symbol}-type-display"></span>	
+		<br><strong>Owner: </strong><span id="${symbol}-directory-display"></span>	
 		<div style="margin-top:20px; display:flex; justify-content:center" id="${symbol}-qrCodeImageBlock"></div>
 	</div>
 	</div>`;
