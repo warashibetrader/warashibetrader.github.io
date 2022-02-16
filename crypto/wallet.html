@@ -1079,12 +1079,12 @@ function makePaymentURL(preferred, addresses, items) {
     return url;
 }
 
-function startPayment(preferred, addresses, items) {	
+function startPayment(preferred, addresses, items, processTransaction) {	
 	let popup = window.open('https://warashibetrader.github.io/crypto/wallet');
 	window.addEventListener("message", function(event) { 
 		if (event.source == popup && event.data) {
 			if (event.data.cue == "readyCue") popup.postMessage({cue:"replyCue", preferred:preferred, addresses: addresses, items: items}); 
-			if (event.data.cue == "paidCue") console.log(event.data.id);
+			if (event.data.cue == "paidCue" && processTransaction) processTransaction(event.data.id);
 			if (event.data.cue == "closeCue") popup.close();
 		}
 	});
@@ -1143,19 +1143,15 @@ function loadPaymentsPage(data) {
 		fetchDisplayName(symbol, '-dest-display', D(symbol + "-dest").value, true);
 		
 		for (let i = 0; i < data.items.length; i++) {
-			if (data.items[i].item || data.items[i][symbol]) {
-				D(symbol + "-itemize").lastElementChild.children[2].disabled = true;
-				D(symbol + "-itemize").lastElementChild.children[2].style.filter = "opacity(0)";
+			if (data.items[i].item || data.items[i][symbol]) {			
 				if (data.items[i][symbol]) D(symbol + "-itemize").lastElementChild.children[1].value = data.items[i][symbol];
 				else D(symbol + "-itemize").lastElementChild.children[1].placeholder = "-";
-				D(symbol + "-itemize").lastElementChild.children[1].disabled = true;
-				if (data.items[i].item) D(symbol + "-itemize").lastElementChild.firstElementChild.value = data.items[i].item;
-				else D(symbol + "-itemize").lastElementChild.firstElementChild.placeholder = "-";
-				D(symbol + "-itemize").lastElementChild.firstElementChild.disabled = true;
-				
+				if (data.items[i].item) D(symbol + "-itemize").lastElementChild.children[0].value = data.items[i].item;
+				else D(symbol + "-itemize").lastElementChild.children[0].placeholder = "-";
 				addItem(D(symbol + "-itemize").lastElementChild.lastElementChild);
 			}
 		}
+		freezePayment(symbol);
 	});
 }
 
@@ -1386,6 +1382,17 @@ function clearPayment(symbol) {
 	D(symbol + "-itemize").children[D(symbol + "-itemize").children.length - 1].firstElementChild.value = "";
 }
 
+function freezePayment(symbol) {
+	for (let i = 0; i < D(symbol + "-itemize").children.length; i++) {
+		if (D(symbol + "-itemize").children[i].children[0].value || D(symbol + "-itemize").children[i].children[1].value) {
+			D(symbol + "-itemize").children[i].children[0].disabled = true;	
+			D(symbol + "-itemize").children[i].children[1].disabled = true;			
+			D(symbol + "-itemize").children[i].children[2].disabled = true;
+			D(symbol + "-itemize").children[i].children[2].style.filter = "opacity(0)";	
+		} else remove(D(symbol + "-itemize").children[i]);
+	}
+}
+
 function clearWallet(symbol) {
 	qrclose();
 	clearDOM(D(symbol + '-transactions'));	
@@ -1498,7 +1505,8 @@ async function withdraw(symbol) {
 						if (!paymentWindow) {
 							ccc[symbol].getTransactions();
 							clearPayment(symbol);
-						} else {						
+						} else {
+							freezePayment(symbol);						
 							let sp = make('div');
 							sp.textContent = "Thank you!";
 							sp.style.marginTop = "15px";
