@@ -1073,20 +1073,6 @@ function setupWebsocket() {
 
 //////////////////////////////////////////////////////// Final display setup
 
-const urlParams = new URLSearchParams(window.location.search);
-if (urlParams.has('preferred') && urlParams.has('addresses') && urlParams.has('items')) {
-	generateHTML(urlParams.get('preferred'));
-	loadPaymentsPage({preferred: urlParams.get('preferred'), 
-						addresses: JSON.parse(decodeURIComponent(urlParams.get('addresses'))), 
-						items: JSON.parse(decodeURIComponent(urlParams.get('items')))});
-} else {
-	for (let symbol in ccc) {generateHTML(symbol);}
-	if (localStorage.getItem('symbol')) D('primary').value = localStorage.getItem('symbol');
-	selectPrimary(D('primary').value);
-}
-window.addEventListener("message", function(event) { if (event.source == window.opener && event.data && event.data.cue == "replyCue") loadPaymentsPage(event.data); });
-if (window.opener) window.opener.postMessage({cue:"readyCue"});
-
 function makePaymentURL(preferred, addresses, items) {
     const url = new URL('https://warashibetrader.github.io/crypto/wallet');
     url.search = new URLSearchParams({preferred:preferred, addresses:encodeURIComponent(JSON.stringify(addresses)), items:encodeURIComponent(JSON.stringify(items))});
@@ -1102,6 +1088,20 @@ function startPayment(preferred, addresses, items) {
 			if (event.data.cue == "closeCue") popup.close();
 		}
 	});
+}
+
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.has('preferred') && urlParams.has('addresses') && urlParams.has('items')) {
+	generateHTML(urlParams.get('preferred'));
+	loadPaymentsPage({preferred: urlParams.get('preferred'), 
+						addresses: JSON.parse(decodeURIComponent(urlParams.get('addresses'))), 
+						items: JSON.parse(decodeURIComponent(urlParams.get('items')))});
+} else {
+	for (let symbol in ccc) {generateHTML(symbol);}
+	if (localStorage.getItem('symbol')) D('primary').value = localStorage.getItem('symbol');
+	selectPrimary(D('primary').value);
+	window.addEventListener("message", function(event) { if (event.source == window.opener && event.data && event.data.cue == "replyCue") loadPaymentsPage(event.data); });
+	if (window.opener) window.opener.postMessage({cue:"readyCue"});
 }
 
 function loadPaymentsPage(data) {
