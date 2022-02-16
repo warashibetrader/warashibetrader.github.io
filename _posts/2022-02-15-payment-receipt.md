@@ -37,7 +37,7 @@ Below is the javascript code that is triggered by clicking this button. This sho
 				 BAN: "ban_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7"};
 		let items = [{item:"Donation to the developer", XNO:"1", BAN:"100"}]; 
 		
-		// The below can be used as-is for a basic implementation, but a successful payment event is exposed below if needed
+		// The below can be used as-is for a basic implementation, but a payment confirmation event is exposed below if needed
 		let popup = window.open("https://warashibetrader.github.io/crypto/wallet");
 		window.addEventListener("message", function(event) {
 			if (event.source == popup && event.data) {
