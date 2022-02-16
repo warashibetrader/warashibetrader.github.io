@@ -17,7 +17,7 @@ I added some features to my [crypto wallet](https://warashibetrader.github.io/cr
 	let preferred = "XNO";
 	let addresses = {XNO: "nano_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7", 
 			 BAN: "ban_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7"};
-	let items = [{item:"Donation to the developer", XNO:"1", BAN:"100"}]; 
+	let items = [{item:"Donation to the developer", XNO:"1", BAN:"100"}, {item:"A memo"}]; 
 	let popup = window.open("https://warashibetrader.github.io/crypto/wallet");
 	window.addEventListener("message", function(event) {
 		if (event.source == popup && event.data) {
@@ -35,11 +35,11 @@ I added some features to my [crypto wallet](https://warashibetrader.github.io/cr
 Below is the javascript code that is triggered by clicking the donation button. The code runs in any javascript-enabled context, with no dependencies or installation required of you or your clients. 
   
 		
-	// Currently only the preferred currency will be accepted
+	// Fill out preferred currency, addresses, items (currently only the preferred currency will be accepted)
 	let preferred = "XNO";
 	let addresses = {XNO: "nano_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7", 
 			 BAN: "ban_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7"};
-	let items = [{item:"Donation to the developer", XNO:"1", BAN:"100"}]; 
+	let items = [{item:"Donation to the developer", XNO:"1", BAN:"100"}, {item:"A memo"}]; 
 
 	// The below can be used as-is for a basic implementation, but a confirmation event is exposed below if needed
 	let popup = window.open("https://warashibetrader.github.io/crypto/wallet");
@@ -49,11 +49,11 @@ Below is the javascript code that is triggered by clicking the donation button. 
 			popup.postMessage({cue:"replyCue", preferred:preferred, addresses: addresses, items: items}); 
 		}
 		if (event.data.cue == "paidCue") { 
-			// Network transaction ID is exposed in event.data.id 
+			// Confirmed transaction's network ID is exposed in event.data.id 
 		}
 		if (event.data.cue == "closeCue") { 
 			popup.close();  
-			// Network transaction ID is exposed in event.data.id 
+			// Confirmed transaction's network ID is exposed in event.data.id 
 		}
 	}
 	});
