@@ -31,25 +31,25 @@ I added some features to my [crypto wallet](https://warashibetrader.github.io/cr
 
 Below is the javascript code that is triggered by clicking this button. This should work in any javascript-enabled context, with no dependencies or installation by either you or your clients. Once pasted on your site, the only missing piece of the payment lifecycle would be
 		
-		// Currently only the preferred currency will be accepted
-		let preferred = "XNO";
-		let addresses = {XNO: "nano_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7", 
-				 BAN: "ban_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7"};
-		let items = [{item:"Donation to the developer", XNO:"1", BAN:"100"}]; 
-		
-		// The below can be used as-is for a basic implementation, but a payment confirmation event is exposed below if needed
-		let popup = window.open("https://warashibetrader.github.io/crypto/wallet");
-		window.addEventListener("message", function(event) {
-			if (event.source == popup && event.data) {
-				if (event.data.cue == "readyCue") {
-					popup.postMessage({cue:"replyCue", preferred:preferred, addresses: addresses, items: items}); 
-				}
-				if (event.data.cue == "paidCue") { 
-					// Network transaction ID is exposed in event.data.id 
-				}
-				if (event.data.cue == "closeCue") { 
-					popup.close();  
-					// Network transaction ID is exposed in event.data.id 
-				}
-			}
-		});
+	// Currently only the preferred currency will be accepted
+	let preferred = "XNO";
+	let addresses = {XNO: "nano_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7", 
+			 BAN: "ban_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7"};
+	let items = [{item:"Donation to the developer", XNO:"1", BAN:"100"}]; 
+
+	// The below can be used as-is for a basic implementation, but a confirmation event is exposed below if needed
+	let popup = window.open("https://warashibetrader.github.io/crypto/wallet");
+	window.addEventListener("message", function(event) {
+	if (event.source == popup && event.data) {
+		if (event.data.cue == "readyCue") {
+			popup.postMessage({cue:"replyCue", preferred:preferred, addresses: addresses, items: items}); 
+		}
+		if (event.data.cue == "paidCue") { 
+			// Network transaction ID is exposed in event.data.id 
+		}
+		if (event.data.cue == "closeCue") { 
+			popup.close();  
+			// Network transaction ID is exposed in event.data.id 
+		}
+	}
+	});
