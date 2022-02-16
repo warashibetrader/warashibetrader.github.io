@@ -1105,6 +1105,7 @@ window.addEventListener("message", function(event) {
 		if (screen.width > 550 && screen.height > 550) {
 			D('firstDiv').parentNode.style.justifyContent = "center";
 			D('firstDiv').style.width = "initial";
+			D('firstDiv').style.maxWidth = "620px";
 		}
 		let symbol = event.data.preferred;
 		let address = event.data.addresses[symbol];
