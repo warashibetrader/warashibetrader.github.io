@@ -1389,9 +1389,8 @@ function freezePayment(symbol, keepOne) {
 			D(symbol + "-itemize").children[i].children[1].disabled = true;		
 			D(symbol + "-itemize").children[i].children[2].disabled = true;
 			
-			D(symbol + "-itemize").children[i].children[0].value = twoDigit(D(symbol + "-itemize").children[i].children[0].value);
+			D(symbol + "-itemize").children[i].children[1].value = twoDigit(D(symbol + "-itemize").children[i].children[1].value);
 			D(symbol + "-itemize").children[i].children[0].placeholder = "-";
-			D(symbol + "-itemize").children[i].children[1].value = twoDigit(D(symbol + "-itemize").children[i].children[0].value);
 			D(symbol + "-itemize").children[i].children[1].placeholder = "-";
 			D(symbol + "-itemize").children[i].children[2].style.filter = "opacity(0)";			
 		} else remove(D(symbol + "-itemize").children[i]);
