@@ -1106,25 +1106,22 @@ window.addEventListener("message", function(event) {
 		let address = event.data.addresses[symbol];
 		D('primary').value = symbol;
 		D('primary').disabled = true;
-		
-		if (screen.width <= 550 || screen.height <= 550) {
-			D(symbol + "-dest").style.textOverflow = "ellipsis";
-			D('firstDiv').parentNode.style.width = "100%";
-		} else {
+		D('secondDiv').style.display = "none";
+		D('nprButton').style.display = "none";
+		if (screen.width <= 550 || screen.height <= 550) D('firstDiv').parentNode.style.width = "100%";
+		else {
 			D('firstDiv').parentNode.style.justifyContent = "center";
 			D('firstDiv').style.width = "initial";
 			D('firstDiv').style.maxWidth = "620px";
 		}
 		
-		selectPrimary(symbol).then(function() {	
-			D('secondDiv').style.display = "none";
-			D('nprButton').style.display = "none";
-			D(symbol + '-donatePanel').style.display = "none";
-			
+		selectPrimary(symbol).then(function() {			
+			if (screen.width <= 550 || screen.height <= 550) D(symbol + "-dest").style.textOverflow = "ellipsis";			
+			D(symbol + '-donatePanel').style.display = "none";			
 			fullView = false;
-			updateView();
-			
+			updateView();			
 			clearPayment(symbol);
+			
 			D(symbol + "-dest").value = address;
 			D(symbol + "-dest").disabled = true;
 			D(symbol + "-dest").nextElementSibling.style.display = "none";
