@@ -1102,16 +1102,20 @@ selectPrimary(D('primary').value);
 window.addEventListener("message", function(event) { 
 	if (event.source == window.opener && event.data && event.data.cue == "replyCue") {
 		paymentWindow = true;
-		if (screen.width <= 550 || screen.height <= 550) D('firstDiv').parentNode.style.width = "100%";
-		else {
-			D('firstDiv').parentNode.style.justifyContent = "center";
-			D('firstDiv').style.width = "initial";
-			D('firstDiv').style.maxWidth = "620px";
-		}
 		let symbol = event.data.preferred;
 		let address = event.data.addresses[symbol];
 		D('primary').value = symbol;
 		D('primary').disabled = true;
+		
+		if (screen.width <= 550 || screen.height <= 550) {
+			D(symbol + "-dest").style.textOverflow = "ellipsis";
+			D('firstDiv').parentNode.style.width = "100%";
+		} else {
+			D('firstDiv').parentNode.style.justifyContent = "center";
+			D('firstDiv').style.width = "initial";
+			D('firstDiv').style.maxWidth = "620px";
+		}
+		
 		selectPrimary(symbol).then(function() {	
 			D('secondDiv').style.display = "none";
 			D('nprButton').style.display = "none";
