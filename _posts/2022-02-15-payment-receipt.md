@@ -2,7 +2,7 @@
 title: "Crypto Wallet support for invoices, receipts, and click-to-pay"
 ---
 
-I added some features to my crypto wallet (https://warashibetrader.github.io/crypto/wallet). The most substantial upgrades include:
+I added some features to my [crypto wallet](https://warashibetrader.github.io/crypto/wallet). The most substantial upgrades include:
 
 1. Support for Algorand.
 
