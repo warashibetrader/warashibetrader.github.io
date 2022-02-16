@@ -29,7 +29,7 @@ I added some features to my [crypto wallet](https://warashibetrader.github.io/cr
 '>Donate!</button>
 </div>
 
-Below is the javascript code that is triggered by clicking this button. The code works in any javascript-enabled context, with no dependencies or installation required of you or your clients. 
+Below is the javascript code that is triggered by clicking the donation button. The code runs in any javascript-enabled context, with no dependencies or installation required of you or your clients. 
 
 		
 	// Currently only the preferred currency will be accepted
