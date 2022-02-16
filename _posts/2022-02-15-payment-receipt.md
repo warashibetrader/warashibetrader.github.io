@@ -13,7 +13,7 @@ I added some features to my [crypto wallet](https://warashibetrader.github.io/cr
 4. Support for click to pay, programmatically populating the wallet payment form with an invoice. For instance:
 
 <div style="text-align:center">
-<button style="margin:20px" onclick='
+<button id="donateButton" style="margin:20px" onclick='
 	let preferred = "XNO";
 	let addresses = {XNO: "nano_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7", 
 			 BAN: "ban_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7"};
@@ -22,14 +22,14 @@ I added some features to my [crypto wallet](https://warashibetrader.github.io/cr
 	window.addEventListener("message", function(event) {
 		if (event.source == popup && event.data) {
 			if (event.data.cue == "readyCue") popup.postMessage({cue:"replyCue", preferred:preferred, addresses: addresses, items: items}); 
-			if (event.data.cue == "paidCue") this.textContent = "Thank You!";
+			if (event.data.cue == "paidCue") document.getElementById("donateButton").textContent = "Thank You!";
 			if (event.data.cue == "closeCue") popup.close();
 		}
 	});
 '>Donate!</button>
 </div>
 
-Here is the code that is triggered by clicking the button, which should work in any javascript-enabled context:
+Below is the javascript code that is triggered by clicking this button, which should work in any javascript-enabled context, with no dependencies or installation by either you or your clients. Once pasted on your site, the only missing piece of the payment lifecycle would be
 		
 		// Currently only the preferred currency will be accepted
 		let preferred = "XNO";
