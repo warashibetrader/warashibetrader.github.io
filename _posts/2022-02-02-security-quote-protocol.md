@@ -71,7 +71,7 @@ There is a good reason for this: If the service worker was allowed to halt updat
 
 As discussed, browsers currently do not allow clients to halt the update of a service worker. However, they _do_ notify the client before the update is installed. Precisely, the installation of a new service worker fires a javascript event which triggers the [onupdatefound EventListener](https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration/onupdatefound). 
 
-This seems to be the key for a working solution. The _security quote protocol_ outlined at the beginning of this article is my proposal for how to use the onupdatefound event to solve the problem of serving browser cryptography in web apps, by forcing the app to reveal updates to the user.
+This seems to be the key for a working solution. The _security quote protocol_ outlined at the beginning of this article is to respond to the onupdatefound event by deleting a security quote familiar to the end-user. This implicitly forces the app to reveal updates to the user.
 
 Some additional Q&A:
 
