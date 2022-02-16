@@ -1143,16 +1143,18 @@ function loadPaymentsPage(data) {
 		fetchDisplayName(symbol, '-dest-display', D(symbol + "-dest").value, true);
 		
 		for (let i = 0; i < data.items.length; i++) {
-			D(symbol + "-itemize").lastElementChild.children[2].disabled = true;
-			D(symbol + "-itemize").lastElementChild.children[2].style.filter = "opacity(0)";
-			if (data.items[i][symbol]) D(symbol + "-itemize").lastElementChild.children[1].value = data.items[i][symbol];
-			else D(symbol + "-itemize").lastElementChild.children[1].placeholder = "-";
-			D(symbol + "-itemize").lastElementChild.children[1].disabled = true;
-			if (data.items[i].item) D(symbol + "-itemize").lastElementChild.firstElementChild.value = data.items[i].item;
-			else D(symbol + "-itemize").lastElementChild.firstElementChild.placeholder = "-";
-			D(symbol + "-itemize").lastElementChild.firstElementChild.disabled = true;
-			
-			addItem(D(symbol + "-itemize").lastElementChild.lastElementChild);
+			if (data.items[i].item || data.items[i][symbol]) {
+				D(symbol + "-itemize").lastElementChild.children[2].disabled = true;
+				D(symbol + "-itemize").lastElementChild.children[2].style.filter = "opacity(0)";
+				if (data.items[i][symbol]) D(symbol + "-itemize").lastElementChild.children[1].value = data.items[i][symbol];
+				else D(symbol + "-itemize").lastElementChild.children[1].placeholder = "-";
+				D(symbol + "-itemize").lastElementChild.children[1].disabled = true;
+				if (data.items[i].item) D(symbol + "-itemize").lastElementChild.firstElementChild.value = data.items[i].item;
+				else D(symbol + "-itemize").lastElementChild.firstElementChild.placeholder = "-";
+				D(symbol + "-itemize").lastElementChild.firstElementChild.disabled = true;
+				
+				addItem(D(symbol + "-itemize").lastElementChild.lastElementChild);
+			}
 		}
 	});
 }
