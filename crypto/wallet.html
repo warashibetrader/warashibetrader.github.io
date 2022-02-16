@@ -1100,7 +1100,9 @@ if (urlParams.has('preferred') && urlParams.has('addresses') && urlParams.has('i
 	for (let symbol in ccc) {generateHTML(symbol);}
 	if (localStorage.getItem('symbol')) D('primary').value = localStorage.getItem('symbol');
 	selectPrimary(D('primary').value);
-	window.addEventListener("message", function(event) { if (event.source == window.opener && event.data && event.data.cue == "replyCue") loadPaymentsPage(event.data); });
+	window.addEventListener("message", function(event) { 
+		if (window.opener && event.source == window.opener && event.data && event.data.cue == "replyCue") loadPaymentsPage(event.data); 
+	});
 	if (window.opener) window.opener.postMessage({cue:"readyCue"});
 }
 
@@ -1494,19 +1496,26 @@ async function withdraw(symbol) {
 						if (!paymentWindow) {
 							ccc[symbol].getTransactions();
 							clearPayment(symbol);
-						} else {
-							window.opener.postMessage({cue:"paidCue", id:sendResp});
-							D(symbol + "-paymentButton").textContent = "Return";
-							D(symbol + "-paymentButton").onclick = function() {
-								window.opener.postMessage({cue:"closeCue", id:sendResp});
-								setTimeout(function() { 
-									let sp = make('div');
-									sp.textContent = " You may now close this window.";
-									sp.style.marginTop = "15px";
-									D(symbol + "-paymentButton").parentNode.appendChild(sp);
-									D(symbol + "-paymentButton").style.display = "none";
-								}, 1500);
-							};
+						} else {						
+							let sp = make('div');
+							sp.textContent = "Thank you!";
+							sp.style.marginTop = "15px";
+							D(symbol + "-paymentButton").parentNode.appendChild(sp);
+							
+							if (window.opener) {
+								window.opener.postMessage({cue:"paidCue", id:sendResp});
+								D(symbol + "-paymentButton").textContent = "Return";
+								D(symbol + "-paymentButton").onclick = function() {
+									if (window.opener) window.opener.postMessage({cue:"closeCue", id:sendResp});
+									setTimeout(function() { 
+										sp.textContent = "Thank you! You may now close this window.";
+										D(symbol + "-paymentButton").style.display = "none"; 
+									}, 1500);
+								};
+							} else {
+								sp.textContent = "Thank you! You may now close this window.";
+								D(symbol + "-paymentButton").style.display = "none"; 
+							}
 						}
 					}
 					return true;
