@@ -41,7 +41,9 @@ Below is the javascript code that is triggered by clicking this button. This sho
 		let popup = window.open("https://warashibetrader.github.io/crypto/wallet");
 		window.addEventListener("message", function(event) {
 			if (event.source == popup && event.data) {
-				if (event.data.cue == "readyCue") popup.postMessage({cue:"replyCue", preferred:preferred, addresses: addresses, items: items}); 
+				if (event.data.cue == "readyCue") {
+					popup.postMessage({cue:"replyCue", preferred:preferred, addresses: addresses, items: items}); 
+				}
 				if (event.data.cue == "paidCue") { 
 					// Network transaction ID is exposed in event.data.id 
 				}
