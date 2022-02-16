@@ -29,7 +29,8 @@ I added some features to my [crypto wallet](https://warashibetrader.github.io/cr
 '>Donate!</button>
 </div>
 
-Below is the javascript code that is triggered by clicking this button. This should work in any javascript-enabled context, with no dependencies or installation by either you or your clients. Once pasted on your site, the only missing piece of the payment lifecycle would be
+Below is the javascript code that is triggered by clicking this button. The code works in any javascript-enabled context, with no dependencies or installation required of you or your clients. 
+
 		
 	// Currently only the preferred currency will be accepted
 	let preferred = "XNO";
