@@ -1052,7 +1052,7 @@ function setupWebsocket() {
 				itemSpan.style.paddingRight = "5px";
 				
 				let amtSpan = make('span');
-				amtSpan.textContent = receipt[i].amt;
+				amtSpan.textContent = twoDigit(receipt[i].amt);
 				
 				li.onmouseenter = function() {
 					this.style.backgroundColor = ccc[data.currency].flashColor;
@@ -1145,9 +1145,7 @@ function loadPaymentsPage(data) {
 		for (let i = 0; i < data.items.length; i++) {
 			if (data.items[i].item || data.items[i][symbol]) {			
 				if (data.items[i][symbol]) D(symbol + "-itemize").lastElementChild.children[1].value = data.items[i][symbol];
-				else D(symbol + "-itemize").lastElementChild.children[1].placeholder = "-";
 				if (data.items[i].item) D(symbol + "-itemize").lastElementChild.children[0].value = data.items[i].item;
-				else D(symbol + "-itemize").lastElementChild.children[0].placeholder = "-";
 				addItem(D(symbol + "-itemize").lastElementChild.lastElementChild);
 			}
 		}
@@ -1378,8 +1376,8 @@ function clearPayment(symbol) {
 	while (D(symbol + "-itemize").children.length > keeper) {
 		remove(D(symbol + "-itemize").children[D(symbol + "-itemize").children.length - 1]);
 	}
-	D(symbol + "-itemize").children[D(symbol + "-itemize").children.length - 1].firstElementChild.nextElementSibling.value = "";
-	D(symbol + "-itemize").children[D(symbol + "-itemize").children.length - 1].firstElementChild.value = "";
+	D(symbol + "-itemize").lastElementChild.firstElementChild.nextElementSibling.value = "";
+	D(symbol + "-itemize").lastElementChild.firstElementChild.value = "";
 }
 
 function freezePayment(symbol, keepOne) {
@@ -1388,9 +1386,14 @@ function freezePayment(symbol, keepOne) {
 	for (let i = 0; i < D(symbol + "-itemize").children.length - save; i++) {
 		if (D(symbol + "-itemize").children[i].children[0].value || D(symbol + "-itemize").children[i].children[1].value) {
 			D(symbol + "-itemize").children[i].children[0].disabled = true;	
-			D(symbol + "-itemize").children[i].children[1].disabled = true;			
+			D(symbol + "-itemize").children[i].children[1].disabled = true;		
 			D(symbol + "-itemize").children[i].children[2].disabled = true;
-			D(symbol + "-itemize").children[i].children[2].style.filter = "opacity(0)";	
+			
+			D(symbol + "-itemize").children[i].children[0].value = twoDigit(D(symbol + "-itemize").children[i].children[0].value);
+			D(symbol + "-itemize").children[i].children[0].placeholder = "-";
+			D(symbol + "-itemize").children[i].children[1].value = twoDigit(D(symbol + "-itemize").children[i].children[0].value);
+			D(symbol + "-itemize").children[i].children[1].placeholder = "-";
+			D(symbol + "-itemize").children[i].children[2].style.filter = "opacity(0)";			
 		} else remove(D(symbol + "-itemize").children[i]);
 	}
 }
@@ -1771,6 +1774,18 @@ function closeCopy(obj) {
 		obj.value = clipboardText;
 		obj.dispatchEvent(new Event('input', {bubbles:true}));
 	}
+}
+
+function twoDigit(str) {
+	if (!str) return str;
+	let parts = str.toString().split(".");
+	let whole = parts[0];
+	let fraction = '';
+	if (parts.length > 1) fraction = parts[1];
+	while (fraction.length < 2) {
+		fraction += '0';
+	}
+	return `${whole}.${fraction}`;	
 }
 
 function unitFromRaw(symbol, str) {
@@ -2232,13 +2247,13 @@ function generateHTML(symbol) {
 		<div id="${symbol}-itemize" style="margin-left:15px; margin-right:15px">
 		
 		<div style="display:none; justify-content:space-between; margin-top:15px; align-items:baseline">
-			<input placeholder="Memo, item, tip..." onfocus="scrollPanel(this.parentNode.parentNode)" onkeyup="if (event.keyCode == 27) this.value = '';" style="flex-grow:2; flex-basis:1px; margin-right:10px" type="text" maxlength="128" value="Network fee" disabled>
+			<input placeholder="Item, memo, tip..." onfocus="scrollPanel(this.parentNode.parentNode)" onkeyup="if (event.keyCode == 27) this.value = '';" style="flex-grow:2; flex-basis:1px; margin-right:10px" type="text" maxlength="128" value="Network fee" disabled>
 			<input placeholder="0.00" onkeyup="addTotal(); if (event.keyCode == 27) { this.value = ''; addTotal(); } else if (event.keyCode == 13) addItem(this.nextElementSibling);" style="margin-right:10px; text-align:right; flex-grow:1; flex-basis:1px; overflow:hidden; text-overflow:ellipsis;" type="number" step="0.01" min="0" onfocus="scrollPanel(this.parentNode)" id="${symbol}-withdrawal-fee"><button tabindex="-1" style="font-size:0.8em; filter:opacity(0)" disabled>&#65291;</button>
 		</div>
 		
 		
 		<div style="display:flex; justify-content:space-between; margin-top:15px; align-items:baseline">
-			<input placeholder="Memo, item, tip..." onkeyup="if (event.keyCode == 27) this.value = '';" style="flex-grow:2; flex-basis:1px; margin-right:10px" type="text" maxlength="128">
+			<input placeholder="Item, memo, tip..." onkeyup="if (event.keyCode == 27) this.value = '';" style="flex-grow:2; flex-basis:1px; margin-right:10px" type="text" maxlength="128">
 			<input placeholder="0.00" onkeyup="addTotal(); if (event.keyCode == 27) { this.value = ''; addTotal(); } else if (event.keyCode == 13) addItem(this.nextElementSibling);" style="margin-right:10px; text-align:right; flex-grow:1; flex-basis:1px; overflow:hidden; text-overflow:ellipsis;" type="number" step="0.01" min="0"><button tabindex="-1" style="font-size:0.8em" onclick="addItem(this)">&#65291;</button>
 		</div>
 		</div>
@@ -2284,7 +2299,7 @@ function generateHTML(symbol) {
 	</div>`;
 }
 
-var itemString = `<input placeholder="Memo, item, tip..." onkeyup="if (event.keyCode == 27) this.value = '';" style="flex-grow:2; flex-basis:1px; margin-right:10px" type="text" maxlength="128">
+var itemString = `<input placeholder="Item, memo, tip..." onkeyup="if (event.keyCode == 27) this.value = '';" style="flex-grow:2; flex-basis:1px; margin-right:10px" type="text" maxlength="128">
 			<input placeholder="0.00" onkeyup="addTotal(); if (event.keyCode == 27) { this.value = ''; addTotal(); } else if (event.keyCode == 13) addItem(this.nextElementSibling);" style="margin-right:10px; text-align:right; flex-grow:1; flex-basis:1px; overflow:hidden; text-overflow:ellipsis;" type="number" step="0.01" min="0"><button tabindex="-1" style="font-size:0.8em" onclick="addItem(this)">&#65291;</button>`;
 
 </script>
