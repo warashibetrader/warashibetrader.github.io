@@ -100,6 +100,11 @@ blockquote, pre {
   background-color: #f4f7f7;
 }
 
+pre {
+  padding:20px;
+  overflow:auto;
+}
+
 blockquote p {
 	font-style:italic;
 }
