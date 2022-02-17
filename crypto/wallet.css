@@ -65,8 +65,6 @@ input[type=number], input[type=text], input[type=password] {
 input[type=number]:focus, input[type=text]:focus, input[type=password]:focus {  
 	border-bottom: solid 2px;
 	outline: none;
-	text-overflow: ellipsis;
-	overflow: hidden;
 }
 
 input[type=number]:disabled, input[type=text]:disabled {
@@ -220,6 +218,10 @@ ul::-webkit-scrollbar-thumb:hover {
 
 	input[type=number]:focus, input[type=text]:focus, input[type=password]:focus {  
 		text-overflow: initial;
+	}
+	
+	input[type=number]:disabled, input[type=text]:disabled, input[type=password]:disabled {	
+		text-overflow: ellipsis;
 	}
 
 	select {
