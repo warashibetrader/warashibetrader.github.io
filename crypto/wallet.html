@@ -1148,6 +1148,7 @@ function loadPaymentsPage(data) {
 				addItem(D(symbol + "-itemize"));
 			}
 		}
+		addTotal(D(symbol + "-itemize"));
 		freezePayment(symbol, true);
 	});
 }
