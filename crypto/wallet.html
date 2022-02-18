@@ -518,7 +518,8 @@ ccc['ALGO'].getTransactions = function(start) {
 };
 
 function handlePage(symbol, condition, lastNumber, restart) {		
-	flash(D(`${symbol}-heading`), "Transactions");			
+	// flash(D(`${symbol}-heading`), "Transactions");
+	flash(D(`${symbol}-filter`), "Transactions");		
 	if (condition) {
 		if (!D(symbol + '-' + lastNumber)) {
 			D(symbol + '-loadMore').style.display = "";
@@ -1296,6 +1297,7 @@ function displayName(symbol, divString, address, displayString) {
 		else displayString = "Unknown";
 	} else if (divString != "-display" && address == ccc[symbol].address) displayString += " (me)";
 	flash(D(symbol + divString), displayString);
+	if (D(symbol + "-transactions").contains(D(symbol + divString))) filterLi(D(symbol + divString).parentNode.parentNode.parentNode, D(symbol + "-filter").value.toLowerCase(), symbol);
 }
 
 //////////////////////////////////////////////////////// Interface with helper functions
@@ -1675,6 +1677,17 @@ function toggleQuote() {
 	}
 }
 
+function toggleInvoices(elt, symbol) {
+	if (elt.classList.contains('active')) {
+		if (elt.textContent == "Invoices") elt.textContent = "Receipts";
+		else {
+			elt.classList.remove('active');
+			elt.textContent = "Invoices";
+		}
+	} else elt.classList.add('active');
+	filterTransactions(symbol);
+}
+
 function toggleView() {
 	if (fullView) {
 		fullView = false;
@@ -1768,7 +1781,7 @@ function addItem(elt) {
 }
 
 function donate(symbol) {
-	D(symbol + "-dest").parentNode.scrollIntoView({block:"center", behavior:"auto"});
+	if (fullView) D(symbol + "-dest").parentNode.scrollIntoView({block:"center", behavior:"auto"});
 	D(symbol + "-dest").value = ccc[symbol].donation;
 	flash(D(symbol + "-dest"));
 	fetchDisplayName(symbol, '-dest-display', D(symbol + "-dest").value, true);
@@ -1868,6 +1881,25 @@ function rawFromUnit(symbol, str) {
 		fraction += '0';
 	}
 	return `${whole}${fraction}`;
+}
+
+function filterTransactions(symbol) {
+	let item = D(symbol + "-filter").value.toLowerCase();
+	let ul = D(symbol + "-transactions");
+	for (let i = 0; i < ul.children.length; i++) {
+		filterLi(ul.children[i], item, symbol);
+	}
+}
+
+function filterLi(li, item, symbol) {
+	let restricted = D(symbol + "-invoice-filter").classList.contains('active');
+	if (restricted && li.children[1].firstElementChild.nextElementSibling.textContent + 's' != D(symbol + "-invoice-filter").textContent) li.style.display = "none";
+	else {
+		let displayName = li.firstElementChild.firstElementChild.textContent.toLowerCase();
+		let address = li.children[1].firstElementChild.firstElementChild.textContent.toLowerCase();
+		if (displayName.indexOf(item) != -1 || address.indexOf(item) != -1) li.style.display = "";
+		else li.style.display = "none";
+	}
 }
 
 //////////////////////////////////////////////////////// QR helper functions
@@ -2229,10 +2261,14 @@ function generateHTML(symbol) {
 	ccc[symbol].transactionElt = make('div');
 	ccc[symbol].transactionElt.innerHTML = `	
 	<div id="${symbol}-gray2" style="display:none;">
-		<div style="max-width:620px; margin-top:30px; display:flex; align-items:center; justify-content:space-between">
-			<strong id="${symbol}-heading" style="border-radius:5px; font-size:1.2em">Transactions</strong>
+		<div style="max-width:620px; margin-top:30px; display:flex;justify-content:space-between">
+			
+			<input id="${symbol}-filter" placeholder="Transaction filter..." style="padding-right:30px; flex-grow:1; margin-right:10px" id="${symbol}-dest" type="text" maxlength="128" onclick="this.select()" onkeyup="if (event.keyCode == 27) this.value = ''; filterTransactions('${symbol}');" oninput="filterTransactions('${symbol}')"><button tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
+			
+			<button id="${symbol}-invoice-filter" style="font-size:0.8em; margin-right:5px" onclick="toggleInvoices(this, '${symbol}')">Invoices</button>
 			<button style="font-size:0.8em" onclick="refreshBalance('${symbol}'); ccc['${symbol}'].getTransactions();">Refresh</button>
 		</div>
+		
 		<ul id="${symbol}-transactions" style="padding-left:0px; max-width:620px; list-style: none; margin-top:25px"></ul>
 		<div style="max-width:620px; margin-top:30px; margin-bottom:70px; text-align:center">
 			<button style="display:none" id="${symbol}-loadMore">Load More</button>
