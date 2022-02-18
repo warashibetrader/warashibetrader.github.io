@@ -2264,7 +2264,7 @@ function generateHTML(symbol) {
 	<div id="${symbol}-gray2" style="display:none;">
 		<div style="max-width:620px; margin-top:30px; display:flex;justify-content:space-between">
 			
-			<input id="${symbol}-filter" placeholder="Transaction filter..." style="padding-right:30px; flex-grow:1; margin-right:10px" id="${symbol}-dest" type="text" maxlength="128" onclick="this.select()" onkeyup="if (event.keyCode == 27) this.value = ''; filterTransactions('${symbol}');" oninput="filterTransactions('${symbol}')"><button tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
+			<input id="${symbol}-filter" placeholder="Transaction filter..." style="padding-right:30px; flex-grow:1; margin-right:10px" id="${symbol}-dest" type="text" maxlength="128" onkeyup="if (event.keyCode == 27) this.value = ''; filterTransactions('${symbol}');" oninput="filterTransactions('${symbol}')"><button tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
 			
 			<button id="${symbol}-invoice-filter" style="font-size:0.8em; margin-right:5px" onclick="toggleInvoices(this, '${symbol}')">Invoices</button>
 			<button style="font-size:0.8em" onclick="refreshBalance('${symbol}'); ccc['${symbol}'].getTransactions();">Refresh</button>
