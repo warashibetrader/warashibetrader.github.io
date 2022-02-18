@@ -1472,7 +1472,7 @@ function refreshBalance(symbol, confirm) {
 			if (accountInfo.pending !== undefined) flash(D(`${symbol}-balance-pending`), unitFromRaw(symbol, accountInfo.pending));
 			
 			if (accountInfo.detail == "Unopened account.") {
-				if (symbol == "XNO" || symbol == "BAN") cyclePending(symbol, true);
+				if (symbol == "XNO" || symbol == "BAN") cyclePending(symbol);
 			}
 		}
 		
@@ -1483,8 +1483,10 @@ function refreshBalance(symbol, confirm) {
 function cyclePending(symbol, elt) {
 	console.error("Cycling");
 	if (ccc[symbol].address) {
-		if (!elt) showMsg(`Collecting arriving ${symbol}...`, null,true);
-		else elt.disabled = true;
+		if (elt) {
+			showMsg(`Collecting arriving ${symbol}...`, null,true);
+			elt.disabled = true;
+		}
 		ccc[symbol].getPending().then(async function(data) {
 			if (data) {
 				let count = 0;
