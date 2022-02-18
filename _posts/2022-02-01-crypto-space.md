@@ -10,7 +10,7 @@ At the risk of stating the obvious, a cryptocurrency is not literally a commodit
 
 ### Trustless validation
 
-Suppose Alice wants a bag of groceries from Bob. Alice could show Bob a bank account statement with a purported balance. She could agree to subtract away some money from this statement and never use the subtracted amount. Bob could add the same amount to his own account statement, and feel free to use his increased quantity. This interaction would constitute payment for the groceries.
+Suppose Alice wants a bag of groceries from Bob. Alice could show Bob a bank account statement with a purported balance. She could agree to subtract away some money from this statement and never use the subtracted amount. Bob could add the same amount to his own account statement, and feel free to use his increased balance. This interaction would constitute payment for the groceries.
 
 Of course, this scenario in isolation is ludicrous, in the contexts of both traditional finance and the crypto/defi space. The modified account statements mean nothing without validation by others.
 
