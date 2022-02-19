@@ -361,28 +361,6 @@ ccc['ALGO'].getAccountInfo = function() {
 	});}).catch(function() { return networkFailMsg(); });
 };
 
-ccc['BAN'].getFee = function() {
-	if (D('BAN' + '-withdrawal-fee')) remove(D('BAN' + '-itemize').firstElementChild);
-};
-ccc['XNO'].getFee = function() {
-	if (D('XNO' + '-withdrawal-fee')) remove(D('XNO' + '-itemize').firstElementChild);
-};
-ccc['SOL'].getFee = function() {
-	D('SOL' + '-withdrawal-fee').value = unitFromRaw('SOL', ccc['SOL'].fee);
-	D('SOL' + '-withdrawal-fee').parentNode.style.display = 'flex';
-	D('SOL' + '-withdrawal-fee').disabled = true;
-};
-ccc['XLM'].getFee = function() { 
-	D('XLM' + '-withdrawal-fee').value = unitFromRaw('XLM', ccc['XLM'].fee);
-	D('XLM' + '-withdrawal-fee').parentNode.style.display = 'flex';
-	D('XLM' + '-withdrawal-fee').disabled = true;
-};
-ccc['ALGO'].getFee = function() { 
-	D('ALGO' + '-withdrawal-fee').value = unitFromRaw('ALGO', ccc['ALGO'].fee);
-	D('ALGO' + '-withdrawal-fee').parentNode.style.display = 'flex';
-	D('ALGO' + '-withdrawal-fee').disabled = true;
-};
-
 ccc['BAN'].getTransactions = function(start) {nanoDisplayTransactions('BAN', start);};
 ccc['XNO'].getTransactions = function(start) {nanoDisplayTransactions('XNO', start);};
 function nanoDisplayTransactions(symbol, start) {
@@ -390,11 +368,8 @@ function nanoDisplayTransactions(symbol, start) {
 	if (D(symbol + '-loadMore') && history && history.history) {
 		handlePage(symbol, history.previous, history.history[history.history.length - 1].height, history.previous);
 		for (let i = 0; i < history.history.length; i++) {
-			if (i == 0) console.log(history.history[0]);
 			if (!D(symbol + '-' + history.history[i].height)) {
-				let sign = "+";		
-				if (history.history[i].type == "send") sign = "-";
-				displayTransaction(symbol, history.history[i].height, sign, history.history[i].account, history.history[i].local_timestamp * 1000, history.history[i].amount, history.history[i].hash);
+				displayTransaction(symbol, history.history[i].height, (history.history[i].type == "send"), history.history[i].account, history.history[i].local_timestamp * 1000, history.history[i].amount, history.history[i].hash);
 			}
 		}
 	}
@@ -406,12 +381,10 @@ ccc['SOL'].getTransactions = function(start) {
 	return ccc[symbol].server.getSignaturesForAddress(ccc[symbol].publicKey, {limit:10, before: start}).then(async function(history) {
 	if (D(symbol + '-loadMore') && history && history.length > 0) {
 		handlePage(symbol, history.length > 9, history[history.length - 1].slot, history[history.length - 1].signature);
-		console.log(history);
 		let details = [];
 		for (let i = 0; i < history.length; i++) {
-			if (i == 0) console.log(history[0]);
 			if (!D(symbol + '-' + history[i].slot)) {
-				displayTransaction(symbol, history[i].slot, "-", history[i].signature, history[i].blockTime * 1000, "0", history[i].signature);				
+				displayTransaction(symbol, history[i].slot, true, history[i].signature, history[i].blockTime * 1000, "0", history[i].signature);				
 				details[i] = history[i].signature;  
 			}
 		}
@@ -466,9 +439,7 @@ ccc['XLM'].getTransactions = function(start) {
 	if (D(symbol + '-loadMore') && history) {
 		handlePage(symbol, history.records.length > 9, history.records[history.records.length - 1].id, history.next);
 		for (let i = 0; i < history.records.length; i++) {
-			if (i == 0) console.log(history.records[0]);
-			if (!D(symbol + '-' + history.records[i].id)) {				
-				let sign = "+";							
+			if (!D(symbol + '-' + history.records[i].id)) {	
 				let otherAccount = history.records[i].from;
 				if (!otherAccount) otherAccount = history.records[i].source_account;
 				
@@ -477,13 +448,12 @@ ccc['XLM'].getTransactions = function(start) {
 				if (!amt) amt = history.records[i].starting_balance;
 				
 				if (history.records[i].source_account == ccc[symbol].address) {
-					sign = "-";
 					otherAccount = history.records[i].to;
 					if (!otherAccount) otherAccount = history.records[i].account;
 					amt = (BigInt(rawFromUnit(symbol, amt)) + BigInt(ccc[symbol].fee)).toString();
 				} else amt = rawFromUnit(symbol, amt);
 				
-				displayTransaction(symbol, history.records[i].id, sign, otherAccount, history.records[i].created_at, amt, history.records[i].transaction_hash); 	
+				displayTransaction(symbol, history.records[i].id, (history.records[i].source_account == ccc[symbol].address), otherAccount, history.records[i].created_at, amt, history.records[i].transaction_hash); 	
 			}
 		}
 	}
@@ -498,18 +468,14 @@ ccc['ALGO'].getTransactions = function(start) {
 	if (D(symbol + '-loadMore') && history && history.transactions.length > 0) {
 		handlePage(symbol, history.transactions.length > 9, history.transactions[history.transactions.length - 1]['confirmed-round'], "&next=" + history['next-token']);	
 		for (let i = 0; i < history.transactions.length; i++) {
-		
-			if (i == 0) console.log(history.transactions[0]);
-			if (!D(symbol + '-' + history.transactions[i]['confirmed-round'])) {				
-				let sign = "+";			
+			if (!D(symbol + '-' + history.transactions[i]['confirmed-round'])) {
 				let otherAccount = history.transactions[i].sender;				
 				let amt = unitFromRaw(symbol, history.transactions[i]["payment-transaction"].amount);				
 				if (otherAccount == ccc[symbol].address) {
-					sign = "-";
 					otherAccount = history.transactions[i]["payment-transaction"].receiver;
 					amt = unitFromRaw(symbol, history.transactions[i]["payment-transaction"].amount + ccc[symbol].fee);
 				}				
-				displayTransaction(symbol, history.transactions[i]['confirmed-round'], sign, otherAccount, history.transactions[i]['round-time']*1000, rawFromUnit(symbol, amt), history.transactions[i].id);
+				displayTransaction(symbol, history.transactions[i]['confirmed-round'], (otherAccount == ccc[symbol].address), otherAccount, history.transactions[i]['round-time']*1000, rawFromUnit(symbol, amt), history.transactions[i].id);
 			}
 		}
 	}
@@ -532,7 +498,7 @@ function handlePage(symbol, condition, lastNumber, restart) {
 	}
 }
 		
-function displayTransaction(symbol, number, sign, address, time, amt, tx) {	
+function displayTransaction(symbol, number, send, address, time, amt, tx) {	
 	let li = make('li');			
 
 	li.style.borderRadius = "5px";
@@ -547,13 +513,15 @@ function displayTransaction(symbol, number, sign, address, time, amt, tx) {
 	
 	let memoType = "Invoice";
 	let color = "#097";	
-	if (sign == "-") {
+	let signSymbol = "+";
+	if (send) {
 		memoType = "Receipt";
 		color = "#333";
+		signSymbol = "-";
 	}
 
 	li.innerHTML = "<div style='display:flex; justify-content:space-between'><strong style='margin-right:10px; overflow:hidden; text-overflow: ellipsis'></strong>"
-	+ "<strong style='text-align:right; overflow:hidden; text-overflow:ellipsis; color:" + color + "'>" + sign + "<span class='clickFlash'></span> " + symbol + "</strong></div>"
+	+ "<strong style='text-align:right; overflow:hidden; text-overflow:ellipsis; color:" + color + "'>" + signSymbol + "<span class='clickFlash'></span> " + symbol + "</strong></div>"
 	+ "<div style='display:flex; justify-content:space-between; align-items:center; margin-top:3px; margin-bottom:5px'><div style='overflow:hidden'><div class='address' onclick='clickCopy(this, this.textContent)'></div>"
 	+ "<div style='font-size:0.8em; padding-left:3px; flex-grow:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis'></div></div><button style='font-size:0.8em; margin-left:10px; color:" + color + "'>" + memoType + "</button></div>" 
 	+ "<ul class='accordion' style='text-align:center; margin-left:20px; margin-right:20px; padding-left:0px; list-style: none;'></ul>";
@@ -1109,8 +1077,8 @@ if (urlParams.has('preferred') && urlParams.has('addresses') && urlParams.has('i
 
 function loadPaymentsPage(data) {
 	paymentWindow = true;
+	fullView = false;
 	let symbol = data.preferred;
-	let address = data.addresses[symbol];
 	D('primary').value = symbol;
 	D('primary').disabled = true;
 	D('secondDiv').style.display = "none";
@@ -1130,12 +1098,10 @@ function loadPaymentsPage(data) {
 	}
 	
 	selectPrimary(symbol).then(function() {			
-		D(symbol + '-donatePanel').style.display = "none";			
-		fullView = false;
-		updateView();			
+		D(symbol + '-donatePanel').style.display = "none";	
 		clearPayment(symbol);
 		
-		D(symbol + "-dest").value = address;
+		D(symbol + "-dest").value = data.addresses[symbol];
 		D(symbol + "-dest").disabled = true;
 		D(symbol + "-dest").nextElementSibling.style.display = "none";
 		D(symbol + "-dest").nextElementSibling.nextElementSibling.style.display = "none";
@@ -1328,12 +1294,12 @@ function importWallet(symbol) {
 		ccc[symbol].unpackSeed(seed, parseInt(index));
 		flash(D(`${symbol}-address`), ccc[symbol].address);	
 		addressQR(symbol);
-		makeInvoiceURL();
 		D(symbol + "-gray").style.display = "";
 		D(symbol + "-gray2").style.display = "";
 		D(symbol + "-clear").style.display = "";
 		D(symbol + "-load").textContent = "Switch Account";	
 		if (!existingWallet && D(symbol + "-tool1").style.maxHeight != "0px") toggleAccount();
+		updateView();
 		
 		fetchDisplayName(symbol, "-display", ccc[symbol].address, true);
 		refreshBalance(symbol, true).then(function(accountInfo) {
@@ -1345,7 +1311,6 @@ function importWallet(symbol) {
 				else localStorage.setItem(`${symbol}-info`, "");
 			}
 		});
-		ccc[symbol].getFee();	
 		ccc[symbol].getTransactions();	
 	}
 }
@@ -1363,7 +1328,7 @@ function clickClearWallet(symbol) {
 	localStorage.removeItem(`${symbol}-rep-display`); 
 	localStorage.removeItem(`${symbol}-info`);
 	
-	if (!paymentWindow) clearPayment(symbol);		
+	if (!paymentWindow) clearPayment(symbol);	
 	while (D(symbol + "-invoice").children.length > 1) {
 		remove(D(symbol + "-invoice").lastElementChild);
 	}
@@ -1375,12 +1340,11 @@ function clearPayment(symbol) {
 	flash(D(`${symbol}-dest-display`), "");
 	D(symbol + "-dest").value = "";	
 	D(`${symbol}-withdrawal-amount`).value = "";
+	D(`${symbol}-withdrawal-amount-total`).value = "";
+	D(`${symbol}-withdrawal-amount-total`).parentNode.parentNode.style.maxHeight = "0px";
 	
-	let keeper = 1;
-	if (D(symbol + '-withdrawal-fee')) keeper = 2;
-	
-	while (D(symbol + "-itemize").children.length > keeper) {
-		remove(D(symbol + "-itemize").children[D(symbol + "-itemize").children.length - 1]);
+	while (D(symbol + "-itemize").children.length > 1) {
+		remove(D(symbol + "-itemize").firstElementChild);
 	}
 	D(symbol + "-itemize").lastElementChild.firstElementChild.nextElementSibling.value = "";
 	D(symbol + "-itemize").lastElementChild.firstElementChild.value = "";
@@ -1401,25 +1365,6 @@ function freezePayment(symbol, keepOne) {
 			D(symbol + "-itemize").children[i].children[2].style.filter = "opacity(0)";			
 		} else remove(D(symbol + "-itemize").children[i]);
 	}
-}
-
-function makeInvoiceURL() {		
-	let symbol = D('primary').value;
-	let items = [];
-	for (let i = 0; i < D(symbol + "-invoice").children.length; i++) {
-		let newItem = D(symbol + "-invoice").children[i].children[0].value;
-		let newAmt = D(symbol + "-invoice").children[i].children[1].value;
-		if (newItem || newAmt) {
-			let obj = {item:newItem};
-			obj[symbol] = newAmt;
-			items.push(obj);
-		}
-	}
-	let addresses = {};
-	addresses[symbol] = ccc[symbol].address;
-	D(symbol + '-invoice-url').href = makePaymentURL(symbol, addresses, items);
-	flash(D(symbol + '-invoice-url'));
-	flash(D(symbol + '-invoice-url-literal'), makePaymentURL(symbol, addresses, items));
 }
 
 function clearWallet(symbol) {
@@ -1451,7 +1396,44 @@ function clearWallet(symbol) {
 	D(symbol + "-gray").style.display = "none";
 	D(symbol + "-gray2").style.display = "none";
 	D(symbol + "-load").textContent = "Load Account";
-	D(symbol + "-clear").style.display = "none";		
+	D(symbol + "-clear").style.display = "none";
+	
+	D(symbol + '-invoice-url').href = "";
+	flash(D(symbol + '-invoice-url-literal'), "\xa0");
+	D(symbol + "-invoice-url").parentNode.parentNode.style.maxHeight = "0px";
+}
+
+
+function prepareTotal(elt) {
+	let symbol = D('primary').value;
+	addTotal(D(symbol + "-itemize"));
+	elt.parentNode.nextElementSibling.style.maxHeight = elt.parentNode.nextElementSibling.scrollHeight + "px";
+	flash(D(symbol + '-withdrawal-amount-total'));	
+	if (D(symbol + "-withdrawal-amount").value) {
+		D(symbol + '-withdrawal-amount-total').value = unitFromRaw(symbol, BigInt(rawFromUnit(symbol, D(symbol + "-withdrawal-amount").value)) 
+																			+ BigInt(rawFromUnit(symbol, D(symbol + "-withdrawal-fee").value)));
+		D(symbol + "-paymentButton").disabled = false;																
+	}
+}
+
+function makeInvoiceURL(elt) {		
+	let symbol = D('primary').value;
+	let items = [];
+	for (let i = 0; i < D(symbol + "-invoice").children.length; i++) {
+		let newItem = D(symbol + "-invoice").children[i].children[0].value;
+		let newAmt = D(symbol + "-invoice").children[i].children[1].value;
+		if (newItem || newAmt) {
+			let obj = {item:newItem};
+			obj[symbol] = newAmt;
+			items.push(obj);
+		}
+	}
+	let addresses = {};
+	addresses[symbol] = ccc[symbol].address;
+	D(symbol + '-invoice-url').href = makePaymentURL(symbol, addresses, items);
+	if (elt.parentNode.nextElementSibling.style.maxHeight == "0px") elt.parentNode.nextElementSibling.style.maxHeight = elt.parentNode.nextElementSibling.scrollHeight + "px";
+	flash(D(symbol + '-invoice-url'));
+	flash(D(symbol + '-invoice-url-literal'), makePaymentURL(symbol, addresses, items));
 }
 
 function refreshBalance(symbol, confirm) {
@@ -1511,69 +1493,64 @@ function cyclePending(symbol, elt) {
 async function withdraw(symbol, elt) {
 	elt.disabled = true;
 	if (ccc[symbol].checkAddress(ccc[symbol].address) && ccc[symbol].checkAddress(D(`${symbol}-dest`).value)) {
-		let amt = D(`${symbol}-withdrawal-amount`).value;
-		let rawAmt = BigInt(rawFromUnit(symbol, amt));
-		if ((amt.match(/\./g)||[]).length <= 1 && /^[0-9.]+$/.test(amt) && rawAmt > 0) {
+		let amt = D(`${symbol}-withdrawal-amount-total`).value;
+		let totalAmt = BigInt(rawFromUnit(symbol, amt));
+		if ((amt.match(/\./g)||[]).length <= 1 && /^[0-9.]+$/.test(amt) && totalAmt > 0) {
 			let balance = BigInt(rawFromUnit(symbol, D(`${symbol}-balance`).textContent));
-			if (rawAmt <= balance) {
-				if (rawAmt + BigInt(rawFromUnit(symbol, ccc[symbol].min)) <= balance) {				
-					rawAmt = (rawAmt - BigInt(ccc[symbol].fee)).toString();
-					if (confirm("Transfer " + amt + " " + symbol + " to " + D(symbol + "-dest-display").textContent + "?")) {
-						showMsg(symbol + " transfer initiated...", null, true);
-						let sendResp = await ccc[symbol].sendTo(D(`${symbol}-dest`).value, rawAmt);
-						if (sendResp) {
-							console.log(sendResp);						
-							let receipt = [];
-							for (let i = 0; i < D(symbol + "-itemize").children.length; i++) {
-								let newItem = D(symbol + "-itemize").children[i].children[0].value;
-								let newAmt = D(symbol + "-itemize").children[i].children[1].value;
-								if (newItem || newAmt) {
-									receipt.push({item:newItem, amt:newAmt});
-								}
-							}
-							ws.emit("setReceiptCue", {currency: symbol, tx:sendResp, receipt:JSON.stringify(receipt)});
-							
-							showMsg(amt + " " + symbol + " transferred.");
-							refreshBalance(symbol);
-							
-							if (!paymentWindow) {
-								ccc[symbol].getTransactions();
-								clearPayment(symbol);
-							} else {
-								freezePayment(symbol);						
-								let sp = make('div');
-								sp.textContent = "Thank you!";
-								sp.style.marginTop = "15px";
-								D(symbol + "-paymentButton").parentNode.insertBefore(sp, D(symbol + "-paymentButton"));
-								
-								if (window.opener) {
-									window.opener.postMessage({cue:"paidCue", id:sendResp});
-									D(symbol + "-paymentButton").textContent = "Return";
-									D(symbol + "-paymentButton").onclick = function() {
-										if (window.opener) window.opener.postMessage({cue:"closeCue", id:sendResp});
-										setTimeout(function() { 
-											sp.textContent = "Thank you! You may now close this window.";
-											D(symbol + "-paymentButton").style.display = "none"; 
-										}, 1500);
-									};
-								} else {
-									sp.textContent = "Thank you! You may now close this window.";
-									D(symbol + "-paymentButton").style.display = "none"; 
-								}
+			if (totalAmt <= balance) {
+				if (totalAmt + BigInt(rawFromUnit(symbol, ccc[symbol].min)) <= balance) {	
+					showMsg(symbol + " transfer initiated...", null, true);
+					let sendResp = await ccc[symbol].sendTo(D(`${symbol}-dest`).value, (totalAmt - BigInt(rawFromUnit(symbol, D(symbol + '-withdrawal-fee').value))).toString());
+					if (sendResp) {
+						console.log(sendResp);						
+						let receipt = [];
+						for (let i = 0; i < D(symbol + "-itemize").children.length; i++) {
+							let newItem = D(symbol + "-itemize").children[i].children[0].value;
+							let newAmt = D(symbol + "-itemize").children[i].children[1].value;
+							if (newItem || newAmt) {
+								receipt.push({item:newItem, amt:newAmt});
 							}
 						}
-						elt.disabled = false; 
-						return true;
+						ws.emit("setReceiptCue", {currency: symbol, tx:sendResp, receipt:JSON.stringify(receipt)});
+						
+						showMsg(amt + " " + symbol + " transferred.");
+						refreshBalance(symbol);
+						
+						if (!paymentWindow) {
+							ccc[symbol].getTransactions();
+							clearPayment(symbol);
+						} else {
+							freezePayment(symbol);						
+							let sp = make('div');
+							sp.textContent = "Thank you!";
+							sp.style.marginTop = "15px";
+							D(symbol + "-paymentButton").parentNode.insertBefore(sp, D(symbol + "-paymentButton"));
+							
+							if (window.opener) {
+								window.opener.postMessage({cue:"paidCue", id:sendResp});
+								D(symbol + "-paymentButton").textContent = "Close Window";
+								D(symbol + "-paymentButton").onclick = function() {
+									if (window.opener) window.opener.postMessage({cue:"closeCue", id:sendResp});
+									setTimeout(function() { 
+										sp.textContent = "Thank you! You may now close this window.";
+										D(symbol + "-paymentButton").style.display = "none"; 
+									}, 1500);
+								};
+							} else {
+								sp.textContent = "Thank you! You may now close this window.";
+								D(symbol + "-paymentButton").style.display = "none"; 
+							}
+						}
 					}
+					elt.disabled = false; 
+					return true;
 				} else showMsg("Minimum account balance is " + ccc[symbol].min + " " + symbol + ".");
 			} else showMsg("Insufficient funds.");
 		} else showMsg("Enter a positive amount.");
-		flash(D(`${symbol}-withdrawal-amount`));
-		D(`${symbol}-withdrawal-amount`).focus();
+		flash(D(`${symbol}-withdrawal-amount-total`));
 	} else {
 		showMsg("Invalid address.");
 		flash(D(`${symbol}-dest`));
-		D(`${symbol}-dest`).focus();
 	}
 	elt.disabled = false;
 }
@@ -1741,21 +1718,20 @@ function updateView() {
 		D(symbol + "-view").classList.remove('active');	
 	}
 }
-
 function addTotal(elt) {
+	if (elt == D(D('primary').value + "-itemize")) D(D('primary').value + "-paymentButton").disabled = true;
 	let symbol = D('primary').value;
 	let totalDiv = elt.nextElementSibling.lastElementChild;
 	let total = BigInt(rawFromUnit(symbol, 0));
 	for (let i = 0; i < elt.children.length; i++) {
-		let amt = elt.children[i].firstElementChild.nextElementSibling.value;
 		if (elt.children[i].firstElementChild.nextElementSibling.validationMessage == "Please enter a number.") {
 			totalDiv.value = "";
 			showMsg(elt.children[i].firstElementChild.nextElementSibling.validationMessage);
 			return false;
-		} else total += BigInt(rawFromUnit(symbol, amt));
+		} else total += BigInt(rawFromUnit(symbol, elt.children[i].firstElementChild.nextElementSibling.value));
 	}
-	if (!total || total == BigInt(ccc[symbol].fee)) totalDiv.value = "";
-	else totalDiv.value = unitFromRaw(symbol, total);
+	if (total) totalDiv.value = unitFromRaw(symbol, total);
+	else totalDiv.value = "";
 }
 
 function amtInputHandler(event, elt) {
@@ -1786,7 +1762,6 @@ function donate(symbol) {
 	D(symbol + "-dest").value = ccc[symbol].donation;
 	flash(D(symbol + "-dest"));
 	fetchDisplayName(symbol, '-dest-display', D(symbol + "-dest").value, true);
-	
 }
 
 function toggleWipe() {
@@ -1794,7 +1769,7 @@ function toggleWipe() {
 		wipeKeys = false;
 		localStorage.removeItem("wipe");
 		D("wipeButton").classList.remove('active');		
-	} else if (confirm("This security setting clears your private keys before any updates are installed. This is a good idea, but updates may arrive without advance notice. Make sure you back up your keys elsewhere.")) {
+	} else if (confirm("This security setting clears your private keys before any updates are installed. This is a good idea, but updates may arrive without advance notice. Ensure your keys are backed up elsewhere.")) {
 		wipeKeys = true;
 		localStorage.setItem("wipe", "true");
 		D("wipeButton").classList.add('active');
@@ -2205,7 +2180,8 @@ async function selectPrimary(symbol) {
 	if (!ccc[symbol].qrCode) {
 		ccc[symbol].qrCode = new QRCode(symbol + "-qrCodeImageBlock");
 		addItem(D(symbol + "-itemize"));
-		addItem(D(symbol + "-invoice"));
+		addItem(D(symbol + "-invoice"));		
+		D(symbol + '-withdrawal-fee').value = unitFromRaw(symbol, ccc[symbol].fee);		
 	
 		if (symbol != "XNO" && symbol != "BAN") {
 			D(`${symbol}-index`).style.display = "none";
@@ -2242,11 +2218,11 @@ async function selectPrimary(symbol) {
 	
 	if (D(symbol + '-tool1').style.maxHeight != "0px") D('account').classList.add('active');
 	else D('account').classList.remove('active');
-	if (ccc[symbol].address) {	
-		makeInvoiceURL();
+	if (ccc[symbol].address) {
 		refreshBalance(symbol);
 		ccc[symbol].getTransactions();	
 		if (D(symbol + '-tool1').style.maxHeight != "0px") toggleAccount();
+		updateView();
 	} else if (localStorage.getItem(`${symbol}-seed`)) {
 		D(`${symbol}-seed`).value = localStorage.getItem(`${symbol}-seed`);
 		let index = localStorage.getItem(`${symbol}-index`);
@@ -2254,7 +2230,6 @@ async function selectPrimary(symbol) {
 		importWallet(symbol);
 	} else if (D(symbol + '-tool1').style.maxHeight == "0px") toggleAccount();
 	
-	updateView();
 	return true;
 }
 			
@@ -2345,23 +2320,39 @@ function generateHTML(symbol) {
 		<canvas style="width:100%; margin-top:10px;" hidden="" id="${symbol}-qr-canvas"></canvas>
 		
 		
-		<div id="${symbol}-itemize" style="margin-left:15px; margin-right:15px">
-		
-		<div style="display:none; justify-content:space-between; margin-top:15px; align-items:baseline">
-			<input placeholder="Item, memo, tip..." onkeyup="if (event.keyCode == 27) this.value = '';" style="flex-grow:2; flex-basis:1px; margin-right:10px" type="text" maxlength="128" value="Network fee" disabled>
-			<input placeholder="0.00" onkeyup="amtInputHandler(event, this)" style="margin-right:10px; text-align:right; flex-grow:1; flex-basis:1px; overflow:hidden; text-overflow:ellipsis;" type="number" step="0.01" min="0" id="${symbol}-withdrawal-fee">
-			<button tabindex="-1" style="font-size:0.8em; filter:opacity(0)" disabled>&#65291;</button>
-		</div>
-		
-		</div>
+		<div id="${symbol}-itemize" style="margin-left:15px; margin-right:15px"></div>
 		
 		<div style="display:flex; justify-content:space-between; margin-top:15px; margin-right:5px; align-items:baseline">
-			<strong>Total:&nbsp;</strong>
+			<strong>Subtotal:&nbsp;</strong>
 			<input id="${symbol}-withdrawal-amount" placeholder="0.00" style="text-align:right; flex-grow:1; flex-basis:1px" type="number" step="0.01" min="0" disabled>&nbsp; ${symbol}
 		</div>
 		
+		
+		
 		<div style="text-align:center;">
-			<button id="${symbol}-paymentButton" style="margin-top:10px" onclick="withdraw('${symbol}', this)">Transfer ${symbol}</button>
+			<button style="margin-top:10px;" onclick="prepareTotal(this)">Generate Total</button>
+		</div>
+		
+		
+		<div style="max-height:0px" class="accordion">			
+			<div style="margin-left:15px; margin-right:15px">			
+				<div style="display:flex; justify-content:space-between; margin-top:10px; align-items:baseline">
+					<input placeholder="Item, memo, tip..." onkeyup="if (event.keyCode == 27) this.value = '';" style="flex-grow:2; flex-basis:1px; margin-right:10px" type="text" maxlength="128" value="Network fee" disabled>
+					<input placeholder="0.00" onkeyup="amtInputHandler(event, this)" style="margin-right:10px; text-align:right; flex-grow:1; flex-basis:1px; overflow:hidden; text-overflow:ellipsis;" type="number" step="0.01" min="0" id="${symbol}-withdrawal-fee" disabled>
+					<button tabindex="-1" style="font-size:0.8em; filter:opacity(0)" disabled>&#65291;</button>
+				</div>
+			</div>
+					
+			<div style="display:flex; justify-content:space-between; margin-top:5px; margin-right:5px; align-items:baseline">
+				<strong>Total:&nbsp;</strong>
+				<input id="${symbol}-withdrawal-amount-total" placeholder="0.00" style="text-align:right; flex-grow:1; flex-basis:1px" type="number" step="0.01" min="0" disabled>&nbsp; ${symbol}
+			</div>
+			
+			<div style="text-align:center;">
+				<button id="${symbol}-paymentButton" style="margin-top:10px" onclick="withdraw('${symbol}', this)" disabled>Transfer ${symbol}</button>
+				<button style="margin-top:10px" onclick="D('${symbol}-withdrawal-amount-total').value = '';
+														 D('${symbol}-withdrawal-amount-total').parentNode.parentNode.style.maxHeight = '0px';">Cancel</button>
+			</div>
 		</div>
 	</div>
 		
@@ -2371,20 +2362,22 @@ function generateHTML(symbol) {
 		<div id="${symbol}-invoice" style="margin-left:15px; margin-right:15px"></div>
 		
 		<div style="display:flex; justify-content:space-between; margin-top:15px; margin-right:5px; align-items:baseline">
-			<strong>Sub-total:&nbsp;</strong>
+			<strong>Subtotal:&nbsp;</strong>
 			<input placeholder="0.00" style="text-align:right; flex-grow:1; flex-basis:1px" type="number" step="0.01" min="0" disabled>&nbsp; ${symbol}
 		</div>
 						
 		<div style="text-align:center;">
-			<button style="margin-top:10px" onclick="makeInvoiceURL()">Generate Invoice URL</button>
+			<button style="margin-top:10px" onclick="makeInvoiceURL(this)">Generate Invoice URL</button>
 		</div>
 		
-		<div style="margin-top:15px; display:flex; align-items:center; justify-content:space-between">
-			<a class="clickFlash" target="_blank" href="" id="${symbol}-invoice-url">Invoice URL Demo</a>
-			<a style="font-size:0.8em; text-align:right" class="clickFlash" rel="noopener" target="_blank" href="https://warashibetrader.github.io/2022/02/17/invoices">Advanced Integrations</a>
-		</div>
-		<div style="margin-bottom:10px; margin-top:5px;">
-			<div class='address' style="white-space:nowrap" id="${symbol}-invoice-url-literal" onclick="clickCopy(this, this.textContent)">&nbsp;</div>
+		<div style="max-height:0px" class="accordion">
+			<div style="margin-top:15px; display:flex; align-items:center; justify-content:space-between">
+				<a class="clickFlash" target="_blank" href="" id="${symbol}-invoice-url">Invoice URL Demo</a>
+				<a style="font-size:0.8em; text-align:right" class="clickFlash" rel="noopener" target="_blank" href="https://warashibetrader.github.io/2022/02/17/invoices">Advanced Integrations</a>
+			</div>
+			<div style="margin-bottom:10px; margin-top:5px;">
+				<div class='address' style="white-space:nowrap" id="${symbol}-invoice-url-literal" onclick="clickCopy(this, this.textContent)">&nbsp;</div>
+			</div>
 		</div>
 	</div>
 	
