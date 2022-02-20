@@ -1407,13 +1407,22 @@ function clearWallet(symbol) {
 function prepareTotal(elt) {
 	let symbol = D('primary').value;
 	addTotal(D(symbol + "-itemize"));
-	elt.parentNode.nextElementSibling.style.maxHeight = elt.parentNode.nextElementSibling.scrollHeight + "px";
-	flash(D(symbol + '-withdrawal-amount-total'));	
-	if (D(symbol + "-withdrawal-amount").value) {
+	
+	if (D(symbol + "-withdrawal-amount").value)
 		D(symbol + '-withdrawal-amount-total').value = unitFromRaw(symbol, BigInt(rawFromUnit(symbol, D(symbol + "-withdrawal-amount").value)) 
 																			+ BigInt(rawFromUnit(symbol, D(symbol + "-withdrawal-fee").value)));
-		D(symbol + "-paymentButton").disabled = false;																
+	else D(symbol + '-withdrawal-amount-total').value = "";
+	flash(D(symbol + '-withdrawal-amount-total'));
+																			
+	if (D(symbol + "-dest-display").textContent != D(symbol + "-dest-display-confirm").textContent) {
+		D(symbol + "-dest-display-confirm").textContent = D(symbol + "-dest-display").textContent;
+		flash(D(symbol + '-dest-display-confirm'));	
 	}
+	
+	if (D(symbol + "-withdrawal-amount").value && D(symbol + "-dest-display").textContent) D(symbol + "-paymentButton").disabled = false;
+	else D(symbol + "-paymentButton").disabled = true;
+		
+	elt.parentNode.nextElementSibling.style.maxHeight = elt.parentNode.nextElementSibling.scrollHeight + "px";
 }
 
 function makeInvoiceURL(elt) {		
@@ -2330,7 +2339,7 @@ function generateHTML(symbol) {
 		
 		
 		<div style="text-align:center;">
-			<button style="margin-top:10px;" onclick="prepareTotal(this)">Generate Total</button>
+			<button style="margin-top:15px;" onclick="prepareTotal(this)">Generate Total</button>
 		</div>
 		
 		
@@ -2348,9 +2357,14 @@ function generateHTML(symbol) {
 				<input id="${symbol}-withdrawal-amount-total" placeholder="0.00" style="text-align:right; flex-grow:1; flex-basis:1px" type="number" step="0.01" min="0" disabled>&nbsp; ${symbol}
 			</div>
 			
+			<div style="display:flex; justify-content:space-between; margin-top:5px; margin-right:5px; align-items:baseline">				
+				<strong>Destination: </strong>
+				<span id="${symbol}-dest-display-confirm" style="text-align:right;"></span>
+			</div>
+			
 			<div style="text-align:center;">
-				<button id="${symbol}-paymentButton" style="margin-top:10px" onclick="withdraw('${symbol}', this)" disabled>Transfer ${symbol}</button>
-				<button style="margin-top:10px" onclick="D('${symbol}-withdrawal-amount-total').value = '';
+				<button id="${symbol}-paymentButton" style="margin-top:15px" onclick="withdraw('${symbol}', this)" disabled>Transfer ${symbol}</button>
+				<button style="margin-top:15px" onclick="D('${symbol}-withdrawal-amount-total').value = '';
 														 D('${symbol}-withdrawal-amount-total').parentNode.parentNode.style.maxHeight = '0px';">Cancel</button>
 			</div>
 		</div>
@@ -2367,7 +2381,7 @@ function generateHTML(symbol) {
 		</div>
 						
 		<div style="text-align:center;">
-			<button style="margin-top:10px" onclick="makeInvoiceURL(this)">Generate Invoice URL</button>
+			<button style="margin-top:15px" onclick="makeInvoiceURL(this)">Generate Invoice URL</button>
 		</div>
 		
 		<div style="max-height:0px" class="accordion">
@@ -2375,7 +2389,7 @@ function generateHTML(symbol) {
 				<a class="clickFlash" target="_blank" href="" id="${symbol}-invoice-url">Invoice URL Demo</a>
 				<a style="font-size:0.8em; text-align:right" class="clickFlash" rel="noopener" target="_blank" href="https://warashibetrader.github.io/2022/02/17/invoices">Advanced Integrations</a>
 			</div>
-			<div style="margin-bottom:10px; margin-top:5px;">
+			<div style="margin-bottom:10px; margin-top:10px;">
 				<div class='address' style="white-space:nowrap" id="${symbol}-invoice-url-literal" onclick="clickCopy(this, this.textContent)">&nbsp;</div>
 			</div>
 		</div>
