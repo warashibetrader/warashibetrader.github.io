@@ -23,24 +23,29 @@
 							  position: fixed; left: 0px; top: 0px; border-radius: 5px;
 							  pointer-events: none; filter: opacity(0.9);"></strong>
 	<div class="containerdiv">
-	<div id="firstDiv" class="firstDiv" style="padding-top:50px">
+	<div id="firstDiv" class="firstDiv" style="padding-top:50px">	
+		<div id="donatePanel" style="display:none; text-align:center; margin-top:30px">
+			<button style="font-size:0.8em;" onclick="donate()">Donate</button>
+			<button id="nprButton" style="font-size:0.8em" onclick="npr()">Play NPR</button>	
+		</div>
+			
+		<div id="quoteDisplay" style="display:none; margin-bottom:15px;">
+			<img src=""  onclick="toggleQuote();" id="preview" style="cursor:pointer; display:none; margin-left:auto; margin-right:auto; max-width:100%; max-height:200px; border-radius:15px">
+			<div id="quote" style="cursor:pointer; white-space:pre-wrap; font-style:italic; font-size:0.9em" onclick="toggleQuote();"></div>
+			
+			<input type="file" style="display:none" id="filetag" accept="image/*">		
+			<div id="advancedQuote" class="accordion" style="display:flex; align-items:center; position:relative; max-height:0px;">
+				<div style="margin:auto">
+				<button id="imageButton" style="font-size:0.8em;" onclick="toggleImage()">Select Security Image</button>
+				<button id="wipeButton" style="font-size:0.8em;" onclick="toggleWipe()">Clear Keys on Updates</button>
+				</div>
+				<span style="position:absolute; right:0px">(<a rel="noopener" href="https://warashibetrader.github.io/2022/02/02/security-quote-protocol" target="_blank">?</a>)</span>
+			</div>
+		</div>
+		
 		<div class="objectWrapper" style="display:none">
 			<div id="serverMsg" style="white-space:pre-wrap; color:red; font-style:italic; font-size:0.9em" ></div>
 			<div id="serverMsgButton" style="display:none; text-align:center; margin-top:10px; margin-bottom:15px; font-size:0.8em"><button onclick="hideServerMsg()">Hide Message</button></div>
-			
-			<div id="quoteDisplay" style="display:none; margin-bottom:15px;">
-				<img src=""  onclick="toggleQuote();" id="preview" style="cursor:pointer; display:none; margin-left:auto; margin-right:auto; max-width:100%; max-height:200px; border-radius:15px">
-				<div id="quote" style="cursor:pointer; white-space:pre-wrap; font-style:italic; font-size:0.9em" onclick="toggleQuote();"></div>
-				
-				<input type="file" style="display:none" id="filetag" accept="image/*">		
-				<div id="advancedQuote" class="accordion" style="display:flex; align-items:center; position:relative; max-height:0px;">
-					<div style="margin:auto">
-					<button id="imageButton" style="font-size:0.8em;" onclick="toggleImage()">Select Security Image</button>
-					<button id="wipeButton" style="font-size:0.8em;" onclick="toggleWipe()">Clear Keys on Updates</button>
-					</div>
-					<span style="position:absolute; right:0px">(<a rel="noopener" href="https://warashibetrader.github.io/2022/02/02/security-quote-protocol" target="_blank">?</a>)</span>
-				</div>
-			</div>
 		</div>
 		
 		<div style="display:flex; align-items:center; position:relative; margin-left:18px; margin-right:18px; margin-top:5px; margin-bottom:5px">	
@@ -51,9 +56,9 @@
 				<option value="XLM">Stellar (XLM)</option>
 				<option value="ALGO">Algorand (ALGO)</option>
 			</select>	
-			<div style="position:absolute; right:0px">
-			<button id="nprButton" style="font-size:0.8em" onclick="npr()">Play NPR</button>
-			<button id="account" style="font-size:0.8em" onclick="toggleAccount()">Account</button>
+			<div style="position:absolute; right:0px">		
+				<button id="view" style="font-size:0.8em;" onclick="toggleView()">All Tools</button>
+				<button id="account" style="font-size:0.8em" onclick="toggleAccount()">Account</button>
 			</div>
 		</div>
 	</div>
@@ -126,6 +131,7 @@ if (localStorage.getItem('symbol')) document.getElementById('firstDiv').style.ba
 
 
 var fullView = localStorage.getItem("view");
+if (fullView) D('view').classList.add('active');
 let imgsrc = localStorage.getItem("image");
 if (imgsrc) {
 	D('preview').src = imgsrc;
@@ -1082,11 +1088,11 @@ if (urlParams.has('preferred') && urlParams.has('addresses') && urlParams.has('i
 function loadPaymentsPage(data) {
 	paymentWindow = true;
 	fullView = false;
+	D('view').classList.remove('active');
 	let symbol = data.preferred;
 	D('primary').value = symbol;
 	D('primary').disabled = true;
 	D('secondDiv').style.display = "none";
-	D('nprButton').style.display = "none";
 	if (screen.width <= 550 || screen.height <= 550) D('firstDiv').parentNode.style.width = "100%";
 	else {
 		D('firstDiv').parentNode.style.justifyContent = "center";
@@ -1101,8 +1107,7 @@ function loadPaymentsPage(data) {
 		D('firstDiv').style.minWidth = "350px";
 	}
 	
-	selectPrimary(symbol).then(function() {			
-		D(symbol + '-donatePanel').style.display = "none";	
+	selectPrimary(symbol).then(function() {	
 		clearPayment(symbol);
 		
 		D(symbol + "-dest").value = data.addresses[symbol];
@@ -1668,12 +1673,13 @@ function toggleView() {
 	if (fullView) {
 		fullView = false;
 		localStorage.removeItem("view");
+		D('view').classList.remove('active');
 	} else {
 		fullView = true;
 		localStorage.setItem("view", "true");
+		D('view').classList.add('active');
 	}
 	updateView();
-	// if (fullView) D(D('primary').value + "-view").scrollIntoView({block:"start", behavior:"smooth"});
 }
 
 function updateView() {
@@ -1685,20 +1691,16 @@ function updateView() {
      	obj.style.maxHeight = obj.scrollHeight + "px";
 		obj.style.padding = "";
 		obj.style.marginTop = "20px";
-		obj.style.scrollMarginTop = "60px";
 		
      	obj3.style.maxHeight = obj3.scrollHeight + "px";
 		obj3.style.paddingTop = "";	
 		obj3.style.paddingBottom = "25px";	
 		obj3.style.marginTop = "";
-		obj.style.scrollMarginTop = "60px";
 		
      	obj4.style.maxHeight = obj4.scrollHeight + "px";
 		obj4.style.padding = "";	
 		obj4.style.marginTop = "20px";	
-		obj.style.scrollMarginTop = "60px";
-		setTimeout(function() { if (obj4.style.maxHeight != "0px") obj4.style.maxHeight = ""; }, 100);		
-		D(symbol + "-view").classList.add('active');
+		setTimeout(function() { if (obj4.style.maxHeight != "0px") obj4.style.maxHeight = ""; }, 100);
 	} else {
       	obj.style.maxHeight = "0px";
 		obj.style.paddingTop = "0px";
@@ -1717,7 +1719,6 @@ function updateView() {
 			obj4.style.paddingBottom = "0px";	
 			obj4.style.marginTop = "0px";
 		}, 1);
-		D(symbol + "-view").classList.remove('active');	
 	}
 }
 function addTotal(elt) {
@@ -1760,7 +1761,8 @@ function addItem(elt) {
 	outerElt.firstElementChild.focus();
 }
 
-function donate(symbol) {
+function donate() {
+	let symbol = D('primary').value;
 	if (fullView) D(symbol + "-dest").parentNode.scrollIntoView({block:"center", behavior:"auto"});
 	D(symbol + "-dest").value = ccc[symbol].donation;
 	flash(D(symbol + "-dest"));
@@ -2163,6 +2165,9 @@ async function selectPrimary(symbol) {
 	D('quoteDisplay').style.display = "none";
 	D('firstDiv').insertBefore(D('quoteDisplay'), D('firstDiv').firstElementChild);
 	
+	D('donatePanel').style.display = "none";
+	D('firstDiv').insertBefore(D('donatePanel'), D('firstDiv').firstElementChild);
+	
 	qrclose();
 	D('firstDiv').style.backgroundColor = ccc[symbol].bgColor;
 	
@@ -2172,8 +2177,11 @@ async function selectPrimary(symbol) {
 	D('firstDiv').appendChild(ccc[symbol].sidebarElt);
 	D('secondDiv').appendChild(ccc[symbol].transactionElt);
 	
-	D(symbol + "-tool1").insertBefore(D('quoteDisplay'), D(symbol + "-tool1").children[0]);
+	D(symbol + "-tool1").insertBefore(D('quoteDisplay'), D(symbol + "-tool1").firstElementChild);
 	D('quoteDisplay').style.display = "";
+	
+	D(symbol + '-gray').appendChild(D('donatePanel'));
+	D('donatePanel').style.display = "";
 	
 	if (ccc[symbol].faucet) D(`${symbol}-faucet`).style.display = "";
 	if (!ccc[symbol].qrCode) {
@@ -2311,7 +2319,7 @@ function generateHTML(symbol) {
 	</div>
 
 	<div class="objectWrapper">
-		<strong>Destination: </strong><span id="${symbol}-dest-display"></span>
+		<strong>Destination: </strong><span class="flash" id="${symbol}-dest-display"></span>
 		<div style="display:flex; justify-content:space-between; margin-top:5px;">
 			<input placeholder="Destination address..." onfocus="scrollPanel(this.parentNode)" style="padding-right:30px; flex-grow:1; margin-right:10px" id="${symbol}-dest" type="text" maxlength="128" onclick="this.select()" oninput="fetchDisplayName('${symbol}', '-dest-display', this.value); D('${symbol}-paymentButton').disabled = true;"><button tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
 			<button tabindex="-1" id="${symbol}-qrButton2" style="font-size:0.8em" onclick="qrscan('${symbol}', '-dest', this)">QR</button>
@@ -2349,7 +2357,7 @@ function generateHTML(symbol) {
 			
 			<div style="display:flex; justify-content:space-between; margin-top:5px; margin-right:5px; align-items:baseline">				
 				<strong>Destination: </strong>
-				<span id="${symbol}-dest-display-confirm" style="text-align:right;"></span>
+				<span class="flash" id="${symbol}-dest-display-confirm" style="text-align:right;"></span>
 			</div>
 			
 			<div style="text-align:center;">
@@ -2391,14 +2399,14 @@ function generateHTML(symbol) {
 			<button style="font-size:0.8em" onclick="addressQR('${symbol}')">My Address</button>
 		</div>				
 		<strong>Type: </strong><span id="${symbol}-type-display"></span>	
-		<br><strong>Owner: </strong><span id="${symbol}-directory-display"></span>	
+		<br><strong>Owner: </strong><span class="flash" id="${symbol}-directory-display"></span>	
 		<div style="margin-top:20px; display:flex; justify-content:center" id="${symbol}-qrCodeImageBlock"></div>
 	</div>
 		
 	<div id="${symbol}-tool2" class="accordion objectWrapper" style="max-height:0px; padding-top:0px; padding-bottom:0px; margin-top:0px;">
-		<strong>Current representative: </strong><span id="${symbol}-rep-display"></span>
+		<strong>Current representative: </strong><span class="flash" id="${symbol}-rep-display"></span>
 		<div class="address" style="margin-bottom:10px; margin-top:5px;" id="${symbol}-rep" onclick="clickCopy(this, this.textContent)">&nbsp;</div>
-		<strong>New representative: </strong><span id="${symbol}-new-rep-display"></span>	
+		<strong>New representative: </strong><span class="flash" id="${symbol}-new-rep-display"></span>	
 		<div style="display:flex; justify-content:space-between; margin-top:5px;">
 			<input placeholder="New representative address..." onfocus="scrollPanel(this.parentNode)" style="padding-right:30px; flex-grow:1; margin-right:10px" id="${symbol}-new-rep" type="text" maxlength="128" onclick="this.select()" oninput="fetchDisplayName('${symbol}', '-new-rep-display', this.value)" onkeyup="if (event.keyCode == 13) setRep('${symbol}', this)"><button tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
 			<button style="font-size:0.8em" onclick="suggestRep('${symbol}')">Suggest</button>
@@ -2408,10 +2416,6 @@ function generateHTML(symbol) {
 		</div>
 	</div>
 	
-	<div id="${symbol}-donatePanel" style="text-align:center; margin-top:30px">
-		<button style="font-size:0.8em;" onclick="donate('${symbol}')">Donate</button>
-		<button id="${symbol}-view" style="font-size:0.8em; scroll-margin-top:60px" onclick="toggleView()">More Tools</button>
-	</div>
 		
 	</div>`;
 }
