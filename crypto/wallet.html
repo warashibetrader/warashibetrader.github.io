@@ -2167,6 +2167,11 @@ async function selectPrimary(symbol) {
 	qrclose();
 	D('firstDiv').style.backgroundColor = ccc[symbol].bgColor;
 	
+	if (D(symbol + '-tool1').style.maxHeight != "0px") D('account').classList.add('active');
+	else D('account').classList.remove('active');
+	D('donateButton').disabled = true;
+	D('view').disabled = true;
+	
 	D('quoteDisplay').style.display = "none";
 	D('firstDiv').insertBefore(D('quoteDisplay'), D('firstDiv').firstElementChild);	
 	
@@ -2217,12 +2222,6 @@ async function selectPrimary(symbol) {
 		});
 	});
 	await waitScript;
-	
-	if (D(symbol + '-tool1').style.maxHeight != "0px") D('account').classList.add('active');
-	else D('account').classList.remove('active');
-	
-	D('donateButton').disabled = true;
-	D('view').disabled = true;
 	
 	if (ccc[symbol].address) {
 		refreshBalance(symbol);
