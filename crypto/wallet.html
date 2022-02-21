@@ -2221,11 +2221,16 @@ async function selectPrimary(symbol) {
 	if (D(symbol + '-tool1').style.maxHeight != "0px") D('account').classList.add('active');
 	else D('account').classList.remove('active');
 	
+	D('donateButton').disabled = true;
+	D('view').disabled = true;
+	
 	if (ccc[symbol].address) {
 		refreshBalance(symbol);
 		ccc[symbol].getTransactions();	
 		if (D(symbol + '-tool1').style.maxHeight != "0px") toggleAccount();
-		updateView();
+		updateView();		
+		D('donateButton').disabled = false;
+		D('view').disabled = false;
 	} else if (localStorage.getItem(`${symbol}-seed`)) {
 		D(`${symbol}-seed`).value = localStorage.getItem(`${symbol}-seed`);
 		let index = localStorage.getItem(`${symbol}-index`);
