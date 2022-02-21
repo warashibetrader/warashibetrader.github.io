@@ -62,7 +62,7 @@ input[type=number], input[type=text], input[type=password] {
 	border-right: solid 0px;
 	text-overflow: ellipsis;
 	overflow: hidden;	 
-	border-bottom: 2px solid #d4d7d7;
+	border-bottom: 2px solid #e4e7e7;
 }
 
 input[type=number]:focus, input[type=text]:focus, input[type=password]:focus {  
@@ -123,7 +123,7 @@ select {
 }
 
 select:hover {	
-	background-color: #d4d7d7;
+	background-color: #e4e7e7;
 }
 
 select:disabled:hover {	
@@ -143,11 +143,14 @@ button {
 }
 
 button:hover:enabled {  
-	background-color: #d4d7d7;
+	background-color: #e4e7e7;
 }
 
 button.active {
-	background-color: #b4b7b7;	
+	background-color: #d4d7d7;	
+}
+button.active:disabled {
+	background-color: #f1f4f4;	
 }
 
 button:disabled, button[disabled]{
@@ -247,7 +250,7 @@ ul::-webkit-scrollbar-thumb:hover {
 	}
 	
 	button.active:hover {
-		background-color: #b4b7b7;	
+		background-color: #d4d7d7;	
 	}
 
 	button:focus {
