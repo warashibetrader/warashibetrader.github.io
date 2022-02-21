@@ -23,34 +23,37 @@
 							  position: fixed; left: 0px; top: 0px; border-radius: 5px;
 							  pointer-events: none; filter: opacity(0.9);"></strong>
 	<div class="containerdiv">
-	<div id="firstDiv" class="firstDiv">
-		<div class="objectWrapper" style="margin-top:50px">
+	<div id="firstDiv" class="firstDiv" style="padding-top:50px">
+		<div class="objectWrapper" style="display:none">
 			<div id="serverMsg" style="white-space:pre-wrap; color:red; font-style:italic; font-size:0.9em" ></div>
 			<div id="serverMsgButton" style="display:none; text-align:center; margin-top:10px; margin-bottom:15px; font-size:0.8em"><button onclick="hideServerMsg()">Hide Message</button></div>
 			
-			<img src=""  onclick="toggleQuote();" id="preview" style="cursor:pointer; display:none; margin-left:auto; margin-right:auto; max-width:100%; max-height:200px; border-radius:15px">
-			<div id="quote" style="cursor:pointer; white-space:pre-wrap; font-style:italic; font-size:0.9em" onclick="toggleQuote();"></div>
-			
-			<input type="file" style="display:none" id="filetag" accept="image/*">		
-			<div id="advancedQuote" class="accordion" style="display:flex; align-items:center; position:relative; max-height:0px;">
-				<div style="margin:auto">
-				<button id="imageButton" style="font-size:0.8em;" onclick="toggleImage()">Select Security Image</button>
-				<button id="wipeButton" style="font-size:0.8em;" onclick="toggleWipe()">Clear Keys on Updates</button>
+			<div id="quoteDisplay" style="display:none; margin-bottom:15px;">
+				<img src=""  onclick="toggleQuote();" id="preview" style="cursor:pointer; display:none; margin-left:auto; margin-right:auto; max-width:100%; max-height:200px; border-radius:15px">
+				<div id="quote" style="cursor:pointer; white-space:pre-wrap; font-style:italic; font-size:0.9em" onclick="toggleQuote();"></div>
+				
+				<input type="file" style="display:none" id="filetag" accept="image/*">		
+				<div id="advancedQuote" class="accordion" style="display:flex; align-items:center; position:relative; max-height:0px;">
+					<div style="margin:auto">
+					<button id="imageButton" style="font-size:0.8em;" onclick="toggleImage()">Select Security Image</button>
+					<button id="wipeButton" style="font-size:0.8em;" onclick="toggleWipe()">Clear Keys on Updates</button>
+					</div>
+					<span style="position:absolute; right:0px">(<a rel="noopener" href="https://warashibetrader.github.io/2022/02/02/security-quote-protocol" target="_blank">?</a>)</span>
 				</div>
-				<span style="position:absolute; right:0px">(<a rel="noopener" href="https://warashibetrader.github.io/2022/02/02/security-quote-protocol" target="_blank">?</a>)</span>
 			</div>
-			
-			
-			<div style="margin-top:15px; display:flex; align-items:center; position:relative">		
-				<button id="nprButton" style="font-size:0.8em; position:absolute; left:0px" onclick="npr()">Play NPR</button>
-				<select style="margin:auto" name="primary" id="primary" onchange="selectPrimary(event.target.value)">
-					<option value="XNO">Nano (XNO)</option>
-					<option value="BAN">Banano (BAN)</option>
-					<option value="SOL">Solana (SOL)</option>
-					<option value="XLM">Stellar (XLM)</option>
-					<option value="ALGO">Algorand (ALGO)</option>
-				</select>
-				<button id="account" style="font-size:0.8em; position:absolute; right:0px" onclick="toggleAccount()">Account</button>
+		</div>
+		
+		<div style="display:flex; align-items:center; position:relative; margin-left:18px; margin-right:18px; margin-top:5px; margin-bottom:5px">	
+			<select name="primary" id="primary" onchange="selectPrimary(event.target.value)">
+				<option value="XNO">Nano (XNO)</option>
+				<option value="BAN">Banano (BAN)</option>
+				<option value="SOL">Solana (SOL)</option>
+				<option value="XLM">Stellar (XLM)</option>
+				<option value="ALGO">Algorand (ALGO)</option>
+			</select>	
+			<div style="position:absolute; right:0px">
+			<button id="nprButton" style="font-size:0.8em" onclick="npr()">Play NPR</button>
+			<button id="account" style="font-size:0.8em" onclick="toggleAccount()">Account</button>
 			</div>
 		</div>
 	</div>
@@ -77,13 +80,13 @@ if ('serviceWorker' in navigator) {
 			
 			if (localStorage.getItem("quote")) {
 				showMsg("Update found. Deleting security quote...");
-				D('msg').style.backgroundColor = "#FFB6C1";	
+				document.getElementById('msg').style.backgroundColor = "#FFB6C1";	
 				
 				localStorage.removeItem("quote");
 				localStorage.removeItem("image");
 				if (wipeKeys) localStorage.clear();
-				D('quote').textContent = "";
-				D('preview').src = "";
+				document.getElementById('quote').textContent = "";
+				document.getElementById('preview').src = "";
 				
 				showMsg("Installing update... Security quote deleted. Clearing DOM...");
 				
@@ -932,6 +935,7 @@ function setupWebsocket() {
 	ws.on('serverMsgCue', function(data) {
 		if (typeof data === "string" && localStorage.getItem("serverMsg") != data) {
 			D('serverMsg').textContent = data;
+			D('serverMsg').parentNode.style.display = "";
 			D('serverMsg').style.display = "";
 			D('serverMsgButton').style.display = "";
 		}
@@ -1269,25 +1273,21 @@ function displayName(symbol, divString, address, displayString) {
 //////////////////////////////////////////////////////// Interface with helper functions
 	
 function generateWallet(symbol) {
-	D(`${symbol}-seed`).value = ccc[symbol].generateSeed(); 	
+	inputEvent(D(`${symbol}-seed`), ccc[symbol].generateSeed());	
+	flash(D(`${symbol}-seed`));
 	navigator.clipboard.writeText(D(`${symbol}-seed`).value);
 	clipboardText = D(`${symbol}-seed`).value;
-		showMsg("New " + ccc[symbol].keyType + " copied to clipboard. Save it securely (elsewhere and NOW).");
-	flash(D(`${symbol}-seed`));
-	D(`${symbol}-generateButton`).disabled = true;
+	showMsg("New " + ccc[symbol].keyType + " copied to clipboard. Save it securely (elsewhere and NOW).");
 }
 
 function importWallet(symbol) {
 	let seed = D(`${symbol}-seed`).value;
 	let index = D(`${symbol}-index`).value;
 	if (index.length == 0 && (symbol == "XNO" || symbol == "BAN")) index = 0;
-	if (!ccc[symbol].checkSeed(seed)) {
-		if (!ccc[symbol].checkAddress(seed)) showMsg("Invalid " + ccc[symbol].keyType  +".");
-		else showMsg("Submit a " + ccc[symbol].keyType  + ", not an address.");
-	}
+	
+	if (!ccc[symbol].checkSeed(seed)) { if (ccc[symbol].checkAddress(seed)) showMsg("Enter a " + ccc[symbol].keyType  + ", not an address."); }
 	else if (index.length > 0 && (!/^[0-9]+$/.test(index) || index < 0 || index > Math.pow(2, 32) - 1)) showMsg("Invalid account index.");
 	else {
-		showMsg(`Loading ${symbol} account...`, null,true);
 		let existingWallet = ccc[symbol].address;
 		clearWallet(symbol);
 		
@@ -1296,34 +1296,25 @@ function importWallet(symbol) {
 		addressQR(symbol);
 		D(symbol + "-gray").style.display = "";
 		D(symbol + "-gray2").style.display = "";
-		D(symbol + "-clear").style.display = "";
-		D(symbol + "-load").textContent = "Switch Account";	
 		if (!existingWallet && D(symbol + "-tool1").style.maxHeight != "0px") toggleAccount();
 		updateView();
 		
+		if (localStorageWriteable) {
+			localStorage.setItem(`${symbol}-seed`, seed);
+			localStorage.setItem(`${symbol}-index`, index);
+			localStorage.setItem(`${symbol}-address`, ccc[symbol].address);
+		}		
 		fetchDisplayName(symbol, "-display", ccc[symbol].address, true);
-		refreshBalance(symbol, true).then(function(accountInfo) {
-			if (localStorageWriteable) {
-				localStorage.setItem(`${symbol}-seed`, seed);
-				localStorage.setItem(`${symbol}-index`, index);
-				localStorage.setItem(`${symbol}-address`, ccc[symbol].address);
-				if (accountInfo) localStorage.setItem(`${symbol}-info`, JSON.stringify(accountInfo));
-				else localStorage.setItem(`${symbol}-info`, "");
-			}
-		});
+		refreshBalance(symbol);
 		ccc[symbol].getTransactions();	
 	}
 }
 
 function clickClearWallet(symbol) {
-	clearWallet(symbol);
+	clearWallet(symbol);	
+	inputEvent(D(`${symbol}-seed`), "");
+	D(`${symbol}-index`).value = "";
 	
-	D(`${symbol}-seed`).value = ""; 
-	D(`${symbol}-generateButton`).disabled = false;
-	D(`${symbol}-index`).value = ""; 	
-	
-	localStorage.removeItem(`${symbol}-seed`); 
-	localStorage.removeItem(`${symbol}-index`); 
 	localStorage.removeItem(`${symbol}-display`); 
 	localStorage.removeItem(`${symbol}-rep-display`); 
 	localStorage.removeItem(`${symbol}-info`);
@@ -1332,22 +1323,25 @@ function clickClearWallet(symbol) {
 	while (D(symbol + "-invoice").children.length > 1) {
 		remove(D(symbol + "-invoice").lastElementChild);
 	}
-	
-	D('firstDiv').scrollTo(0, 0);
 }
 
 function clearPayment(symbol) {
 	flash(D(`${symbol}-dest-display`), "");
 	D(symbol + "-dest").value = "";	
-	D(`${symbol}-withdrawal-amount`).value = "";
-	D(`${symbol}-withdrawal-amount-total`).value = "";
-	D(`${symbol}-withdrawal-amount-total`).parentNode.parentNode.style.maxHeight = "0px";
+	D(`${symbol}-withdrawal-amount`).value = "";	
+	clearPaymentSummary(symbol);
 	
 	while (D(symbol + "-itemize").children.length > 1) {
 		remove(D(symbol + "-itemize").firstElementChild);
 	}
 	D(symbol + "-itemize").lastElementChild.firstElementChild.nextElementSibling.value = "";
 	D(symbol + "-itemize").lastElementChild.firstElementChild.value = "";
+}
+
+function clearPaymentSummary(symbol) {
+	D(symbol + '-withdrawal-amount-total').value = '';
+	D(symbol + '-dest-display-confirm').textContent = '';
+	D(symbol + '-withdrawal-amount-total').parentNode.parentNode.style.maxHeight = '0px';
 }
 
 function freezePayment(symbol, keepOne) {
@@ -1395,12 +1389,14 @@ function clearWallet(symbol) {
 	//D(symbol + "-gray").style.filter = "opacity(0.5)";
 	D(symbol + "-gray").style.display = "none";
 	D(symbol + "-gray2").style.display = "none";
-	D(symbol + "-load").textContent = "Load Account";
-	D(symbol + "-clear").style.display = "none";
 	
 	D(symbol + '-invoice-url').href = "";
 	flash(D(symbol + '-invoice-url-literal'), "\xa0");
 	D(symbol + "-invoice-url").parentNode.parentNode.style.maxHeight = "0px";
+	
+	localStorage.removeItem(`${symbol}-seed`); 
+	localStorage.removeItem(`${symbol}-index`); 
+	localStorage.removeItem(`${symbol}-address`); 
 }
 
 
@@ -1412,6 +1408,7 @@ function prepareTotal(elt) {
 		D(symbol + '-withdrawal-amount-total').value = unitFromRaw(symbol, BigInt(rawFromUnit(symbol, D(symbol + "-withdrawal-amount").value)) 
 																			+ BigInt(rawFromUnit(symbol, D(symbol + "-withdrawal-fee").value)));
 	else D(symbol + '-withdrawal-amount-total').value = "";
+	flash(D(symbol + '-withdrawal-amount-total').parentNode);
 	flash(D(symbol + '-withdrawal-amount-total'));
 																			
 	if (D(symbol + "-dest-display").textContent != D(symbol + "-dest-display-confirm").textContent) {
@@ -1445,12 +1442,11 @@ function makeInvoiceURL(elt) {
 	flash(D(symbol + '-invoice-url-literal'), makePaymentURL(symbol, addresses, items));
 }
 
-function refreshBalance(symbol, confirm) {
+function refreshBalance(symbol) {
 	return ccc[symbol].getAccountInfo().then(function(accountInfo) {
 		if (accountInfo) {
-			if (confirm) showMsg(`${symbol} account loaded.`);
-			else if (D('msg').textContent.indexOf('Unable to connect to network.') != -1) showMsg(`Connected.`);
-			localStorage.setItem(`${symbol}-info`, JSON.stringify(accountInfo));	
+			if (ccc[symbol].address == localStorage.getItem(`${symbol}-address`)) localStorage.setItem(`${symbol}-info`, JSON.stringify(accountInfo));	
+			if (D('msg').textContent.indexOf('Unable to connect to network.') != -1) showMsg(`Connected.`);
 		} else {
 			if (ccc[symbol].address == localStorage.getItem(`${symbol}-address`)) accountInfo = localStorage.getItem(`${symbol}-info`);
 			if (accountInfo) accountInfo = JSON.parse(accountInfo);
@@ -1501,66 +1497,60 @@ function cyclePending(symbol, elt) {
 
 async function withdraw(symbol, elt) {
 	elt.disabled = true;
-	if (ccc[symbol].checkAddress(ccc[symbol].address) && ccc[symbol].checkAddress(D(`${symbol}-dest`).value)) {
-		let amt = D(`${symbol}-withdrawal-amount-total`).value;
-		let totalAmt = BigInt(rawFromUnit(symbol, amt));
-		if ((amt.match(/\./g)||[]).length <= 1 && /^[0-9.]+$/.test(amt) && totalAmt > 0) {
-			let balance = BigInt(rawFromUnit(symbol, D(`${symbol}-balance`).textContent));
-			if (totalAmt <= balance) {
-				if (totalAmt + BigInt(rawFromUnit(symbol, ccc[symbol].min)) <= balance) {	
-					showMsg(symbol + " transfer initiated...", null, true);
-					let sendResp = await ccc[symbol].sendTo(D(`${symbol}-dest`).value, (totalAmt - BigInt(rawFromUnit(symbol, D(symbol + '-withdrawal-fee').value))).toString());
-					if (sendResp) {
-						console.log(sendResp);						
-						let receipt = [];
-						for (let i = 0; i < D(symbol + "-itemize").children.length; i++) {
-							let newItem = D(symbol + "-itemize").children[i].children[0].value;
-							let newAmt = D(symbol + "-itemize").children[i].children[1].value;
-							if (newItem || newAmt) {
-								receipt.push({item:newItem, amt:newAmt});
-							}
-						}
-						ws.emit("setReceiptCue", {currency: symbol, tx:sendResp, receipt:JSON.stringify(receipt)});
-						
-						showMsg(amt + " " + symbol + " transferred.");
-						refreshBalance(symbol);
-						
-						if (!paymentWindow) {
-							ccc[symbol].getTransactions();
-							clearPayment(symbol);
-						} else {
-							freezePayment(symbol);						
-							let sp = make('div');
-							sp.textContent = "Thank you!";
-							sp.style.marginTop = "15px";
-							D(symbol + "-paymentButton").parentNode.insertBefore(sp, D(symbol + "-paymentButton"));
-							
-							if (window.opener) {
-								window.opener.postMessage({cue:"paidCue", id:sendResp});
-								D(symbol + "-paymentButton").textContent = "Close Window";
-								D(symbol + "-paymentButton").onclick = function() {
-									if (window.opener) window.opener.postMessage({cue:"closeCue", id:sendResp});
-									setTimeout(function() { 
-										sp.textContent = "Thank you! You may now close this window.";
-										D(symbol + "-paymentButton").style.display = "none"; 
-									}, 1500);
-								};
-							} else {
+	let amt = D(`${symbol}-withdrawal-amount-total`).value;
+	let totalAmt = BigInt(rawFromUnit(symbol, amt));
+	let balance = BigInt(rawFromUnit(symbol, D(`${symbol}-balance`).textContent));
+	if (totalAmt <= balance) {
+		if (totalAmt + BigInt(rawFromUnit(symbol, ccc[symbol].min)) <= balance) {	
+			showMsg(symbol + " transfer initiated...", null, true);
+			let sendResp = await ccc[symbol].sendTo(D(`${symbol}-dest`).value, (totalAmt - BigInt(rawFromUnit(symbol, D(symbol + '-withdrawal-fee').value))).toString());
+			if (sendResp) {
+				console.log(sendResp);						
+				let receipt = [];
+				for (let i = 0; i < D(symbol + "-itemize").children.length; i++) {
+					let newItem = D(symbol + "-itemize").children[i].children[0].value;
+					let newAmt = D(symbol + "-itemize").children[i].children[1].value;
+					if (newItem || newAmt) {
+						receipt.push({item:newItem, amt:newAmt});
+					}
+				}
+				ws.emit("setReceiptCue", {currency: symbol, tx:sendResp, receipt:JSON.stringify(receipt)});
+				
+				showMsg(amt + " " + symbol + " transferred.");
+				refreshBalance(symbol);
+				
+				if (!paymentWindow) {
+					ccc[symbol].getTransactions();
+					clearPayment(symbol);
+				} else {
+					freezePayment(symbol);						
+					let sp = make('div');
+					sp.textContent = "Thank you!";
+					sp.style.marginTop = "15px";
+					D(symbol + "-paymentButton").parentNode.insertBefore(sp, D(symbol + "-paymentButton"));
+					
+					if (window.opener) {
+						window.opener.postMessage({cue:"paidCue", id:sendResp});
+						D(symbol + "-paymentButton").textContent = "Close Window";
+						D(symbol + "-paymentButton").onclick = function() {
+							if (window.opener) window.opener.postMessage({cue:"closeCue", id:sendResp});
+							setTimeout(function() { 
 								sp.textContent = "Thank you! You may now close this window.";
 								D(symbol + "-paymentButton").style.display = "none"; 
-							}
-						}
+							}, 1500);
+						};
+					} else {
+						sp.textContent = "Thank you! You may now close this window.";
+						D(symbol + "-paymentButton").style.display = "none"; 
 					}
-					elt.disabled = false; 
-					return true;
-				} else showMsg("Minimum account balance is " + ccc[symbol].min + " " + symbol + ".");
-			} else showMsg("Insufficient funds.");
-		} else showMsg("Enter a positive amount.");
-		flash(D(`${symbol}-withdrawal-amount-total`));
-	} else {
-		showMsg("Invalid address.");
-		flash(D(`${symbol}-dest`));
-	}
+				}
+			}
+			elt.disabled = false; 
+			return true;
+		} else showMsg("Minimum account balance is " + ccc[symbol].min + " " + symbol + ".");
+	} else showMsg("Insufficient funds.");
+	flash(D(`${symbol}-withdrawal-amount-total`));
+	flash(D(`${symbol}-withdrawal-amount-total`).parentNode);
 	elt.disabled = false;
 }
 
@@ -1630,12 +1620,12 @@ function toggleAccount() {
 			D(`${symbol}-seed`).value = seed;
 			D(`${symbol}-generateButton`).disabled = true;
 			let index = localStorage.getItem(`${symbol}-index`);
-			if (index) D(`${symbol}-index`).value = index; 
+			if (index && index != "0") D(`${symbol}-index`).value = index; 
 		}
 	
      	obj.style.maxHeight = obj.scrollHeight + "px";
 		obj.style.padding = "";
-		obj.style.marginTop = "";
+		obj.style.marginTop = "10px";
 		D('account').classList.add('active');
 		setTimeout(function() { if (obj.style.maxHeight != "0px") obj.style.maxHeight = ""; }, 100);
 	} else {	
@@ -1736,6 +1726,7 @@ function addTotal(elt) {
 		if (elt.children[i].firstElementChild.nextElementSibling.validationMessage == "Please enter a number.") {
 			totalDiv.value = "";
 			showMsg(elt.children[i].firstElementChild.nextElementSibling.validationMessage);
+			flash(elt.children[i].firstElementChild.nextElementSibling);
 			return false;
 		} else total += BigInt(rawFromUnit(symbol, elt.children[i].firstElementChild.nextElementSibling.value));
 	}
@@ -1812,23 +1803,11 @@ if (screen.width <= 550 || screen.height <= 550) {
 	});
 }
 
-
 function closeCopy(obj) {
-	if (obj.value.length > 0) {
-		obj.value = "";
-		obj.dispatchEvent(new Event('input', {bubbles:true}));
-	}
-	else if (navigator.clipboard.readText) navigator.clipboard.readText().then(function(text) {
-		obj.value = text;
-		obj.dispatchEvent(new Event('input', {bubbles:true}));
-	}).catch(function() {
-		obj.value = clipboardText;
-		obj.dispatchEvent(new Event('input', {bubbles:true}));
-	});
-	else if (clipboardText) {
-		obj.value = clipboardText;
-		obj.dispatchEvent(new Event('input', {bubbles:true}));
-	}
+	if (obj.value.length > 0) inputEvent(obj, "");
+	else if (navigator.clipboard.readText) navigator.clipboard.readText().then(function(text) { inputEvent(obj, text); })
+																		 .catch(function() { inputEvent(obj, clipboardText); });
+	else if (clipboardText) inputEvent(obj, clipboardText);
 }
 
 function twoDigit(str) {
@@ -1911,14 +1890,12 @@ window.qrcode.callback = res => {
 			if (qrScanningType == "-dest") {
 				const nano_scheme = /^(nano):.+$/g;
 				if (ccc[qrScanningSymbol].checkAddress(res)) {
-					D(qrScanningSymbol + qrScanningType).value = res;
-					D(qrScanningSymbol + qrScanningType).dispatchEvent(new Event('input', {bubbles:true}));
+					inputEvent(D(qrScanningSymbol + qrScanningType), res);
 					showMsg("Destination address scanned.");
 				} else if (qrScanningSymbol == "XNO" && nano_scheme.test(res)) {
 					const url = new URL(res);
 					if (url.protocol === 'nano:' && ccc[qrScanningSymbol].checkAddress(url.pathname)) {
-						D(qrScanningSymbol + qrScanningType).value = url.pathname;
-						D(qrScanningSymbol + qrScanningType).dispatchEvent(new Event('input', {bubbles:true}));
+						inputEvent(D(qrScanningSymbol + qrScanningType), url.pathname);
 						D(qrScanningSymbol + "-withdrawal-amount").value = unitFromRaw('XNO', url.searchParams.get('amount'));
 						showMsg("Bill scanned.");
 					}
@@ -1988,8 +1965,7 @@ function qrscan(symbol, type, elt) {
 
 function addressQR(symbol) {
 	if (ccc[symbol].address) {
-		D(symbol + '-qr-input').value = ccc[symbol].address;
-		D(symbol + '-qr-input').dispatchEvent(new Event('input', {bubbles:true}));
+		inputEvent(D(symbol + '-qr-input'), ccc[symbol].address);
 		flash(D(symbol + '-qr-input'));
 		ccc[symbol].qrCode.makeCode(ccc[symbol].address);
 	}
@@ -2013,8 +1989,7 @@ function generateQR(symbol, input) {
 //////////////////////////////////////////////////////// General helper functions
 
 function hideServerMsg() {
-	D('serverMsg').style.display = "none";
-	D('serverMsgButton').style.display = "none";
+	D('serverMsg').parentNode.style.display = "none";
 	localStorage.setItem("serverMsg", D('serverMsg').textContent);
 }
 
@@ -2114,6 +2089,11 @@ function addOrdered(li, element) {
 	element.appendChild(li);
 }
 
+function inputEvent(obj, value) {
+	obj.value = value;
+	obj.dispatchEvent(new Event('input', {bubbles:true}));
+}
+
 function byteArrayToHex(byteArray) {
   if (!byteArray) return '';
   let hexStr = '';
@@ -2176,6 +2156,10 @@ function npr() {
 	
 async function selectPrimary(symbol) {
 	localStorage.setItem('symbol', symbol);
+	
+	D('quoteDisplay').style.display = "none";
+	D('firstDiv').insertBefore(D('quoteDisplay'), D('firstDiv').firstElementChild);
+	
 	qrclose();
 	D('firstDiv').style.backgroundColor = ccc[symbol].bgColor;
 	
@@ -2184,6 +2168,9 @@ async function selectPrimary(symbol) {
 	
 	D('firstDiv').appendChild(ccc[symbol].sidebarElt);
 	D('secondDiv').appendChild(ccc[symbol].transactionElt);
+	
+	D(symbol + "-tool1").insertBefore(D('quoteDisplay'), D(symbol + "-tool1").children[0]);
+	D('quoteDisplay').style.display = "";
 	
 	if (ccc[symbol].faucet) D(`${symbol}-faucet`).style.display = "";
 	if (!ccc[symbol].qrCode) {
@@ -2227,6 +2214,7 @@ async function selectPrimary(symbol) {
 	
 	if (D(symbol + '-tool1').style.maxHeight != "0px") D('account').classList.add('active');
 	else D('account').classList.remove('active');
+	
 	if (ccc[symbol].address) {
 		refreshBalance(symbol);
 		ccc[symbol].getTransactions();	
@@ -2235,7 +2223,7 @@ async function selectPrimary(symbol) {
 	} else if (localStorage.getItem(`${symbol}-seed`)) {
 		D(`${symbol}-seed`).value = localStorage.getItem(`${symbol}-seed`);
 		let index = localStorage.getItem(`${symbol}-index`);
-		if (index) D(`${symbol}-index`).value = index; 
+		if (index && index != "0") D(`${symbol}-index`).value = index; 
 		importWallet(symbol);
 	} else if (D(symbol + '-tool1').style.maxHeight == "0px") toggleAccount();
 	
@@ -2270,30 +2258,29 @@ function generateHTML(symbol) {
 		<div style="text-align:center;">
 		<button tabindex="-1" id="${symbol}-generateButton" style="font-size:0.8em" onclick="generateWallet('${symbol}')">Generate Key</button>
 		<button tabindex="-1" id="${symbol}-qrButton1" style="font-size:0.8em" onclick="qrscan('${symbol}', '-seed', this)">Scan QR Code</button>
+		<button style="font-size:0.8em" onclick="if (confirm('Clear all data for ${symbol}, including the current ' + ccc['${symbol}'].keyType + '?'))
+													clickClearWallet('${symbol}'); showMsg('${symbol} account cleared.');">Clear Account</button>
 		</div>
 		<div style="display:flex; justify-content:space-between; margin-top:15px;">
-			<input onfocus="scrollPanel(this.parentNode)" placeholder="Private key (store securely) ..." id="${symbol}-seed" style="padding-right:30px; flex-grow:1; flex-basis:20px; margin-right:10px;" type="password" autocomplete="off" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')" oninput="if (this.value.length == 0) D('${symbol}-generateButton').disabled = false; else D('${symbol}-generateButton').disabled = true;">
+			<input onfocus="scrollPanel(this.parentNode)" placeholder="Private key (store securely) ..." id="${symbol}-seed" style="padding-right:30px; flex-grow:1; flex-basis:20px; margin-right:10px;" type="password" autocomplete="off" onclick="this.select()" oninput="importWallet('${symbol}'); D('${symbol}-generateButton').disabled = (this.value.length != 0);">
 			<button  tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
 			<div>
 				<button id="${symbol}-show" tabindex="-1" style="font-size:0.8em" onclick="toggleVisibility('${symbol}')">Show</button>
 			</div>			
 		</div>
 		<canvas style="width:100%; margin-top:10px;" hidden="" id="${symbol}-qr-canvas-seed"></canvas>
-		<input onfocus="scrollPanel(this)" placeholder="Account index (default 0; or 1, 2, 3, etc) ..." id="${symbol}-index" type="number" style="margin-top:15px; width:calc(100% - 70px)" min="0" maxlength="64" onclick="this.select()" onkeyup="if (event.keyCode == 13) importWallet('${symbol}')">
+		<input onfocus="scrollPanel(this)" placeholder="Account index (default 0; or 1, 2, 3, etc) ..." id="${symbol}-index" type="number" style="margin-top:15px; width:calc(100% - 70px)" min="0" maxlength="64" onclick="this.select()" oninput="importWallet('${symbol}');">
 		<div style="text-align:center;">
-		<button style="margin-top:15px;" id="${symbol}-load" onclick="importWallet('${symbol}')">Load Account</button>
-		<button id="${symbol}-clear" style="display:none" onclick="if (confirm('Clear all data for ${symbol}, including the seed and private keys?')) {
-													clickClearWallet('${symbol}'); showMsg('${symbol} account cleared.'); }">Clear Account</button>
 		</div>
 	</div>
 	<div id="${symbol}-gray" style="margin-bottom:120px; display:none;">
-	<div class="objectWrapper" style="margin-top:20px">
+	<div class="objectWrapper">
 		<div style="display:flex; align-items:center; justify-content:space-between">
 			<strong><div id="${symbol}-display" style="font-size:1.2em;" class="clickFlash" onclick="toggleEdit('${symbol}'); fetchDisplayName('${symbol}', '-display', ccc['${symbol}'].address, true)">✏️ My Account</div></strong>
 			<button style="font-size:0.8em" onclick="fetchDisplayName('${symbol}', '-display', ccc['${symbol}'].address, true); refreshBalance('${symbol}'); ccc['${symbol}'].getTransactions();">Refresh</button>
 		</div>
 		
-		<div id="${symbol}-editpanel" class="accordion" style="margin-left:15px; margin-right:15px; margin-top:10px; margin-bottom:20px">			
+		<div id="${symbol}-editpanel" class="accordion" style="margin-left:10px; margin-right:10px; margin-top:10px; margin-bottom:20px">			
 			<div style="display:flex; justify-content:space-between;">
 				<input placeHolder="Public display name..." onfocus="scrollPanel(this.parentNode.parentNode)" id="${symbol}-set-display" style="padding-right:30px; flex-grow:1; margin-right:10px;" type="text" maxlength="64" onkeyup="if (event.keyCode == 13) setName('${symbol}'); if (event.keyCode == 27) this.value = '';"><button  tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
 				<button style="font-size:0.8em" onclick="setName('${symbol}')">Set</button>
@@ -2323,13 +2310,13 @@ function generateHTML(symbol) {
 	<div class="objectWrapper">
 		<strong>Destination: </strong><span id="${symbol}-dest-display"></span>
 		<div style="display:flex; justify-content:space-between; margin-top:5px;">
-			<input placeholder="Destination address..." onfocus="scrollPanel(this.parentNode)" style="padding-right:30px; flex-grow:1; margin-right:10px" id="${symbol}-dest" type="text" maxlength="128" onclick="this.select()" oninput="fetchDisplayName('${symbol}', '-dest-display', this.value)"><button tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
+			<input placeholder="Destination address..." onfocus="scrollPanel(this.parentNode)" style="padding-right:30px; flex-grow:1; margin-right:10px" id="${symbol}-dest" type="text" maxlength="128" onclick="this.select()" oninput="fetchDisplayName('${symbol}', '-dest-display', this.value); D('${symbol}-paymentButton').disabled = true;"><button tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
 			<button tabindex="-1" id="${symbol}-qrButton2" style="font-size:0.8em" onclick="qrscan('${symbol}', '-dest', this)">QR</button>
 		</div>		
 		<canvas style="width:100%; margin-top:10px;" hidden="" id="${symbol}-qr-canvas"></canvas>
 		
 		
-		<div id="${symbol}-itemize" style="margin-left:15px; margin-right:15px"></div>
+		<div id="${symbol}-itemize" style="margin-left:10px; margin-right:10px"></div>
 		
 		<div style="display:flex; justify-content:space-between; margin-top:15px; margin-right:5px; align-items:baseline">
 			<strong>Subtotal:&nbsp;</strong>
@@ -2339,20 +2326,20 @@ function generateHTML(symbol) {
 		
 		
 		<div style="text-align:center;">
-			<button style="margin-top:15px;" onclick="prepareTotal(this)">Generate Total</button>
+			<button style="margin-top:15px;" onclick="prepareTotal(this)">Total and Summary</button>
 		</div>
 		
 		
 		<div style="max-height:0px" class="accordion">			
-			<div style="margin-left:15px; margin-right:15px">			
-				<div style="display:flex; justify-content:space-between; margin-top:10px; align-items:baseline">
+			<div style="margin-left:10px; margin-right:10px">			
+				<div style="display:flex; justify-content:space-between; margin-top:10px; align-items:baseline;">
 					<input placeholder="Item, memo, tip..." onkeyup="if (event.keyCode == 27) this.value = '';" style="flex-grow:2; flex-basis:1px; margin-right:10px" type="text" maxlength="128" value="Network fee" disabled>
 					<input placeholder="0.00" onkeyup="amtInputHandler(event, this)" style="margin-right:10px; text-align:right; flex-grow:1; flex-basis:1px; overflow:hidden; text-overflow:ellipsis;" type="number" step="0.01" min="0" id="${symbol}-withdrawal-fee" disabled>
 					<button tabindex="-1" style="font-size:0.8em; filter:opacity(0)" disabled>&#65291;</button>
 				</div>
 			</div>
 					
-			<div style="display:flex; justify-content:space-between; margin-top:5px; margin-right:5px; align-items:baseline">
+			<div class="clickFlash" style="display:flex; justify-content:space-between; margin-top:5px; margin-right:5px; align-items:baseline;">
 				<strong>Total:&nbsp;</strong>
 				<input id="${symbol}-withdrawal-amount-total" placeholder="0.00" style="text-align:right; flex-grow:1; flex-basis:1px" type="number" step="0.01" min="0" disabled>&nbsp; ${symbol}
 			</div>
@@ -2364,8 +2351,7 @@ function generateHTML(symbol) {
 			
 			<div style="text-align:center;">
 				<button id="${symbol}-paymentButton" style="margin-top:15px" onclick="withdraw('${symbol}', this)" disabled>Transfer ${symbol}</button>
-				<button style="margin-top:15px" onclick="D('${symbol}-withdrawal-amount-total').value = '';
-														 D('${symbol}-withdrawal-amount-total').parentNode.parentNode.style.maxHeight = '0px';">Cancel</button>
+				<button style="margin-top:15px" onclick="clearPaymentSummary('${symbol}');">Cancel</button>
 			</div>
 		</div>
 	</div>
@@ -2373,7 +2359,7 @@ function generateHTML(symbol) {
 	
 	<div id="${symbol}-tool4" class="accordion objectWrapper" style="max-height:0px; padding-top:0px; padding-bottom:0px; margin-top:0px;">
 		<strong>Invoice/bill/check generator:</strong>		
-		<div id="${symbol}-invoice" style="margin-left:15px; margin-right:15px"></div>
+		<div id="${symbol}-invoice" style="margin-left:10px; margin-right:10px"></div>
 		
 		<div style="display:flex; justify-content:space-between; margin-top:15px; margin-right:5px; align-items:baseline">
 			<strong>Subtotal:&nbsp;</strong>
