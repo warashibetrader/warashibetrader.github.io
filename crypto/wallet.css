@@ -61,9 +61,8 @@ input[type=number], input[type=text], input[type=password] {
 	border-left: solid 0px;
 	border-right: solid 0px;
 	text-overflow: ellipsis;
-	overflow: hidden;
-	 
-	border-bottom: solid 2px 2px solid #d4d7d7;
+	overflow: hidden;	 
+	border-bottom: 2px solid #d4d7d7;
 }
 
 input[type=number]:focus, input[type=text]:focus, input[type=password]:focus {  
