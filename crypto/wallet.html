@@ -23,12 +23,7 @@
 							  position: fixed; left: 0px; top: 0px; border-radius: 5px;
 							  pointer-events: none; filter: opacity(0.9);"></strong>
 	<div class="containerdiv">
-	<div id="firstDiv" class="firstDiv" style="padding-top:50px">	
-		<div id="donatePanel" style="display:none; text-align:center; margin-top:35px">
-			<button id="nprButton" style="font-size:0.8em" onclick="npr()">Play NPR</button>	
-			<button style="font-size:0.8em;" onclick="donate()">Developer Donation</button>
-		</div>
-			
+	<div id="firstDiv" class="firstDiv" style="padding-top:50px; display:flex; flex-direction:column;">				
 		<div id="quoteDisplay" style="display:none; margin-bottom:15px;">
 			<img src=""  onclick="toggleQuote();" id="preview" style="cursor:pointer; display:none; margin-left:auto; margin-right:auto; max-width:100%; max-height:200px; border-radius:15px">
 			<div id="quote" style="cursor:pointer; white-space:pre-wrap; font-style:italic; font-size:0.9em" onclick="toggleQuote();"></div>
@@ -48,7 +43,7 @@
 			<div id="serverMsgButton" style="display:none; text-align:center; margin-top:10px; margin-bottom:15px; font-size:0.8em"><button onclick="hideServerMsg()">Hide Message</button></div>
 		</div>
 		
-		<div style="display:flex; align-items:center; position:relative; margin-left:18px; margin-right:18px; margin-top:5px; margin-bottom:5px">	
+		<div style="display:flex; align-items:center; position:relative; margin-left:18px; margin-right:18px; margin-top:5px; margin-bottom:10px">	
 			<select name="primary" id="primary" onchange="selectPrimary(event.target.value)">
 				<option value="XNO">Nano (XNO)</option>
 				<option value="BAN">Banano (BAN)</option>
@@ -57,9 +52,14 @@
 				<option value="ALGO">Algorand (ALGO)</option>
 			</select>	
 			<div style="position:absolute; right:0px">		
-				<button id="view" style="font-size:0.8em;" onclick="toggleView()">All Tools</button>
+				<button id="view" style="font-size:0.8em;" onclick="toggleView()" disabled>All Tools</button>
 				<button id="account" style="font-size:0.8em" onclick="toggleAccount()">Account</button>
 			</div>
+		</div>		
+		
+		<div style="text-align:center; margin-bottom:25px; margin-top:auto; width:100%">
+			<button id="nprButton" style="font-size:0.8em" onclick="npr()">NPR</button>	
+			<button id="donateButton" style="font-size:0.8em;" onclick="donate()" disabled>Developer Donation</button>
 		</div>
 	</div>
 	<div id="secondDiv" class="secondDiv">
@@ -1168,7 +1168,7 @@ window.addEventListener('beforeinstallprompt', function (evt) {  // CODELAB: Add
 			if (choice.outcome === 'accepted') {
 			  console.log('User accepted the A2HS prompt', choice);
 			  
-				D('nprButton').textContent = "Play NPR";
+				D('nprButton').textContent = "NPR";
 				D('nprButton').onclick = npr;
 	
 			} else console.log('User dismissed the A2HS prompt', choice);
@@ -1301,6 +1301,8 @@ function importWallet(symbol) {
 		addressQR(symbol);
 		D(symbol + "-gray").style.display = "";
 		D(symbol + "-gray2").style.display = "";
+		D('donateButton').disabled = false;
+		D('view').disabled = false;
 		if (!existingWallet && D(symbol + "-tool1").style.maxHeight != "0px") toggleAccount();
 		updateView();
 		
@@ -1394,6 +1396,8 @@ function clearWallet(symbol) {
 	//D(symbol + "-gray").style.filter = "opacity(0.5)";
 	D(symbol + "-gray").style.display = "none";
 	D(symbol + "-gray2").style.display = "none";
+	D('donateButton').disabled = true;
+	D('view').disabled = true;
 	
 	D(symbol + '-invoice-url').href = "";
 	flash(D(symbol + '-invoice-url-literal'), "\xa0");
@@ -1630,7 +1634,7 @@ function toggleAccount() {
 	
      	obj.style.maxHeight = obj.scrollHeight + "px";
 		obj.style.padding = "";
-		obj.style.marginTop = "10px";
+		obj.style.marginTop = "5px";
 		D('account').classList.add('active');
 		setTimeout(function() { if (obj.style.maxHeight != "0px") obj.style.maxHeight = ""; }, 100);
 	} else {	
@@ -2161,27 +2165,21 @@ function npr() {
 	
 async function selectPrimary(symbol) {
 	localStorage.setItem('symbol', symbol);
-	
-	D('quoteDisplay').style.display = "none";
-	D('firstDiv').insertBefore(D('quoteDisplay'), D('firstDiv').firstElementChild);
-	
-	D('donatePanel').style.display = "none";
-	D('firstDiv').insertBefore(D('donatePanel'), D('firstDiv').firstElementChild);
-	
 	qrclose();
 	D('firstDiv').style.backgroundColor = ccc[symbol].bgColor;
 	
-	D('firstDiv').removeChild(D('firstDiv').lastChild);
-	D('secondDiv').removeChild(D('secondDiv').lastChild);
+	D('quoteDisplay').style.display = "none";
+	D('firstDiv').insertBefore(D('quoteDisplay'), D('firstDiv').firstElementChild);	
 	
-	D('firstDiv').appendChild(ccc[symbol].sidebarElt);
+	if (D('sidebarEltDOM')) {
+		D('firstDiv').removeChild(D('firstDiv').lastElementChild.previousElementSibling);
+		D('secondDiv').removeChild(D('secondDiv').lastElementChild);
+	}
+	D('firstDiv').insertBefore(ccc[symbol].sidebarElt, D('firstDiv').lastElementChild);
 	D('secondDiv').appendChild(ccc[symbol].transactionElt);
 	
 	D(symbol + "-tool1").insertBefore(D('quoteDisplay'), D(symbol + "-tool1").firstElementChild);
 	D('quoteDisplay').style.display = "";
-	
-	D(symbol + '-gray').appendChild(D('donatePanel'));
-	D('donatePanel').style.display = "";
 	
 	if (ccc[symbol].faucet) D(`${symbol}-faucet`).style.display = "";
 	if (!ccc[symbol].qrCode) {
@@ -2202,16 +2200,14 @@ async function selectPrimary(symbol) {
 	}
 	
 	let waitSymbol = symbol;
-	if (waitSymbol == 'BAN') waitSymbol = 'XNO';
-	
+	if (waitSymbol == 'BAN') waitSymbol = 'XNO';	
 	if (!D(waitSymbol)) {
 		let script = make("script");
 		script.type = "text/javascript";
 		script.src = waitSymbol.toLowerCase() + ".js";
 		script.id = waitSymbol;
 		document.body.appendChild(script);		
-	}
-	
+	}	
 	let waitScript = new Promise(function(resolve, reject) { resolve(true); });	
 	if (D(waitSymbol).title != "done") waitScript = new Promise(function(resolve, reject) { 
 		D(waitSymbol).addEventListener('load', function() {
@@ -2264,6 +2260,8 @@ function generateHTML(symbol) {
 	</div>`;
 		
 	ccc[symbol].sidebarElt = make('div');
+	ccc[symbol].sidebarElt.style.marginBottom = "35px"
+	ccc[symbol].sidebarElt.id = "sidebarEltDOM"
 	ccc[symbol].sidebarElt.innerHTML = `
 	<div id="${symbol}-tool1" class="accordion objectWrapper" style="max-height:0px; padding-top:0px; padding-bottom:0px; margin-top:0px">
 		<div style="text-align:center;">
@@ -2284,7 +2282,7 @@ function generateHTML(symbol) {
 		<div style="text-align:center;">
 		</div>
 	</div>
-	<div id="${symbol}-gray" style="margin-bottom:120px; display:none;">
+	<div id="${symbol}-gray" style="display:none;">
 	<div class="objectWrapper">
 		<div style="display:flex; align-items:center; justify-content:space-between">
 			<strong><div id="${symbol}-display" style="font-size:1.2em;" class="clickFlash" onclick="toggleEdit('${symbol}'); fetchDisplayName('${symbol}', '-display', ccc['${symbol}'].address, true)">✏️ My Account</div></strong>
