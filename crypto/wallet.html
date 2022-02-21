@@ -1759,7 +1759,7 @@ function addItem(elt) {
 	
 	let outerElt = make('div');
 	outerElt.style = "display:flex; justify-content:space-between; margin-top:15px; align-items:baseline";
-	outerElt.innerHTML = '<input placeholder="Item, memo, tip..." onkeyup="if (event.keyCode == 27) this.value = ' + "''; " + '" style="flex-grow:2; flex-basis:1px; margin-right:10px" type="text" maxlength="128"><input placeholder="0.00" onkeyup="amtInputHandler(event, this)" style="margin-right:10px; text-align:right; flex-grow:1; flex-basis:1px; overflow:hidden; text-overflow:ellipsis;" type="number" step="0.01" min="0"><button tabindex="-1" style="font-size:0.8em" onclick="addItem(this.parentNode.parentNode)">&#65291;</button>';
+	outerElt.innerHTML = '<input placeholder="Item, memo, tip..." onfocus="scrollPanel(this)" onkeyup="if (event.keyCode == 27) this.value = ' + "''; " + '" style="flex-grow:2; flex-basis:1px; margin-right:10px" type="text" maxlength="128"><input placeholder="0.00" onkeyup="amtInputHandler(event, this)" style="margin-right:10px; text-align:right; flex-grow:1; flex-basis:1px; overflow:hidden; text-overflow:ellipsis;" type="number" step="0.01" min="0"><button tabindex="-1" style="font-size:0.8em" onclick="addItem(this.parentNode.parentNode)">&#65291;</button>';
 
 	elt.appendChild(outerElt);
 	outerElt.firstElementChild.focus();
@@ -1800,7 +1800,6 @@ var currentElt;
 
 function scrollPanel(elt) {
 	if (screen.width <= 550 || screen.height <= 550 && ccc[D('primary').value].address) {
-	//	elt.parentNode.scrollIntoView({block:'start', behavior:'auto'});	
 		currentElt = elt;
 		setTimeout(function() {currentElt = null;}, 1000);
 	}
@@ -1808,7 +1807,7 @@ function scrollPanel(elt) {
 
 if (screen.width <= 550 || screen.height <= 550) {
 	window.addEventListener("resize", function() {
-		if (currentElt) currentElt.parentNode.scrollIntoView({block:'start', behavior:'auto'});	
+		if (currentElt) currentElt.scrollIntoView({block:'nearest', behavior:'smooth'});	
 	});
 }
 
@@ -2271,7 +2270,7 @@ function generateHTML(symbol) {
 													clickClearWallet('${symbol}'); showMsg('${symbol} account cleared.');">Clear Account</button>
 		</div>
 		<div style="display:flex; justify-content:space-between; margin-top:15px;">
-			<input onfocus="scrollPanel(this.parentNode)" placeholder="Private key (store securely) ..." id="${symbol}-seed" style="padding-right:30px; flex-grow:1; flex-basis:20px; margin-right:10px;" type="password" autocomplete="off" onclick="this.select()" oninput="importWallet('${symbol}'); D('${symbol}-generateButton').disabled = (this.value.length != 0);">
+			<input onfocus="scrollPanel(this)" placeholder="Private key (store securely) ..." id="${symbol}-seed" style="padding-right:30px; flex-grow:1; flex-basis:20px; margin-right:10px;" type="password" autocomplete="off" onclick="this.select()" oninput="importWallet('${symbol}'); D('${symbol}-generateButton').disabled = (this.value.length != 0);">
 			<button  tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
 			<div>
 				<button id="${symbol}-show" tabindex="-1" style="font-size:0.8em" onclick="toggleVisibility('${symbol}')">Show</button>
@@ -2291,7 +2290,7 @@ function generateHTML(symbol) {
 		
 		<div id="${symbol}-editpanel" class="accordion" style="margin-left:10px; margin-right:10px; margin-top:10px; margin-bottom:20px">			
 			<div style="display:flex; justify-content:space-between;">
-				<input placeHolder="Public display name..." onfocus="scrollPanel(this.parentNode.parentNode)" id="${symbol}-set-display" style="padding-right:30px; flex-grow:1; margin-right:10px;" type="text" maxlength="64" onkeyup="if (event.keyCode == 13) setName('${symbol}'); if (event.keyCode == 27) this.value = '';"><button  tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
+				<input placeHolder="Public display name..." onfocus="scrollPanel(this)" id="${symbol}-set-display" style="padding-right:30px; flex-grow:1; margin-right:10px;" type="text" maxlength="64" onkeyup="if (event.keyCode == 13) setName('${symbol}'); if (event.keyCode == 27) this.value = '';"><button  tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
 				<button style="font-size:0.8em" onclick="setName('${symbol}')">Set</button>
 			</div>
 		</div>
@@ -2319,7 +2318,7 @@ function generateHTML(symbol) {
 	<div class="objectWrapper">
 		<strong>Destination: </strong><span class="flash" id="${symbol}-dest-display"></span>
 		<div style="display:flex; justify-content:space-between; margin-top:5px;">
-			<input placeholder="Destination address..." onfocus="scrollPanel(this.parentNode)" style="padding-right:30px; flex-grow:1; margin-right:10px" id="${symbol}-dest" type="text" maxlength="128" onclick="this.select()" oninput="fetchDisplayName('${symbol}', '-dest-display', this.value); D('${symbol}-paymentButton').disabled = true;"><button tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
+			<input placeholder="Destination address..." onfocus="scrollPanel(this)" style="padding-right:30px; flex-grow:1; margin-right:10px" id="${symbol}-dest" type="text" maxlength="128" onclick="this.select()" oninput="fetchDisplayName('${symbol}', '-dest-display', this.value); D('${symbol}-paymentButton').disabled = true;"><button tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
 			<button tabindex="-1" id="${symbol}-qrButton2" style="font-size:0.8em" onclick="qrscan('${symbol}', '-dest', this)">QR</button>
 		</div>		
 		<canvas style="width:100%; margin-top:10px;" hidden="" id="${symbol}-qr-canvas"></canvas>
@@ -2342,7 +2341,7 @@ function generateHTML(symbol) {
 		<div style="max-height:0px" class="accordion">			
 			<div style="margin-left:10px; margin-right:10px">			
 				<div style="display:flex; justify-content:space-between; margin-top:10px; align-items:baseline;">
-					<input placeholder="Item, memo, tip..." onkeyup="if (event.keyCode == 27) this.value = '';" style="flex-grow:2; flex-basis:1px; margin-right:10px" type="text" maxlength="128" value="Network fee" disabled>
+					<input placeholder="Item, memo, tip..." onfocus="scrollPanel(this)" onkeyup="if (event.keyCode == 27) this.value = '';" style="flex-grow:2; flex-basis:1px; margin-right:10px" type="text" maxlength="128" value="Network fee" disabled>
 					<input placeholder="0.00" onkeyup="amtInputHandler(event, this)" style="margin-right:10px; text-align:right; flex-grow:1; flex-basis:1px; overflow:hidden; text-overflow:ellipsis;" type="number" step="0.01" min="0" id="${symbol}-withdrawal-fee" disabled>
 					<button tabindex="-1" style="font-size:0.8em; filter:opacity(0)" disabled>&#65291;</button>
 				</div>
@@ -2393,7 +2392,7 @@ function generateHTML(symbol) {
 	<div id="${symbol}-tool3" class="accordion objectWrapper" style="max-height:0px; padding-top:0px; padding-bottom:0px; margin-top:0px;">
 		<strong>Device-to-device communication:</strong>
 		<div style="margin-bottom:10px; display:flex; justify-content:space-between; margin-top:10px;">
-			<input placeholder="Text to QR-encode..." onfocus="scrollPanel(this.parentNode)" style="padding-right:30px; flex-grow:1; margin-right:10px" id="${symbol}-qr-input" type="text" maxlength="512" onclick="this.select()" oninput="generateQR('${symbol}', this.value)"><button tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
+			<input placeholder="Text to QR-encode..." onfocus="scrollPanel(this)" style="padding-right:30px; flex-grow:1; margin-right:10px" id="${symbol}-qr-input" type="text" maxlength="512" onclick="this.select()" oninput="generateQR('${symbol}', this.value)"><button tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
 			<button style="font-size:0.8em" onclick="addressQR('${symbol}')">My Address</button>
 		</div>				
 		<strong>Type: </strong><span id="${symbol}-type-display"></span>	
@@ -2406,7 +2405,7 @@ function generateHTML(symbol) {
 		<div class="address" style="margin-bottom:10px; margin-top:5px;" id="${symbol}-rep" onclick="clickCopy(this, this.textContent)">&nbsp;</div>
 		<strong>New representative: </strong><span class="flash" id="${symbol}-new-rep-display"></span>	
 		<div style="display:flex; justify-content:space-between; margin-top:5px;">
-			<input placeholder="New representative address..." onfocus="scrollPanel(this.parentNode)" style="padding-right:30px; flex-grow:1; margin-right:10px" id="${symbol}-new-rep" type="text" maxlength="128" onclick="this.select()" oninput="fetchDisplayName('${symbol}', '-new-rep-display', this.value)" onkeyup="if (event.keyCode == 13) setRep('${symbol}', this)"><button tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
+			<input placeholder="New representative address..." onfocus="scrollPanel(this)" style="padding-right:30px; flex-grow:1; margin-right:10px" id="${symbol}-new-rep" type="text" maxlength="128" onclick="this.select()" oninput="fetchDisplayName('${symbol}', '-new-rep-display', this.value)" onkeyup="if (event.keyCode == 13) setRep('${symbol}', this)"><button tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
 			<button style="font-size:0.8em" onclick="suggestRep('${symbol}')">Suggest</button>
 		</div>
 		<div style="text-align:center;">
