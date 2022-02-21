@@ -1685,20 +1685,19 @@ function updateView() {
      	obj.style.maxHeight = obj.scrollHeight + "px";
 		obj.style.padding = "";
 		obj.style.marginTop = "20px";
+		obj.style.scrollMarginTop = "60px";
 		
      	obj3.style.maxHeight = obj3.scrollHeight + "px";
 		obj3.style.paddingTop = "";	
 		obj3.style.paddingBottom = "25px";	
 		obj3.style.marginTop = "";
+		obj.style.scrollMarginTop = "60px";
 		
      	obj4.style.maxHeight = obj4.scrollHeight + "px";
 		obj4.style.padding = "";	
 		obj4.style.marginTop = "20px";	
-		setTimeout(function() { 
-			if (obj4.style.maxHeight != "0px") obj4.style.maxHeight = ""; 
-			if (obj3.style.maxHeight != "0px") obj3.style.maxHeight = ""; 
-			if (obj.style.maxHeight != "0px") obj.style.maxHeight = ""; 
-		}, 100);		
+		obj.style.scrollMarginTop = "60px";
+		setTimeout(function() { if (obj4.style.maxHeight != "0px") obj4.style.maxHeight = ""; }, 100);		
 		D(symbol + "-view").classList.add('active');
 	} else {
       	obj.style.maxHeight = "0px";
@@ -1712,8 +1711,6 @@ function updateView() {
 		obj3.style.marginTop = "0px";		
 
 		if (obj4.style.maxHeight != "0px") obj4.style.maxHeight = obj4.scrollHeight + "px";
-		if (obj3.style.maxHeight != "0px") obj3.style.maxHeight = obj3.scrollHeight + "px";
-		if (obj.style.maxHeight != "0px") obj.style.maxHeight = obj.scrollHeight + "px";
 		setTimeout(function() {		
 			obj4.style.maxHeight = "0px";
 			obj4.style.paddingTop = "0px";
