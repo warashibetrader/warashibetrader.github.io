@@ -1904,7 +1904,7 @@ window.qrcode.callback = res => {
 			
 			if (qrScanningType == "-seed") {
 				if (ccc[qrScanningSymbol].checkSeed(res)) {
-					D(qrScanningSymbol + qrScanningType).value = res;
+					inputEvent(D(qrScanningSymbol + qrScanningType), res);
 					showMsg("Scanned a " + ccc[qrScanningSymbol].keyType + ".");
 				} else showMsg("Not a valid " + ccc[qrScanningSymbol].keyType + ": " + res);
 			}
