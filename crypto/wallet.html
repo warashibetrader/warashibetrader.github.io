@@ -2166,9 +2166,6 @@ async function selectPrimary(symbol) {
 	localStorage.setItem('symbol', symbol);
 	qrclose();
 	D('firstDiv').style.backgroundColor = ccc[symbol].bgColor;
-	
-	if (D(symbol + '-tool1').style.maxHeight != "0px") D('account').classList.add('active');
-	else D('account').classList.remove('active');
 	D('donateButton').disabled = true;
 	D('view').disabled = true;
 	
@@ -2184,6 +2181,9 @@ async function selectPrimary(symbol) {
 	
 	D(symbol + "-tool1").insertBefore(D('quoteDisplay'), D(symbol + "-tool1").firstElementChild);
 	D('quoteDisplay').style.display = "";
+	
+	if (D(symbol + '-tool1').style.maxHeight != "0px") D('account').classList.add('active');
+	else D('account').classList.remove('active');
 	
 	if (ccc[symbol].faucet) D(`${symbol}-faucet`).style.display = "";
 	if (!ccc[symbol].qrCode) {
