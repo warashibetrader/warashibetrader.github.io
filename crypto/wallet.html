@@ -1354,18 +1354,20 @@ function clearPaymentSummary(symbol) {
 }
 
 function freezePayment(symbol, finalize) {
-	for (let i = 0; i < D(symbol + "-itemize").children.length; i++) {
-		D(symbol + "-itemize").children[i].children[0].disabled = true;	
-		D(symbol + "-itemize").children[i].children[0].placeholder = "-";	
-		D(symbol + "-itemize").children[i].children[2].disabled = true;
-		D(symbol + "-itemize").children[i].children[2].style.filter = "opacity(0)";	
-		D(symbol + "-itemize").children[i].children[2].innerHTML = '&#x2715;';		
-		
+	for (let i = 0; i < D(symbol + "-itemize").children.length; i++) {	
+		if (D(symbol + "-itemize").children[i].children[0].value || i < D(symbol + "-itemize").children.length - 1 || finalize) {
+			D(symbol + "-itemize").children[i].children[0].disabled = true;	
+			D(symbol + "-itemize").children[i].children[0].placeholder = "-";
+		}		
 		if (D(symbol + "-itemize").children[i].children[1].value || i < D(symbol + "-itemize").children.length - 1 || finalize) {
 			D(symbol + "-itemize").children[i].children[1].value = twoDigit(D(symbol + "-itemize").children[i].children[1].value);
 			D(symbol + "-itemize").children[i].children[1].disabled = true;		
 			D(symbol + "-itemize").children[i].children[1].placeholder = "-";
 		}
+		
+		D(symbol + "-itemize").children[i].children[2].disabled = true;
+		D(symbol + "-itemize").children[i].children[2].style.filter = "opacity(0)";	
+		D(symbol + "-itemize").children[i].children[2].innerHTML = '&#x2715;';		
 	}
 }
 
