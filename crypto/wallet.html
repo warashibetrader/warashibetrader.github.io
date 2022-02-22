@@ -1304,7 +1304,8 @@ function importWallet(symbol) {
 		D(symbol + "-gray").style.display = "";
 		D(symbol + "-gray2").style.display = "";
 		D('donateButton').disabled = false;
-		D('view').disabled = false;
+		D('view').disabled = false;				
+		makeInvoiceURL(symbol);
 		if (!existingWallet && D(symbol + "-tool1").style.maxHeight != "0px") toggleAccount();
 		updateView();
 		
@@ -1355,16 +1356,20 @@ function clearPaymentSummary(symbol) {
 
 function freezePayment(symbol, finalize) {
 	for (let i = 0; i < D(symbol + "-itemize").children.length; i++) {	
-		if (D(symbol + "-itemize").children[i].children[0].value || i < D(symbol + "-itemize").children.length - 1 || finalize) {
-			D(symbol + "-itemize").children[i].children[0].disabled = true;	
-			D(symbol + "-itemize").children[i].children[0].placeholder = "-";
-		}		
 		if (D(symbol + "-itemize").children[i].children[1].value || i < D(symbol + "-itemize").children.length - 1 || finalize) {
 			D(symbol + "-itemize").children[i].children[1].value = twoDigit(D(symbol + "-itemize").children[i].children[1].value);
 			D(symbol + "-itemize").children[i].children[1].disabled = true;		
 			D(symbol + "-itemize").children[i].children[1].placeholder = "-";
+		} 
+		if (D(symbol + "-itemize").children[i].children[0].value || D(symbol + "-itemize").children[i].children[1].value != "0.00" || finalize) {
+		console.log(D(symbol + "-itemize").children[i].children[1].value);
+			D(symbol + "-itemize").children[i].children[0].disabled = true;	
+			D(symbol + "-itemize").children[i].children[0].placeholder = "-";
+		} else {
+			D(symbol + "-itemize").children[i].children[0].placeholder = "Message...";
+			D(symbol + "-itemize").children[i].children[1].value = "";
 		}
-		
+		 
 		D(symbol + "-itemize").children[i].children[2].disabled = true;
 		D(symbol + "-itemize").children[i].children[2].style.filter = "opacity(0)";	
 		D(symbol + "-itemize").children[i].children[2].innerHTML = '&#x2715;';		
@@ -1404,7 +1409,6 @@ function clearWallet(symbol) {
 	
 	D(symbol + '-invoice-url').href = "";
 	flash(D(symbol + '-invoice-url-literal'), "\xa0");
-	D(symbol + "-invoice-url").parentNode.parentNode.style.maxHeight = "0px";
 	
 	localStorage.removeItem(`${symbol}-seed`); 
 	localStorage.removeItem(`${symbol}-index`); 
@@ -1434,24 +1438,27 @@ function prepareTotal(elt) {
 	elt.parentNode.nextElementSibling.style.maxHeight = elt.parentNode.nextElementSibling.scrollHeight + "px";
 }
 
-function makeInvoiceURL(elt) {		
-	let symbol = D('primary').value;
-	let items = [];
-	for (let i = 0; i < D(symbol + "-invoice").children.length; i++) {
-		let newItem = D(symbol + "-invoice").children[i].children[0].value;
-		let newAmt = D(symbol + "-invoice").children[i].children[1].value;
-		if (newItem || newAmt) {
-			let obj = {item:newItem};
-			obj[symbol] = newAmt;
-			items.push(obj);
+var invoiceWaiter;
+function makeInvoiceURL(symbol) {
+	if (invoiceWaiter) clearTimeout(invoiceWaiter);
+	invoiceWaiter = setTimeout(function() {	
+		invoiceWaiter = "";
+		let items = [];
+		for (let i = 0; i < D(symbol + "-invoice").children.length; i++) {
+			let newItem = D(symbol + "-invoice").children[i].children[0].value;
+			let newAmt = D(symbol + "-invoice").children[i].children[1].value;
+			if (newItem || newAmt) {
+				let obj = {item:newItem};
+				obj[symbol] = newAmt;
+				items.push(obj);
+			}
 		}
-	}
-	let addresses = {};
-	addresses[symbol] = ccc[symbol].address;
-	D(symbol + '-invoice-url').href = makePaymentURL(symbol, addresses, items);
-	if (elt.parentNode.nextElementSibling.style.maxHeight == "0px") elt.parentNode.nextElementSibling.style.maxHeight = elt.parentNode.nextElementSibling.scrollHeight + "px";
-	flash(D(symbol + '-invoice-url'));
-	flash(D(symbol + '-invoice-url-literal'), makePaymentURL(symbol, addresses, items));
+		let addresses = {};
+		addresses[symbol] = ccc[symbol].address;
+		D(symbol + '-invoice-url').href = makePaymentURL(symbol, addresses, items);
+		flash(D(symbol + '-invoice-url'));
+		flash(D(symbol + '-invoice-url-literal'), makePaymentURL(symbol, addresses, items));
+	}, 500);
 }
 
 function refreshBalance(symbol) {
@@ -1730,6 +1737,7 @@ function updateView() {
 }
 function addTotal(elt) {
 	if (elt == D(D('primary').value + "-itemize")) D(D('primary').value + "-paymentButton").disabled = true;
+	else makeInvoiceURL(D('primary').value);
 	let symbol = D('primary').value;
 	let totalDiv = elt.nextElementSibling.lastElementChild;
 	let total = BigInt(rawFromUnit(symbol, 0));
@@ -1760,9 +1768,12 @@ function addItem(elt) {
 		};
 	}
 	
+	let urlString = "";
+	let symbol = D('primary').value;
+	if (D(symbol + "-invoice").contains(elt)) urlString = "makeInvoiceURL('" + symbol + "');";
 	let outerElt = make('div');
 	outerElt.style = "display:flex; justify-content:space-between; margin-top:15px; align-items:baseline";
-	outerElt.innerHTML = '<input placeholder="Item, memo, tip..." onfocus="scrollPanel(this)" onkeyup="if (event.keyCode == 27) this.value = ' + "''; " + '" style="flex-grow:2; flex-basis:1px; margin-right:10px" type="text" maxlength="128"><input placeholder="0.00" onkeyup="amtInputHandler(event, this)" style="margin-right:10px; text-align:right; flex-grow:1; flex-basis:1px; overflow:hidden; text-overflow:ellipsis;" type="number" step="0.01" min="0"><button tabindex="-1" style="font-size:0.8em" onclick="addItem(this.parentNode.parentNode)">&#65291;</button>';
+	outerElt.innerHTML = '<input placeholder="Item, memo, tip..." onfocus="scrollPanel(this)" onkeyup="if (event.keyCode == 27) this.value = ' + "''; " + urlString + '" style="flex-grow:2; flex-basis:1px; margin-right:10px" type="text" maxlength="128"><input placeholder="0.00" onkeyup="amtInputHandler(event, this)" style="margin-right:10px; text-align:right; flex-grow:1; flex-basis:1px; overflow:hidden; text-overflow:ellipsis;" type="number" step="0.01" min="0"><button tabindex="-1" style="font-size:0.8em" onclick="addItem(this.parentNode.parentNode)">&#65291;</button>';
 
 	elt.appendChild(outerElt);
 	outerElt.firstElementChild.focus();
@@ -2192,7 +2203,7 @@ async function selectPrimary(symbol) {
 	if (!ccc[symbol].qrCode) {
 		ccc[symbol].qrCode = new QRCode(symbol + "-qrCodeImageBlock");
 		addItem(D(symbol + "-itemize"));
-		addItem(D(symbol + "-invoice"));		
+		addItem(D(symbol + "-invoice"));	
 		D(symbol + '-withdrawal-fee').value = unitFromRaw(symbol, ccc[symbol].fee);		
 	
 		if (symbol != "XNO" && symbol != "BAN") {
@@ -2232,7 +2243,8 @@ async function selectPrimary(symbol) {
 		if (D(symbol + '-tool1').style.maxHeight != "0px") toggleAccount();
 		updateView();		
 		D('donateButton').disabled = false;
-		D('view').disabled = false;
+		D('view').disabled = false;			
+		makeInvoiceURL(symbol);
 	} else if (localStorage.getItem(`${symbol}-seed`)) {
 		D(`${symbol}-seed`).value = localStorage.getItem(`${symbol}-seed`);
 		let index = localStorage.getItem(`${symbol}-index`);
@@ -2380,19 +2392,13 @@ function generateHTML(symbol) {
 			<strong>Subtotal:&nbsp;</strong>
 			<input placeholder="0.00" style="text-align:right; flex-grow:1; flex-basis:1px" type="number" step="0.01" min="0" disabled>&nbsp; ${symbol}
 		</div>
-						
-		<div style="text-align:center;">
-			<button style="margin-top:15px" onclick="makeInvoiceURL(this)">Generate Invoice URL</button>
+			
+		<div style="margin-top:15px; display:flex; align-items:center; justify-content:space-between">
+			<a class="clickFlash" target="_blank" href="" id="${symbol}-invoice-url">Invoice URL Demo</a>
+			<a style="font-size:0.8em; text-align:right" class="clickFlash" rel="noopener" target="_blank" href="https://warashibetrader.github.io/2022/02/17/invoices">Advanced Integrations</a>
 		</div>
-		
-		<div style="max-height:0px" class="accordion">
-			<div style="margin-top:15px; display:flex; align-items:center; justify-content:space-between">
-				<a class="clickFlash" target="_blank" href="" id="${symbol}-invoice-url">Invoice URL Demo</a>
-				<a style="font-size:0.8em; text-align:right" class="clickFlash" rel="noopener" target="_blank" href="https://warashibetrader.github.io/2022/02/17/invoices">Advanced Integrations</a>
-			</div>
-			<div style="margin-bottom:10px; margin-top:10px;">
-				<div class='address' style="white-space:nowrap" id="${symbol}-invoice-url-literal" onclick="clickCopy(this, this.textContent)">&nbsp;</div>
-			</div>
+		<div style="margin-bottom:10px; margin-top:10px;">
+			<div class='address' style="white-space:nowrap" id="${symbol}-invoice-url-literal" onclick="clickCopy(this, this.textContent)">&nbsp;</div>
 		</div>
 	</div>
 	
