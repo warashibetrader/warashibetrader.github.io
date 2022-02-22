@@ -1581,6 +1581,7 @@ async function setRep(symbol, elt) {
 		showMsg("Updating representative...", null,true);
 		await ccc[symbol].changeRep(D(`${symbol}-new-rep`).value);
 		showMsg("Representative updated.");
+		refreshBalance(symbol);
 		elt.disabled = false;
 	}
 }
