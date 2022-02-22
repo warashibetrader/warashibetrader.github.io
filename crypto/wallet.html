@@ -1123,7 +1123,7 @@ function loadPaymentsPage(data) {
 			if (data.items[i].item || data.items[i][symbol]) {			
 				if (data.items[i][symbol]) D(symbol + "-itemize").lastElementChild.children[1].value = data.items[i][symbol];
 				if (data.items[i].item) D(symbol + "-itemize").lastElementChild.children[0].value = data.items[i].item;
-				addItem(D(symbol + "-itemize"));
+				if (i < data.items.length - 1) addItem(D(symbol + "-itemize"));
 			}
 		}
 		addTotal(D(symbol + "-itemize"));
