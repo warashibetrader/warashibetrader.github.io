@@ -1305,7 +1305,7 @@ function importWallet(symbol) {
 		D(symbol + "-gray2").style.display = "";
 		D('donateButton').disabled = false;
 		D('view').disabled = false;				
-		makeInvoiceURL(symbol);
+		if (!paymentWindow) makeInvoiceURL(symbol);
 		if (!existingWallet && D(symbol + "-tool1").style.maxHeight != "0px") toggleAccount();
 		updateView();
 		
