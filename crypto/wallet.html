@@ -1127,7 +1127,7 @@ function loadPaymentsPage(data) {
 			}
 		}
 		addTotal(D(symbol + "-itemize"));
-		freezePayment(symbol, true);
+		freezePayment(symbol);
 	});
 }
 
@@ -1353,10 +1353,8 @@ function clearPaymentSummary(symbol) {
 	D(symbol + '-withdrawal-amount-total').parentNode.parentNode.style.maxHeight = '0px';
 }
 
-function freezePayment(symbol, keepOne) {
-	let save = 0;
-	if (keepOne) save = 1;
-	for (let i = 0; i < D(symbol + "-itemize").children.length - save; i++) {
+function freezePayment(symbol) {
+	for (let i = 0; i < D(symbol + "-itemize").children.length; i++) {
 		if (D(symbol + "-itemize").children[i].children[0].value || D(symbol + "-itemize").children[i].children[1].value) {
 			D(symbol + "-itemize").children[i].children[0].disabled = true;	
 			D(symbol + "-itemize").children[i].children[1].disabled = true;		
@@ -1366,7 +1364,7 @@ function freezePayment(symbol, keepOne) {
 			D(symbol + "-itemize").children[i].children[0].placeholder = "-";
 			D(symbol + "-itemize").children[i].children[1].placeholder = "-";
 			D(symbol + "-itemize").children[i].children[2].style.filter = "opacity(0)";			
-		} else remove(D(symbol + "-itemize").children[i]);
+		} else if (D(symbol + "-itemize").children.length > 1) remove(D(symbol + "-itemize").children[i]);
 	}
 }
 
