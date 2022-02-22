@@ -1472,7 +1472,7 @@ function refreshBalance(symbol) {
 		}
 		
 		if (accountInfo) {
-			if (accountInfo.representative && D(`${symbol}-rep`) && D(`${symbol}-rep`).textContent != accountInfo.representative) {
+			if (!paymentWindow && accountInfo.representative && D(`${symbol}-rep`) && D(`${symbol}-rep`).textContent != accountInfo.representative) {
 				flash(D(`${symbol}-rep`), accountInfo.representative);	
 				fetchDisplayName(symbol, "-rep-display", accountInfo.representative, true);
 			}
