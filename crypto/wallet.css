@@ -25,6 +25,9 @@ body {
 	box-shadow: #d4d4d4 0px 0px 7px; 
 	width:400px;	
 	scrollbar-width:thin;
+	padding-top:50px; 
+	display:flex; 
+	flex-direction:column;
 }
 
 .secondDiv {
