@@ -1742,9 +1742,9 @@ function addTotal(elt) {
 	let totalDiv = elt.nextElementSibling.lastElementChild;
 	let total = BigInt(rawFromUnit(symbol, 0));
 	for (let i = 0; i < elt.children.length; i++) {
-		if (elt.children[i].children[1].validationMessage == "Please enter a number.") {
+		if (elt.children[i].children[1].validationMessage == "Please enter a number." || elt.children[i].children[1].value < 0) {
 			totalDiv.value = "";
-			showMsg(elt.children[i].children[1].validationMessage);
+			showMsg("Enter a positive value.");
 			flash(elt.children[i].children[1]);
 			return false;
 		} else total += BigInt(rawFromUnit(symbol, elt.children[i].children[1].value));
