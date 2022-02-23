@@ -404,8 +404,8 @@ ccc['SOL'].getTransactions = function(start) {
 						for (let j = 0; j < historyDetails[i].transaction.message.accountKeys.length; j++) {
 							if (historyDetails[i].transaction.message.accountKeys[j].pubkey.toBase58() == ccc[symbol].address) {
 								let change = historyDetails[i].meta.postBalances[j] - historyDetails[i].meta.preBalances[j];
-								let amtDisplay = li.firstChild.firstChild.nextSibling;								
-								let but = D(symbol + '-' + historyDetails[i].slot).parentNode.parentNode.parentNode.lastElementChild.previousElementSibling.lastElementChild;
+								let amtDisplay = li.children[0].children[1];								
+								let but = li.lastElementChild.previousElementSibling.lastElementChild;
 								if (historyDetails[i].transaction.message.accountKeys[j].signer) {
 									change = -change;
 								} else {
@@ -414,13 +414,13 @@ ccc['SOL'].getTransactions = function(start) {
 									amtDisplay.style.color = "#097";
 									but.style.color = "#097";
 								}
-								amtDisplay.firstElementChild.textContent = unitFromRaw(symbol, change);
-								amtDisplay.firstElementChild.onclick = function() { clickCopy(this, this.textContent); };			
+								amtDisplay.children[0].textContent = unitFromRaw(symbol, change);
+								amtDisplay.children[0].onclick = function() { clickCopy(this, this.textContent); };			
 							} else if (j < 2) {
 								let actualAddress = historyDetails[i].transaction.message.accountKeys[j].pubkey.toBase58()
-								li.firstChild.nextSibling.firstChild.firstChild.textContent = actualAddress;
+								li.children[1].children[0].children[0].textContent = actualAddress;
 								fetchDisplayName(symbol, "-" + historyDetails[i].slot + "-display", actualAddress);								
-								li.firstChild.firstChild.firstElementChild.onclick = function() {
+								li.children[0].children[0].children[0].onclick = function() {
 									fetchDisplayName(symbol, "-" + historyDetails[i].slot + "-display", actualAddress, true);
 								}
 							}
@@ -530,12 +530,11 @@ function displayTransaction(symbol, number, send, address, time, amt, tx) {
 	+ "<div style='font-size:0.8em; padding-left:3px; flex-grow:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis'></div></div><button style='font-size:0.8em; margin-left:10px; color:" + color + "'>" + memoType + "</button></div>" 
 	+ "<ul class='accordion' style='text-align:center; margin-left:20px; margin-right:20px; padding-left:0px; list-style: none;'></ul>";
 	
-	let topRow = li.firstChild.firstChild;
-	topRow.appendChild(displayNameSpan);
-	topRow.nextSibling.firstElementChild.textContent = unitFromRaw(symbol, amt);
-	topRow.nextSibling.firstElementChild.onclick = function() { clickCopy(this, this.textContent); };
+	li.children[0].children[0].appendChild(displayNameSpan);
+	li.children[0].children[1].children[0].textContent = unitFromRaw(symbol, amt);
+	li.children[0].children[1].children[0].onclick = function() { clickCopy(this, this.textContent); };
 	
-	let bottomRow = li.firstChild.nextSibling.firstChild.firstChild;
+	let bottomRow = li.children[1].children[0].children[0];
 	bottomRow.textContent = address;
 	bottomRow.id = symbol + '-' + number;
 	
@@ -1327,8 +1326,8 @@ function clickClearWallet(symbol) {
 	while (D(symbol + "-invoice").children.length > 1) {
 		remove(D(symbol + "-invoice").lastElementChild);
 	}
-	D(symbol + "-invoice").lastElementChild.firstElementChild.nextElementSibling.value = "";
-	D(symbol + "-invoice").lastElementChild.firstElementChild.value = "";
+	D(symbol + "-invoice").lastElementChild.children[1].value = "";
+	D(symbol + "-invoice").lastElementChild.children[0].value = "";
 }
 
 function clearPayment(symbol) {
@@ -1338,10 +1337,10 @@ function clearPayment(symbol) {
 	clearPaymentSummary(symbol);
 	
 	while (D(symbol + "-itemize").children.length > 1) {
-		remove(D(symbol + "-itemize").firstElementChild);
+		remove(D(symbol + "-itemize").children[0]);
 	}
-	D(symbol + "-itemize").lastElementChild.firstElementChild.nextElementSibling.value = "";
-	D(symbol + "-itemize").lastElementChild.firstElementChild.value = "";
+	D(symbol + "-itemize").lastElementChild.children[1].value = "";
+	D(symbol + "-itemize").lastElementChild.children[0].value = "";
 }
 
 function clearPaymentSummary(symbol) {
@@ -1739,12 +1738,12 @@ function addTotal(elt) {
 	let totalDiv = elt.nextElementSibling.lastElementChild;
 	let total = BigInt(rawFromUnit(symbol, 0));
 	for (let i = 0; i < elt.children.length; i++) {
-		if (elt.children[i].firstElementChild.nextElementSibling.validationMessage == "Please enter a number.") {
+		if (elt.children[i].children[1].validationMessage == "Please enter a number.") {
 			totalDiv.value = "";
-			showMsg(elt.children[i].firstElementChild.nextElementSibling.validationMessage);
-			flash(elt.children[i].firstElementChild.nextElementSibling);
+			showMsg(elt.children[i].children[1].validationMessage);
+			flash(elt.children[i].children[1]);
 			return false;
-		} else total += BigInt(rawFromUnit(symbol, elt.children[i].firstElementChild.nextElementSibling.value));
+		} else total += BigInt(rawFromUnit(symbol, elt.children[i].children[1].value));
 	}
 	if (total) totalDiv.value = unitFromRaw(symbol, total);
 	else totalDiv.value = "";
@@ -1773,7 +1772,7 @@ function addItem(elt) {
 	outerElt.innerHTML = '<input placeholder="Item, memo, tip..." onfocus="scrollPanel(this)" onkeyup="if (event.keyCode == 27) this.value = ' + "''; " + urlString + '" style="flex-grow:2; flex-basis:1px; margin-right:10px" type="text" maxlength="128"><input placeholder="0.00" onkeyup="amtInputHandler(event, this)" style="margin-right:10px; text-align:right; flex-grow:1; flex-basis:1px; overflow:hidden; text-overflow:ellipsis;" type="number" step="0.01" min="0"><button tabindex="-1" style="font-size:0.8em" onclick="addItem(this.parentNode.parentNode)">&#65291;</button>';
 
 	elt.appendChild(outerElt);
-	outerElt.firstElementChild.focus();
+	outerElt.children[0].focus();
 }
 
 function donate() {
@@ -1876,10 +1875,10 @@ function filterTransactions(symbol) {
 
 function filterLi(li, item, symbol) {
 	let restricted = D(symbol + "-invoice-filter").classList.contains('active');
-	if (restricted && li.children[1].firstElementChild.nextElementSibling.textContent + 's' != D(symbol + "-invoice-filter").textContent) li.style.display = "none";
+	if (restricted && li.children[1].children[1].textContent + 's' != D(symbol + "-invoice-filter").textContent) li.style.display = "none";
 	else {
-		let displayName = li.firstElementChild.firstElementChild.textContent.toLowerCase();
-		let address = li.children[1].firstElementChild.firstElementChild.textContent.toLowerCase();
+		let displayName = li.children[0].children[0].textContent.toLowerCase();
+		let address = li.children[1].children[0].children[0].textContent.toLowerCase();
 		if (displayName.indexOf(item) != -1 || address.indexOf(item) != -1) li.style.display = "";
 		else li.style.display = "none";
 	}
@@ -2178,16 +2177,16 @@ async function selectPrimary(symbol) {
 	D('view').disabled = true;
 	
 	D('quoteDisplay').style.display = "none";
-	D('firstDiv').insertBefore(D('quoteDisplay'), D('firstDiv').firstElementChild);	
+	D('firstDiv').insertBefore(D('quoteDisplay'), D('firstDiv').children[0]);	
 	
 	if (D('sidebarEltDOM')) {
-		D('firstDiv').removeChild(D('firstDiv').lastElementChild.previousElementSibling);
+		D('firstDiv').removeChild(D('sidebarEltDOM'));
 		D('secondDiv').removeChild(D('secondDiv').lastElementChild);
 	}
 	D('firstDiv').insertBefore(ccc[symbol].sidebarElt, D('firstDiv').lastElementChild);
 	D('secondDiv').appendChild(ccc[symbol].transactionElt);
 	
-	D(symbol + "-tool1").insertBefore(D('quoteDisplay'), D(symbol + "-tool1").firstElementChild);
+	D(symbol + "-tool1").insertBefore(D('quoteDisplay'), D(symbol + "-tool1").children[0]);
 	D('quoteDisplay').style.display = "";
 	
 	if (D(symbol + '-tool1').style.maxHeight != "0px") D('account').classList.add('active');
