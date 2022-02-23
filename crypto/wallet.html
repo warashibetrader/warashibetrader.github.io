@@ -8,7 +8,7 @@
 
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">	
 	<meta name="theme-color" content="#fff">	
-	<meta name="description" content="A multi-asset cryptocurrency wallet for Nano and Banano, featuring integration with a public directory of addresses. Designed as a single page application emphasizing security, speed, and simplicity. Progressive Web App (PWA) support.">	
+	<meta name="description" content="A multi-asset cryptocurrency wallet (Nano, Banano, Solana, Stellar, and Algorand), integrated with a complete humanizing layer featuring a public directory of addresses, receipts, and invoices. Designed as a single page application emphasizing security, speed, and simplicity. Supports Progressive Web App (PWA) installation.">	
 	
 	<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
 	<meta content="utf-8" http-equiv="encoding">
@@ -19,11 +19,10 @@
 	
 <body>
 	<audio id="audio"><source src="https://streams.kqed.org/kqedradio.mp3" type="audio/mpeg"/></audio>
-	<strong id="msg" style="display:none; padding:5px; z-index: 4; box-shadow: #ccc 2px 2px 2px; background-color: #fff;
-							  position: fixed; left: 0px; top: 0px; border-radius: 5px;
-							  pointer-events: none; filter: opacity(0.9);"></strong>
+	<strong id="msg" style="display:none; padding:5px; z-index:4; box-shadow:#ccc 2px 2px 2px; background-color:#fff;
+							  position:fixed; left:0px; top:0px; border-radius:5px; pointer-events:none; filter:opacity(0.9);"></strong>
 	<div class="containerdiv">
-	<div id="firstDiv" class="firstDiv" style="padding-top:50px; display:flex; flex-direction:column;">				
+	<div id="firstDiv" class="firstDiv">				
 		<div id="quoteDisplay" style="display:none; margin-bottom:15px;">
 			<img src=""  onclick="toggleQuote();" id="preview" style="cursor:pointer; display:none; margin-left:auto; margin-right:auto; max-width:100%; max-height:200px; border-radius:15px">
 			<div id="quote" style="cursor:pointer; white-space:pre-wrap; font-style:italic; font-size:0.9em" onclick="toggleQuote();"></div>
@@ -73,7 +72,7 @@
 //////////////////////////////////////////////////////// security quote setup
 
 var wipeKeys = localStorage.getItem("wipe");
-if (wipeKeys) document.getElementById("wipeButton").classList.add('active');
+if (wipeKeys) D("wipeButton").classList.add('active');
 var localStorageWriteable = true;
 if ('serviceWorker' in navigator) {
 	navigator.serviceWorker.register('service-worker.js').then((reg) => {
@@ -85,20 +84,20 @@ if ('serviceWorker' in navigator) {
 			
 			if (localStorage.getItem("quote")) {
 				showMsg("Update found. Deleting security quote...");
-				document.getElementById('msg').style.backgroundColor = "#FFB6C1";	
+				D('msg').style.backgroundColor = "#FFB6C1";	
 				
 				localStorage.removeItem("quote");
 				localStorage.removeItem("image");
 				if (wipeKeys) localStorage.clear();
-				document.getElementById('quote').textContent = "";
-				document.getElementById('preview').src = "";
+				D('quote').textContent = "";
+				D('preview').src = "";
 				
 				showMsg("Installing update... Security quote deleted. Clearing DOM...");
 				
 				if (ccc) {
 					for (let symbol in ccc) {
 						ccc[symbol].privateKey = "";						
-						if (document.getElementById(`${symbol}-seed`)) document.getElementById(`${symbol}-seed`).value = "";
+						if (D(`${symbol}-seed`)) D(`${symbol}-seed`).value = "";
 						ccc[symbol].sidebarElt.innerHTML = "";
 						console.log("Deleted " + symbol + "key.");
 					}
@@ -114,6 +113,7 @@ if ('serviceWorker' in navigator) {
 	});
 }
 
+function D(string) { return document.getElementById(string); }
 let quickColorArray = {XNO:'steelblue', BAN:'orange', SOL:'#0ca', XLM:'#373b82', ALGO:'#b72375' };
 if (localStorage.getItem('symbol')) document.getElementById('firstDiv').style.backgroundColor = quickColorArray[localStorage.getItem('symbol')];	
 </script>
@@ -123,13 +123,12 @@ if (localStorage.getItem('symbol')) document.getElementById('firstDiv').style.ba
 <script src="qrscan.js"></script>
 <script src="nacl.js"></script>
 
-
 <script>
 'use strict';
 
 //////////////////////////////////////////////////////// global data
 
-
+var paymentWindow = false;
 var fullView = localStorage.getItem("view");
 if (fullView) D('view').classList.add('active');
 let imgsrc = localStorage.getItem("image");
@@ -151,8 +150,6 @@ var qrScanningSymbol = D('primary').value;
 var qrScanningType = "";	
 
 var clipboardText;
-
-var paymentWindow = false;
 
 //////////////////////////////////////////////////////// crypto currency classes
 
@@ -452,7 +449,6 @@ ccc['XLM'].getTransactions = function(start) {
 				let otherAccount = history.records[i].from;
 				if (!otherAccount) otherAccount = history.records[i].source_account;
 				
-				
 				let amt = history.records[i].amount;
 				if (!amt) amt = history.records[i].starting_balance;
 				
@@ -492,8 +488,7 @@ ccc['ALGO'].getTransactions = function(start) {
 	});
 };
 
-function handlePage(symbol, condition, lastNumber, restart) {		
-	// flash(D(`${symbol}-heading`), "Transactions");
+function handlePage(symbol, condition, lastNumber, restart) {
 	flash(D(`${symbol}-filter`), "Transactions");		
 	if (condition) {
 		if (!D(symbol + '-' + lastNumber)) {
@@ -564,7 +559,6 @@ function displayTransaction(symbol, number, send, address, time, amt, tx) {
 
     // ie: 2014-03-24, 3:00 PM
     bottomRow.nextSibling.textContent = h + ':' + min + '\xa0' + ampm + ' ' + mm + '/' + dd + '/' + yyyy + ": #" + number;
-
 	
 	li.lastChild.previousElementSibling.lastChild.onclick = function() {
 		if (!ws.emit('getReceiptCue', {currency:symbol, tx: tx, div: displayNameSpan.id })) showMsg("Unable to connect to directory.");
@@ -2163,10 +2157,7 @@ function post(url, params) {
         xhttp.setRequestHeader("Content-Type", "application/json");
         xhttp.send(JSON.stringify(params));
     });
-}
-
-
-function D(string) { return document.getElementById(string); }	
+}	
  
 function npr() {
     if (D('audio').paused) {
@@ -2369,7 +2360,7 @@ function generateHTML(symbol) {
 				</div>
 			</div>
 					
-			<div class="clickFlash" style="display:flex; justify-content:space-between; margin-top:5px; margin-right:5px; align-items:baseline;">
+			<div class="flash" style="display:flex; justify-content:space-between; margin-top:5px; margin-right:5px; align-items:baseline;">
 				<strong>Total:&nbsp;</strong>
 				<input id="${symbol}-withdrawal-amount-total" placeholder="0.00" style="text-align:right; flex-grow:1; flex-basis:1px" type="number" step="0.01" min="0" disabled>&nbsp; ${symbol}
 			</div>
