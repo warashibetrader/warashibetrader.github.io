@@ -1333,6 +1333,8 @@ function clickClearWallet(symbol) {
 	while (D(symbol + "-invoice").children.length > 1) {
 		remove(D(symbol + "-invoice").lastElementChild);
 	}
+	D(symbol + "-invoice").lastElementChild.firstElementChild.nextElementSibling.value = "";
+	D(symbol + "-invoice").lastElementChild.firstElementChild.value = "";
 }
 
 function clearPayment(symbol) {
@@ -2395,7 +2397,7 @@ function generateHTML(symbol) {
 		</div>
 			
 		<div style="margin-top:15px; display:flex; align-items:center; justify-content:space-between">
-			<a class="clickFlash" target="_blank" href="" id="${symbol}-invoice-url">Invoice Link Demo</a>
+			<a class="clickFlash" target="_blank" href="" id="${symbol}-invoice-url">Payment Link</a>
 			<a style="font-size:0.8em; text-align:right" class="clickFlash" rel="noopener" target="_blank" href="https://warashibetrader.github.io/2022/02/17/invoices">Advanced Integrations</a>
 		</div>
 		<div style="margin-bottom:10px; margin-top:10px;">
