@@ -1546,6 +1546,8 @@ async function withdraw(symbol, elt) {
 					if (window.opener) {
 						window.opener.postMessage({cue:"paidCue", id:sendResp});
 						D(symbol + "-paymentButton").textContent = "Close Window";
+						D(symbol + "-paymentButton").nextElementSibling.style.display = "none"; 
+						D(symbol + "-paymentButton").parentNode.parentNode.style.maxHeight = D(symbol + "-paymentButton").parentNode.parentNode.scrollHeight + "px";					
 						D(symbol + "-paymentButton").onclick = function() {
 							if (window.opener) window.opener.postMessage({cue:"closeCue", id:sendResp});
 							setTimeout(function() { 
