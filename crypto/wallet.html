@@ -1,20 +1,21 @@
-<!DOCTYPE html><html>	
+<!DOCTYPE html><html lang="en">	
 <head>
+	<meta charset="UTF-8">
 	<title>Crypto Wallet</title>	
 	<link rel="stylesheet" type="text/css" href="wallet.css">
 	<link rel="icon" href="strawicontrans.png">	
 	<link rel="manifest" href="manifest.json">
 	<link rel="apple-touch-icon" href="strawicontrans.png">
-
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">	
-	<meta name="theme-color" content="#fff">	
-	<meta name="description" content="A multi-asset cryptocurrency wallet (Nano, Banano, Solana, Stellar, and Algorand), integrated with a complete humanizing layer featuring a public directory of addresses, receipts, and invoices. Designed as a single page application emphasizing security, speed, and simplicity. Supports Progressive Web App (PWA) installation.">	
 	
-	<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+	<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
 	<meta content="utf-8" http-equiv="encoding">
 	<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 	<meta http-equiv="Pragma" content="no-cache">
 	<meta http-equiv="Expires" content="0">
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">	
+	<meta name="theme-color" content="#fff">	
+	<meta name="description" content="A multi-asset cryptocurrency wallet (Nano, Banano, Solana, Stellar, and Algorand), integrated with a complete humanizing layer featuring a public directory of addresses, receipts, and invoices. Designed as a single page application emphasizing security, speed, and simplicity. Supports Progressive Web App (PWA) installation.">	
 </head>
 	
 <body>
@@ -128,6 +129,7 @@ if (localStorage.getItem('symbol')) document.getElementById('firstDiv').style.ba
 
 //////////////////////////////////////////////////////// global data
 
+var thisURL = 'https://warashibetrader.github.io/crypto/wallet';
 var paymentWindow = false;
 var fullView = localStorage.getItem("view");
 if (fullView) D('view').classList.add('active');
@@ -918,16 +920,16 @@ function setupWebsocket() {
 		let data;
 		try { 
 			data = JSON.parse(event.data); 
-			if (data && data.cueName && ws.customEvents[data.cueName]) ws.customEvents[data.cueName](data.payload);
-			else {
-				showMsg("Unrecognized server message.")
-				console.error(event.data);
-			}
-		}
-		catch { 
+		} catch { 
 			showMsg("Unrecognized server message.")
 			console.error(event.data);
-		}	
+			return false;
+		}			
+		if (data && data.cueName && ws.customEvents[data.cueName]) ws.customEvents[data.cueName](data.payload);
+		else {
+			showMsg("Unrecognized server message.")
+			console.error(event.data);
+		}
 	};
 
 	// Custom commands	
@@ -1046,13 +1048,13 @@ function setupWebsocket() {
 //////////////////////////////////////////////////////// Final display setup
 
 function makePaymentURL(preferred, addresses, items) {
-    const url = new URL('https://warashibetrader.github.io/crypto/wallet');
+    const url = new URL(thisURL);
     url.search = new URLSearchParams({preferred:preferred, addresses:encodeURIComponent(JSON.stringify(addresses)), items:encodeURIComponent(JSON.stringify(items))});
     return url;
 }
 
 function startPayment(preferred, addresses, items, processTransaction) {	
-	let popup = window.open('https://warashibetrader.github.io/crypto/wallet');
+	let popup = window.open(thisURL);
 	window.addEventListener("message", function(event) { 
 		if (event.source == popup && event.data) {
 			if (event.data.cue == "readyCue") popup.postMessage({cue:"replyCue", preferred:preferred, addresses: addresses, items: items}); 
@@ -2247,7 +2249,7 @@ async function selectPrimary(symbol) {
 		let index = localStorage.getItem(`${symbol}-index`);
 		if (index && index != "0") D(`${symbol}-index`).value = index; 
 		importWallet(symbol);
-	} else if (D(symbol + '-tool1').style.maxHeight == "0px") toggleAccount();
+	} else if (D(symbol + '-tool1') && D(symbol + '-tool1').style.maxHeight == "0px") toggleAccount();
 	
 	return true;
 }
