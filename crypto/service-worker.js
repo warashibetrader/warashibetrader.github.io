@@ -49,8 +49,7 @@ self.addEventListener('fetch', (evt) => {
 	if (evt.request.url.startsWith(self.location.origin)) evt.respondWith(
 		caches.open(CACHE_NAME).then((cache) => {
 		return cache.match(evt.request).then((response) => {
-			if (response) console.log('[sw] Cache fetch', evt.request.url);
-			else console.log('[sw] Network fetch', evt.request.url);
+			if (!response) console.log('[sw] Network fetch', evt.request.url);
 			return response || fetch(evt.request).catch(() => {
 				return cache.match('wallet.html');		
 			});
