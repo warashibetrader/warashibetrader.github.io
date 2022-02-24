@@ -171,7 +171,7 @@ ccc['BAN'] = {shift:29, flashColor:'#ffc', keyType:'seed', min:0, fee:0, donatio
 					repRec:'https://api.spyglass.pw/banano/v1/representatives/scores'};
 						
 ccc['SOL'] = {shift:9, flashColor:'#e0faf0', keyType:'private key', min:0, fee:5000, donation:'9uugZyizr3QCrTcCgDGHpYwik636GGJVQTYBFRtd2rvG',
-				server: 'mainnet',	// devnet
+				server: 'mainnet-beta',	// devnet
 				gettingStarted:'https://solana.com/',
 					
 					faucet: 'https://solfaucet.togatech.org/'};
@@ -468,7 +468,7 @@ ccc['XLM'].getTransactions = function(start) {
 ccc['ALGO'].getTransactions = function(start) {
 	let symbol = 'ALGO';
 	if (!start) start = "";
-	fetch('https://algoindexer.testnet.algoexplorerapi.io/v2/transactions?limit=10&tx-type=pay&sig-type=sig&address=' + ccc[symbol].address + start).then(function(response) { 
+	fetch(ccc[symbol].server + 'transactions?limit=10&tx-type=pay&sig-type=sig&address=' + ccc[symbol].address + start).then(function(response) { 
 	response.json().then(function(history) {
 	if (D(symbol + '-loadMore') && history && history.transactions.length > 0) {
 		handlePage(symbol, history.transactions.length > 9, history.transactions[history.transactions.length - 1]['confirmed-round'], "&next=" + history['next-token']);	
