@@ -171,23 +171,23 @@ ccc['BAN'] = {shift:29, flashColor:'#ffc', keyType:'seed', min:0, fee:0, donatio
 					repRec:'https://api.spyglass.pw/banano/v1/representatives/scores'};
 						
 ccc['SOL'] = {shift:9, flashColor:'#e0faf0', keyType:'private key', min:0, fee:5000, donation:'9uugZyizr3QCrTcCgDGHpYwik636GGJVQTYBFRtd2rvG',
-				server: 'devnet',				
+				server: 'mainnet',	// devnet
 				gettingStarted:'https://solana.com/',
 					
 					faucet: 'https://solfaucet.togatech.org/'};
 				
 ccc['XLM'] = {shift:7, flashColor:'#edf', keyType:'private key', min:1, fee: 100, donation:'GCOYMN3XAUD4OM4OTNC536TG6MEB6TK3IGSPKDJJJ7V36S3NNGKVBLTC',
-				server: "https://horizon-testnet.stellar.org/", //https://horizon-testnet.stellar.org				
+				server: "https://horizon.stellar.org/", //https://horizon-testnet.stellar.org				
 				gettingStarted:'https://www.stellar.org',
 				
-					passphrase: "Test SDF Network ; September 2015"}; // "Public Global Stellar Network ; September 2015"
+					passphrase: "Public Global Stellar Network ; September 2015"}; // "Public Global Stellar Network ; September 2015" "Test SDF Network ; September 2015"
 					
 ccc['ALGO'] = {shift:6, flashColor:'#ebd', keyType:'private key', min:0.1, fee: 1000, donation:'EWB5J4POIJXWGOFS54HY7BGJ3MQW4HMJGQOKNECE7WANYNSKZS25E3G3NA',
-				server: 'https://algoindexer.testnet.algoexplorerapi.io/v2/',				
+				server: 'https://algoindexer.algoexplorerapi.io/v2/',		 // 'https://algoindexer.testnet.algoexplorerapi.io/v2/'		
 				gettingStarted:'https://www.algorand.com/',
 				
 					faucet: 'https://thealgofaucet.com/',
-					sendServer: 'https://node.testnet.algoexplorerapi.io/'}; 
+					sendServer: 'https://node.algoexplorerapi.io/'}; // 'https://node.testnet.algoexplorerapi.io/'
 	
 for (let symbol in ccc) { 
 	ccc[symbol].queue = new Promise(function(resolve, reject) { resolve(true); });
