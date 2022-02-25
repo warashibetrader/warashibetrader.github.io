@@ -901,7 +901,9 @@ setupWebsocket(ws);
 
 function setupWebsocket() {
 	ws.onopen = function() { 
-		if (ccc[D('primary').value].address) fetchDisplayName(D('primary').value, "-display", ccc[D('primary').value].address);
+		if (ccc[D('primary').value].address 
+			&& !nameCache[ccc[D('primary').value].address]
+			&& !localStorage.getItem(`${D('primary').value}-display`)) fetchDisplayName(D('primary').value, "-display", ccc[D('primary').value].address);
 	};
 	ws.onclose = function() { 
 		ws = new WebSocket(exchangeURL());
@@ -1137,6 +1139,11 @@ window.addEventListener('keydown', function(evt) {
 			toggleView();
 			//D('primary').focus();
 		}
+		if (evt.keyCode == 87) {
+			evt.preventDefault();
+			toggleAccount();
+			//D('primary').focus();
+		}
 		if (evt.keyCode == 49) {
 			evt.preventDefault();
 			//toggleView();
@@ -1268,8 +1275,10 @@ function displayName(symbol, divString, address, displayString) {
 		} else if (address == ccc[symbol].address) displayString = "(me)";
 		else displayString = "Unknown";
 	} else if (divString != "-display" && address == ccc[symbol].address) displayString += " (me)";
-	flash(D(symbol + divString), displayString);
-	if (D(symbol + "-transactions").contains(D(symbol + divString))) filterLi(D(symbol + divString).parentNode.parentNode.parentNode, D(symbol + "-filter").value.toLowerCase(), symbol);
+	if (D(symbol + divString)) {
+		flash(D(symbol + divString), displayString);
+		if (D(symbol + "-transactions").contains(D(symbol + divString))) filterLi(D(symbol + divString).parentNode.parentNode.parentNode, D(symbol + "-filter").value.toLowerCase(), symbol);
+	}
 }
 
 //////////////////////////////////////////////////////// Interface with helper functions
@@ -1441,20 +1450,22 @@ function makeInvoiceURL(symbol) {
 	invoiceWaiter = setTimeout(function() {	
 		invoiceWaiter = "";
 		let items = [];
-		for (let i = 0; i < D(symbol + "-invoice").children.length; i++) {
-			let newItem = D(symbol + "-invoice").children[i].children[0].value;
-			let newAmt = D(symbol + "-invoice").children[i].children[1].value;
-			if (newItem || newAmt) {
-				let obj = {item:newItem};
-				obj[symbol] = newAmt;
-				items.push(obj);
+		if (D(symbol + "-invoice")) {
+			for (let i = 0; i < D(symbol + "-invoice").children.length; i++) {
+				let newItem = D(symbol + "-invoice").children[i].children[0].value;
+				let newAmt = D(symbol + "-invoice").children[i].children[1].value;
+				if (newItem || newAmt) {
+					let obj = {item:newItem};
+					obj[symbol] = newAmt;
+					items.push(obj);
+				}
 			}
+			let addresses = {};
+			addresses[symbol] = ccc[symbol].address;
+			D(symbol + '-invoice-url').href = makePaymentURL(symbol, addresses, items);
+			flash(D(symbol + '-invoice-url'));
+			flash(D(symbol + '-invoice-url-literal'), makePaymentURL(symbol, addresses, items));
 		}
-		let addresses = {};
-		addresses[symbol] = ccc[symbol].address;
-		D(symbol + '-invoice-url').href = makePaymentURL(symbol, addresses, items);
-		flash(D(symbol + '-invoice-url'));
-		flash(D(symbol + '-invoice-url-literal'), makePaymentURL(symbol, addresses, items));
 	}, 500);
 }
 
@@ -2236,20 +2247,22 @@ async function selectPrimary(symbol) {
 	});
 	await waitScript;
 	
-	if (ccc[symbol].address) {
-		refreshBalance(symbol);
-		ccc[symbol].getTransactions();	
-		if (D(symbol + '-tool1').style.maxHeight != "0px") toggleAccount();
-		updateView();		
-		D('donateButton').disabled = false;
-		D('view').disabled = false;			
-		makeInvoiceURL(symbol);
-	} else if (localStorage.getItem(`${symbol}-seed`)) {
-		D(`${symbol}-seed`).value = localStorage.getItem(`${symbol}-seed`);
-		let index = localStorage.getItem(`${symbol}-index`);
-		if (index && index != "0") D(`${symbol}-index`).value = index; 
-		importWallet(symbol);
-	} else if (D(symbol + '-tool1') && D(symbol + '-tool1').style.maxHeight == "0px") toggleAccount();
+	if (D(symbol + '-tool1')) {
+		if (ccc[symbol].address) {
+			refreshBalance(symbol);
+			ccc[symbol].getTransactions();	
+			if (D(symbol + '-tool1').style.maxHeight != "0px") toggleAccount();
+			updateView();		
+			D('donateButton').disabled = false;
+			D('view').disabled = false;			
+			makeInvoiceURL(symbol);
+		} else if (localStorage.getItem(`${symbol}-seed`)) {
+			D(`${symbol}-seed`).value = localStorage.getItem(`${symbol}-seed`);
+			let index = localStorage.getItem(`${symbol}-index`);
+			if (index && index != "0") D(`${symbol}-index`).value = index; 
+			importWallet(symbol);
+		} else if (D(symbol + '-tool1') && D(symbol + '-tool1').style.maxHeight == "0px") toggleAccount();
+	}
 	
 	return true;
 }
