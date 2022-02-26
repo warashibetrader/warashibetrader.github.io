@@ -1,14 +1,12 @@
 <!DOCTYPE html><html lang="en">	
 <head> 
-	<link rel="preconnect" href="https://fonts.googleapis.com">
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro&display=swap" rel="stylesheet"> 
 	<meta charset="UTF-8">
 	<title>Crypto Wallet</title>	
 	<link rel="stylesheet" type="text/css" href="wallet.css">
 	<link rel="icon" href="strawicontrans.png">	
 	<link rel="manifest" href="manifest.json">
 	<link rel="apple-touch-icon" href="strawicontrans.png">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;700&display=swap"> 
 	
 	<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
 	<meta content="utf-8" http-equiv="encoding">
@@ -27,7 +25,7 @@
 							  position:fixed; left:0px; top:0px; border-radius:5px; pointer-events:none; filter:opacity(0.9);"></strong>
 	<div class="containerdiv">
 	<div id="firstDiv" class="firstDiv">				
-		<div id="quoteDisplay" style="display:none; margin-bottom:15px; flex-shrink:0">
+		<div id="quoteDisplay" style="display:none; margin-bottom:15px">
 			<img src=""  onclick="toggleQuote();" id="preview" style="cursor:pointer; display:none; margin-left:auto; margin-right:auto; max-width:100%; max-height:200px; border-radius:15px">
 			<div id="quote" style="cursor:pointer; white-space:pre-wrap; font-style:italic; font-size:0.9em" onclick="toggleQuote();"></div>
 			
@@ -41,12 +39,12 @@
 			</div>
 		</div>
 		
-		<div class="objectWrapper" style="display:none; margin-bottom:10px;">
+		<div class="objectWrapper" style="display:none; margin-bottom:10px; flex-shrink:0">
 			<div id="serverMsg" style="white-space:pre-wrap; color:red; font-style:italic; font-size:0.9em" ></div>
 			<div id="serverMsgButton" style="display:none; text-align:center; margin-top:10px; font-size:0.8em"><button onclick="hideServerMsg()">Hide Message</button></div>
 		</div>
 		
-		<div style="display:flex; align-items:center; position:relative; margin-left:18px; margin-right:18px; margin-top:5px; margin-bottom:10px">	
+		<div style="display:flex; align-items:center; position:relative; margin-left:18px; margin-right:18px; margin-top:5px; margin-bottom:10px; flex-shrink:0">	
 			<select name="primary" id="primary" onchange="selectPrimary(event.target.value)">
 				<option value="XNO">Nano (XNO)</option>
 				<option value="BAN">Banano (BAN)</option>
