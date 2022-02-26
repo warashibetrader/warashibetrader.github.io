@@ -1731,6 +1731,7 @@ function addTotal(elt) {
 	if (elt == D(symbol + "-itemize")) D(symbol + "-paymentButton").disabled = true;
 	else makeInvoiceLink(symbol);
 	let totalDiv = elt.nextElementSibling.lastElementChild;
+	showMsg("adding up");
 	let total = BigInt(rawFromUnit(symbol, 0));
 	for (let i = 0; i < elt.children.length; i++) {
 		if (elt.children[i].children[1].validationMessage == "Please enter a number." || elt.children[i].children[1].value < 0) {
@@ -1740,7 +1741,11 @@ function addTotal(elt) {
 			return false;
 		} else total += BigInt(rawFromUnit(symbol, elt.children[i].children[1].value));
 	}
-	if (total) totalDiv.value = unitFromRaw(symbol, total);
+	if (total) {
+		totalDiv.value = unitFromRaw(symbol, total);
+		
+		showMsg("adding up: " + unitFromRaw(symbol, total));
+	}
 	else totalDiv.value = "";
 }
 
