@@ -59,13 +59,16 @@ div:focus {
 }
 
 input[type=number], input[type=text], input[type=password] { 
+	box-sizing: border-box;
+    font-family: Segoe UI, Source Sans Pro, Roboto, Helvetica, sans-serif;  
+	
 	padding: 5px;
 	border-top: solid 0px;
 	border-left: solid 0px;
 	border-right: solid 0px;
+	border-bottom: solid 2px #e4e7e7;
 	text-overflow: ellipsis;
 	overflow: hidden;	 
-	border-bottom: 2px solid #e4e7e7;
 	scroll-margin:20px;
 }
 
@@ -78,6 +81,8 @@ input[type=number]:disabled, input[type=text]:disabled {
 	background-color:white;
 	border-bottom: 0px;
 	color: #333;
+	padding:0px;
+	font-size:1em;
 }
 
 /* Firefox */
