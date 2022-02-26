@@ -1008,8 +1008,7 @@ function setupWebsocket() {
 			itemSpan.style.fontSize = "0.8em";
 			
 			let amtSpan = make('span');
-			amtSpan.textContent = data.tx;
-			
+			amtSpan.textContent = data.tx;			
 			amtSpan.classList.add('address');
 			amtSpan.onclick = function() { clickCopy(amtSpan, amtSpan.textContent);	};			
 			
@@ -1061,12 +1060,10 @@ function startPayment(preferred, addresses, items, processTransaction) {
 
 const urlParams = new URLSearchParams(window.location.search);
 if (urlParams.has('preferred') && urlParams.has('addresses') && urlParams.has('items')) {
-	generateHTML(urlParams.get('preferred'));
 	loadPaymentsPage({preferred: urlParams.get('preferred'), 
 						addresses: JSON.parse(decodeURIComponent(urlParams.get('addresses'))), 
 						items: JSON.parse(decodeURIComponent(urlParams.get('items')))});
 } else {
-	for (let symbol in ccc) {generateHTML(symbol);}
 	if (localStorage.getItem('symbol')) D('primary').value = localStorage.getItem('symbol');
 	selectPrimary(D('primary').value);
 	window.addEventListener("message", function(event) { 
@@ -1076,27 +1073,19 @@ if (urlParams.has('preferred') && urlParams.has('addresses') && urlParams.has('i
 }
 
 function loadPaymentsPage(data) {
+	let symbol = data.preferred;
 	paymentWindow = true;
 	fullView = false;
 	D('view').classList.remove('active');
-	let symbol = data.preferred;
+	D('view').style.display = "none";
 	D('primary').value = symbol;
 	D('primary').disabled = true;
 	D('secondDiv').style.display = "none";
 	D('donatePanel').style.display = "none";
-	D('view').style.display = "none";
 	if (screen.width <= 550 || screen.height <= 550) D('firstDiv').parentNode.style.width = "100%";
 	else {
-		D('firstDiv').parentNode.style.justifyContent = "center";
-		D('firstDiv').parentNode.style.backgroundColor = ccc[symbol].bgColor;
-		D('firstDiv').parentNode.style.height = "initial";
-		D('firstDiv').parentNode.style.minHeight = "100%";
-		
-		D('firstDiv').style.boxShadow = "initial";
-		D('firstDiv').style.overflow = "initial";
-		D('firstDiv').style.width = "initial";
-		D('firstDiv').style.maxWidth = "620px";
-		D('firstDiv').style.minWidth = "350px";
+		D('firstDiv').parentNode.style = "justify-content:center; height:initial; min-height:100%; background-color:" + ccc[symbol].bgColor;
+		D('firstDiv').style = "box-shadow:initial; overflow:initial; width:initial; max-width:620px; min-width:350px;";
 	}
 	
 	selectPrimary(symbol).then(function() {	
@@ -1261,7 +1250,7 @@ function displayName(symbol, divString, address, displayString) {
 	} else if (divString != "-display" && address == ccc[symbol].address) displayString += " (me)";
 	if (D(symbol + divString)) {
 		flash(D(symbol + divString), displayString);
-		if (D(symbol + "-transactions").contains(D(symbol + divString))) filterLi(D(symbol + divString).parentNode.parentNode.parentNode, D(symbol + "-filter").value.toLowerCase(), symbol);
+		if (D(symbol + "-transactions").contains(D(symbol + divString))) checkli(D(symbol + divString).parentNode.parentNode.parentNode, D(symbol + "-filter").value.toLowerCase(), symbol);
 	}
 }
 
@@ -1291,21 +1280,25 @@ function importWallet(symbol) {
 		addressQR(symbol);
 		D(symbol + "-gray").style.display = "";
 		D(symbol + "-gray2").style.display = "";
-		D('donateButton').disabled = false;
-		D('view').disabled = false;				
-		if (!paymentWindow) makeInvoiceLink(symbol);
-		if (!existingWallet && D(symbol + "-tool1").style.maxHeight != "0px") toggleAccount();
-		updateView();
 		
 		if (localStorageWriteable) {
 			localStorage.setItem(`${symbol}-seed`, seed);
 			localStorage.setItem(`${symbol}-index`, index);
 			localStorage.setItem(`${symbol}-address`, ccc[symbol].address);
 		}		
-		fetchDisplayName(symbol, "-display", ccc[symbol].address, true);
-		refreshBalance(symbol);
-		ccc[symbol].getTransactions();	
+		fetchDisplayName(symbol, "-display", ccc[symbol].address, true);		
+		loadDisplay(symbol, existingWallet);
 	}
+}
+
+function loadDisplay(symbol, keepAccount) {
+	refreshBalance(symbol);
+	ccc[symbol].getTransactions();
+	updateView();
+	D('donateButton').disabled = false;
+	D('view').disabled = false;	
+	if (!paymentWindow) makeInvoiceLink(symbol);
+	if (!keepAccount && D(symbol + "-tool1").style.maxHeight != "0px") toggleAccount();
 }
 
 function clickClearWallet(symbol) {
@@ -1687,14 +1680,13 @@ function toggleInvoices(elt, symbol) {
 
 function toggleView() {
 	if (fullView) {
-		fullView = false;
 		localStorage.removeItem("view");
 		D('view').classList.remove('active');
 	} else {
-		fullView = true;
 		localStorage.setItem("view", "true");
 		D('view').classList.add('active');
 	}
+	fullView = !fullView;
 	updateView();
 }
 
@@ -1831,13 +1823,12 @@ function closeCopy(obj) {
 function twoDigit(str) {
 	if (!str) return str;
 	let parts = str.toString().split(".");
-	let whole = parts[0];
 	let fraction = '';
 	if (parts.length > 1) fraction = parts[1];
 	while (fraction.length < 2) {
 		fraction += '0';
 	}
-	return `${whole}.${fraction}`;	
+	return `${parts[0]}.${fraction}`;	
 }
 
 function unitFromRaw(symbol, str) {
@@ -1856,24 +1847,23 @@ function unitFromRaw(symbol, str) {
 function rawFromUnit(symbol, str) {
 	let shift = ccc[symbol].shift;
 	let parts = str.toString().split(".");	
-	let whole = parts[0];
 	let fraction = '';
 	if (parts.length > 1) fraction = parts[1];
 	while (fraction.length < shift) {
 		fraction += '0';
 	}
-	return `${whole}${fraction}`;
+	return `${parts[0]}${fraction}`;
 }
 
 function filterTransactions(symbol) {
 	let item = D(symbol + "-filter").value.toLowerCase();
 	let ul = D(symbol + "-transactions");
 	for (let i = 0; i < ul.children.length; i++) {
-		filterLi(ul.children[i], item, symbol);
+		checkli(ul.children[i], item, symbol);
 	}
 }
 
-function filterLi(li, item, symbol) {
+function checkli(li, item, symbol) {
 	let restricted = D(symbol + "-invoice-filter").classList.contains('active');
 	if (restricted && li.children[1].children[1].textContent + 's' != D(symbol + "-invoice-filter").textContent) li.style.display = "none";
 	else {
@@ -2171,6 +2161,7 @@ function npr() {
 	
 async function selectPrimary(symbol) {
 	localStorage.setItem('symbol', symbol);
+	if (!ccc[symbol].sidebarElt) generateHTML(symbol);
 	qrclose();
 	D('firstDiv').style.backgroundColor = ccc[symbol].bgColor;
 	D('donateButton').disabled = true;
@@ -2231,15 +2222,8 @@ async function selectPrimary(symbol) {
 	await waitScript;
 	
 	if (D(symbol + '-tool1')) {
-		if (ccc[symbol].address) {
-			refreshBalance(symbol);
-			ccc[symbol].getTransactions();	
-			if (D(symbol + '-tool1').style.maxHeight != "0px") toggleAccount();
-			updateView();		
-			D('donateButton').disabled = false;
-			D('view').disabled = false;			
-			makeInvoiceLink(symbol);
-		} else if (localStorage.getItem(`${symbol}-seed`)) {
+		if (ccc[symbol].address) loadDisplay(symbol);
+		else if (localStorage.getItem(`${symbol}-seed`)) {
 			D(`${symbol}-seed`).value = localStorage.getItem(`${symbol}-seed`);
 			let index = localStorage.getItem(`${symbol}-index`);
 			if (index && index != "0") D(`${symbol}-index`).value = index; 
