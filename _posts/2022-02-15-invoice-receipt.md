@@ -2,7 +2,7 @@
 title: "Crypto Wallet support for invoices, receipts, memos, and click-to-pay"
 ---
 
-I added some features to my [crypto wallet](https://warashibetrader.github.io/crypto/wallet). The most substantial upgrades include:
+I added some features to my [crypto wallet](https://transactcc.github.io/). The most substantial upgrades include:
 
 1. Support for Algorand.
 
@@ -18,7 +18,7 @@ I added some features to my [crypto wallet](https://warashibetrader.github.io/cr
 	let addresses = {XNO: "nano_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7", 
 			 BAN: "ban_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7"};
 	let items = [{item:"Donation to the developer", XNO:"1", BAN:"100"}, {item:"A memo"}]; 
-	let popup = window.open("https://warashibetrader.github.io/crypto/wallet");
+	let popup = window.open("https://transactcc.github.io/");
 	window.addEventListener("message", function(event) {
 		if (event.source == popup && event.data) {
 			if (event.data.cue == "readyCue") popup.postMessage({cue:"replyCue", preferred:preferred, addresses: addresses, items: items}); 
@@ -42,7 +42,7 @@ Below is the javascript code that is triggered by clicking the donation button. 
 	let items = [{item:"Donation to the developer", XNO:"1", BAN:"100"}, {item:"A memo"}]; 
 
 	// The below can be used as-is for a basic implementation, but a confirmation event is exposed below if needed
-	let popup = window.open("https://warashibetrader.github.io/crypto/wallet");
+	let popup = window.open("https://transactcc.github.io/");
 	window.addEventListener("message", function(event) {
 	if (event.source == popup && event.data) {
 		if (event.data.cue == "readyCue") {
