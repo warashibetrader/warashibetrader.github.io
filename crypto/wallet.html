@@ -1732,7 +1732,8 @@ function addTotal(elt) {
 	else makeInvoiceLink(symbol);
 	let totalDiv = elt.nextElementSibling.lastElementChild;
 	showMsg("adding up");
-	let total = BigInt(rawFromUnit(symbol, 0));
+	let total = BigInt(rawFromUnit(symbol, 0));	
+	showMsg("adding up: " + unitFromRaw(symbol, total));
 	for (let i = 0; i < elt.children.length; i++) {
 		if (elt.children[i].children[1].validationMessage == "Please enter a number." || elt.children[i].children[1].value < 0) {
 			totalDiv.value = "";
@@ -1741,10 +1742,10 @@ function addTotal(elt) {
 			return false;
 		} else total += BigInt(rawFromUnit(symbol, elt.children[i].children[1].value));
 	}
+	showMsg("adding up after for: " + unitFromRaw(symbol, total));
 	if (total) {
-		totalDiv.value = unitFromRaw(symbol, total);
-		
-		showMsg("adding up: " + unitFromRaw(symbol, total));
+		totalDiv.value = unitFromRaw(symbol, total);		
+		showMsg("adding up final: " + unitFromRaw(symbol, total));
 	}
 	else totalDiv.value = "";
 }
