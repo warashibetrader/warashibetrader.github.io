@@ -1,5 +1,5 @@
 ---
-title: "Crypto Wallet support for invoices, receipts, memos, and click-to-pay"
+title: "Crypto wallet support for invoices, receipts, memos, and click-to-pay"
 ---
 
 I added some features to my [crypto wallet](https://transactcc.github.io/). The most substantial upgrades include:
