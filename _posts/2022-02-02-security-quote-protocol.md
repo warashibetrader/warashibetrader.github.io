@@ -94,4 +94,4 @@ before the client code can successfully delete its security quote. I have tested
 
 #### Is this an officially recognized protocol?
 
-No; I'm proposing it now. As an example, I have implemented it in this [crypto wallet](https://warashibetrader.github.io/crypto/wallet).
+No; I'm proposing it now. As an example, I have implemented it in this [crypto wallet](https://transactcc.github.io/).
