@@ -1,5 +1,8 @@
 <!DOCTYPE html><html lang="en">	
-<head>
+<head> 
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro&display=swap" rel="stylesheet"> 
 	<meta charset="UTF-8">
 	<title>Crypto Wallet</title>	
 	<link rel="stylesheet" type="text/css" href="wallet.css">
@@ -24,7 +27,7 @@
 							  position:fixed; left:0px; top:0px; border-radius:5px; pointer-events:none; filter:opacity(0.9);"></strong>
 	<div class="containerdiv">
 	<div id="firstDiv" class="firstDiv">				
-		<div id="quoteDisplay" style="display:none; margin-bottom:15px;">
+		<div id="quoteDisplay" style="display:none; margin-bottom:15px; flex-shrink:0">
 			<img src=""  onclick="toggleQuote();" id="preview" style="cursor:pointer; display:none; margin-left:auto; margin-right:auto; max-width:100%; max-height:200px; border-radius:15px">
 			<div id="quote" style="cursor:pointer; white-space:pre-wrap; font-style:italic; font-size:0.9em" onclick="toggleQuote();"></div>
 			
@@ -1264,7 +1267,7 @@ function generateWallet(symbol) {
 	flash(D(`${symbol}-seed`));
 	navigator.clipboard.writeText(D(`${symbol}-seed`).value);
 	clipboardText = D(`${symbol}-seed`).value;
-	showMsg("New " + ccc[symbol].keyType + " copied to clipboard. Save it securely (elsewhere and NOW).");
+	showMsg("New " + ccc[symbol].keyType + " copied to clipboard. Save it securely, elsewhere and now!");
 }
 
 function importWallet(symbol) {
@@ -1763,7 +1766,7 @@ function addItem(elt) {
 	if (D(symbol + "-invoice").contains(elt)) urlString = "makeInvoiceLink('" + symbol + "');";
 	let outerElt = make('div');
 	outerElt.style = "display:flex; justify-content:space-between; margin-top:15px; align-items:baseline";
-	outerElt.innerHTML = '<input placeholder="Item, memo, tip..." onfocus="scrollPanel(this)" onkeyup="if (event.keyCode == 27) this.value = ' + "''; " + urlString + '" style="flex-grow:2; flex-basis:1px; margin-right:10px" type="text" maxlength="128"><input placeholder="0.00" onkeyup="amtInputHandler(event, this)" style="margin-right:10px; text-align:right; flex-grow:1; flex-basis:1px; overflow:hidden; text-overflow:ellipsis;" type="number" step="0.01" min="0"><button tabindex="-1" style="font-size:0.8em" onclick="addItem(this.parentNode.parentNode)">&#65291;</button>';
+	outerElt.innerHTML = '<input placeholder="Description..." onfocus="scrollPanel(this)" onkeyup="if (event.keyCode == 27) this.value = ' + "''; " + urlString + '" style="flex-grow:2; flex-basis:1px; margin-right:10px" type="text" maxlength="128"><input placeholder="0.00" onkeyup="amtInputHandler(event, this)" style="margin-right:10px; text-align:right; flex-grow:1; flex-basis:1px; overflow:hidden; text-overflow:ellipsis;" type="number" step="0.01" min="0"><button tabindex="-1" style="font-size:0.8em" onclick="addItem(this.parentNode.parentNode)">&#65291;</button>';
 
 	elt.appendChild(outerElt);
 	outerElt.children[0].focus();
@@ -2341,7 +2344,7 @@ function generateHTML(symbol) {
 		<div style="max-height:0px" class="accordion">			
 			<div style="margin-left:10px; margin-right:10px">			
 				<div style="display:flex; justify-content:space-between; margin-top:10px; align-items:baseline;">
-					<input placeholder="Item, memo, tip..." onfocus="scrollPanel(this)" onkeyup="if (event.keyCode == 27) this.value = '';" style="flex-grow:2; flex-basis:1px; margin-right:10px" type="text" maxlength="128" value="Network fee" disabled>
+					<input placeholder="Description..." onfocus="scrollPanel(this)" onkeyup="if (event.keyCode == 27) this.value = '';" style="flex-grow:2; flex-basis:1px; margin-right:10px" type="text" maxlength="128" value="Network fee" disabled>
 					<input placeholder="0.00" onkeyup="amtInputHandler(event, this)" style="margin-right:10px; text-align:right; flex-grow:1; flex-basis:1px; overflow:hidden; text-overflow:ellipsis;" type="number" step="0.01" min="0" id="${symbol}-withdrawal-fee" disabled>
 					<button tabindex="-1" style="font-size:0.8em; filter:opacity(0)" disabled>&#65291;</button>
 				</div>
