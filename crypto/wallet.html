@@ -1073,11 +1073,11 @@ if (urlParams.has('preferred') && urlParams.has('addresses') && urlParams.has('i
 }
 
 function loadPaymentsPage(data) {
-	let symbol = data.preferred;
 	paymentWindow = true;
 	fullView = false;
 	D('view').classList.remove('active');
 	D('view').style.display = "none";
+	let symbol = data.preferred;
 	D('primary').value = symbol;
 	D('primary').disabled = true;
 	D('secondDiv').style.display = "none";
@@ -1298,7 +1298,7 @@ function loadDisplay(symbol, keepAccount) {
 	D('donateButton').disabled = false;
 	D('view').disabled = false;	
 	if (!paymentWindow) makeInvoiceLink(symbol);
-	if (!keepAccount && D(symbol + "-tool1").style.maxHeight != "0px") toggleAccount();
+	if (!keepAccount && D(symbol + "-tool1").style.maxHeight != "0px") toggleAccount(symbol);
 }
 
 function clickClearWallet(symbol) {
@@ -1396,8 +1396,7 @@ function clearWallet(symbol) {
 }
 
 
-function prepareTotalTab(elt) {
-	let symbol = D('primary').value;
+function prepareTotalTab(symbol, elt) {
 	addTotal(D(symbol + "-itemize"));
 	
 	if (D(symbol + "-withdrawal-amount").value)
@@ -1629,8 +1628,8 @@ function hideAccordionPadding(obj) {
 	obj.style.paddingBottom = "0px";
 }
 
-function toggleAccount() {
-	let symbol = D('primary').value;
+function toggleAccount(symbol) {
+	if (!symbol) symbol = D('primary').value;
 	if (D(`${symbol}-seed`).type != "password") toggleVisibility(symbol);
 	
 	let obj = D(symbol + "-tool1");
@@ -2228,7 +2227,7 @@ async function selectPrimary(symbol) {
 			let index = localStorage.getItem(`${symbol}-index`);
 			if (index && index != "0") D(`${symbol}-index`).value = index; 
 			importWallet(symbol);
-		} else if (D(symbol + '-tool1') && D(symbol + '-tool1').style.maxHeight == "0px") toggleAccount();
+		} else if (D(symbol + '-tool1') && D(symbol + '-tool1').style.maxHeight == "0px") toggleAccount(symbol);
 	}
 	
 	return true;
@@ -2332,7 +2331,7 @@ function generateHTML(symbol) {
 		
 		
 		<div style="text-align:center;">
-			<button style="margin-top:15px;" onclick="prepareTotalTab(this)">Total and Summary</button>
+			<button style="margin-top:15px;" onclick="prepareTotalTab('${symbol}', this)">Total and Summary</button>
 		</div>
 		
 		
