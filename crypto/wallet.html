@@ -1069,7 +1069,10 @@ if (urlParams.has('preferred') && urlParams.has('addresses') && urlParams.has('i
 	window.addEventListener("message", function(event) { 
 		if (window.opener && event.source == window.opener && event.data && event.data.cue == "replyCue") loadPaymentsPage(event.data); 
 	});
-	if (window.opener) window.opener.postMessage({cue:"readyCue"});
+	if (window.opener) {
+		console.log("before posting message");
+		window.opener.postMessage({cue:"readyCue"});
+	}
 }
 
 function loadPaymentsPage(data) {
