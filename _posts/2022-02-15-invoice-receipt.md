@@ -17,7 +17,7 @@ I added some features to my [crypto wallet](https://transactcc.github.io/). The 
 	let preferred = "XNO";
 	let addresses = {XNO: "nano_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7", 
 			 BAN: "ban_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7"};
-	let items = [{item:"Donation to the developer", XNO:"1", BAN:"100"}, {item:"A memo"}]; 
+	let items = [{item:"Donation to the developer", XNO:"1", BAN:"100"}, {item:"Supplement"}]; 
 	let popup = window.open("https://transactcc.github.io/");
 	window.addEventListener("message", function(event) {
 		if (event.source == popup && event.data) {
@@ -39,7 +39,7 @@ Below is the javascript code that is triggered by clicking the donation button. 
 	let preferred = "XNO";
 	let addresses = {XNO: "nano_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7", 
 			 BAN: "ban_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7"};
-	let items = [{item:"Donation to the developer", XNO:"1", BAN:"100"}, {item:"A memo"}]; 
+	let items = [{item:"Donation to the developer", XNO:"1", BAN:"100"}, {item:"Supplement"}]; 
 
 	// The below can be used as-is for a basic implementation, but a confirmation event is exposed below if needed
 	let popup = window.open("https://transactcc.github.io/");
