@@ -2,7 +2,7 @@
 title: "A multi-asset, single-page crypto wallet"
 ---
 
-To help myself learn about crypto, I developed a simple multi-asset wallet. You can find it [here](https://warashibetrader.github.io/crypto/wallet).
+To help myself learn about crypto, I developed a simple multi-asset wallet. You can find it [here](https://transactcc.github.io/).
 
 Here are some reasons it might appeal to other users:
 
