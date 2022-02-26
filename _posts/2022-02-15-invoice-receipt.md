@@ -21,7 +21,7 @@ I added some features to my [crypto wallet](https://transactcc.github.io/). The 
 	let popup = window.open("https://transactcc.github.io/");
 	window.addEventListener("message", function(event) {
 		if (event.source == popup && event.data) {
-			if (event.data.cue == "readyCue") popup.postMessage({cue:"replyCue", preferred:preferred, addresses: addresses, items: items}); 
+			if (event.data.cue == "readyCue") popup.postMessage({cue:"replyCue", preferred:preferred, addresses: addresses, items: items}, "*"); 
 			if (event.data.cue == "paidCue") document.getElementById("donateButton").textContent = "Thank You!";
 			if (event.data.cue == "closeCue") popup.close();
 		}
@@ -46,7 +46,7 @@ Below is the javascript code that is triggered by clicking the donation button. 
 	window.addEventListener("message", function(event) {
 	if (event.source == popup && event.data) {
 		if (event.data.cue == "readyCue") {
-			popup.postMessage({cue:"replyCue", preferred:preferred, addresses: addresses, items: items}); 
+			popup.postMessage({cue:"replyCue", preferred:preferred, addresses: addresses, items: items}, "*"); 
 		}
 		if (event.data.cue == "paidCue") { 
 			// Confirmed transaction's network ID is exposed in event.data.id 
