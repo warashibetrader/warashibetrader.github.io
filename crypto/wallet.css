@@ -61,6 +61,7 @@ div:focus {
 input[type=number], input[type=text], input[type=password] { 
 	box-sizing: border-box;
     font-family: Segoe UI, Source Sans Pro, Roboto, Helvetica, sans-serif;  
+	font-size:0.8em;
 	
 	padding: 5px;
 	border-top: solid 0px;
