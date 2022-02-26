@@ -1311,7 +1311,7 @@ function clickClearWallet(symbol) {
 	localStorage.removeItem(`${symbol}-info`);
 	
 	if (!paymentWindow) clearPayment(symbol);
-	clearMemoList("-invoice");
+	clearMemoList(symbol, "-invoice");
 }
 
 function clearPayment(symbol) {
@@ -1319,10 +1319,10 @@ function clearPayment(symbol) {
 	D(symbol + "-dest").value = "";	
 	D(`${symbol}-withdrawal-amount`).value = "";	
 	clearPaymentSummary(symbol);
-	clearMemoList("-itemize");
+	clearMemoList(symbol, "-itemize");
 }
 
-function clearMemoList(div) {
+function clearMemoList(symbol, div) {
 	while (D(symbol + div).children.length > 1) {
 		remove(D(symbol + div).children[0]);
 	}
