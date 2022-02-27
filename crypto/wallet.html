@@ -100,7 +100,7 @@ if ('serviceWorker' in navigator) {
 					for (let symbol in ccc) {
 						ccc[symbol].privateKey = "";						
 						if (D(`${symbol}-seed`)) D(`${symbol}-seed`).value = "";
-						ccc[symbol].sidebarElt.innerHTML = "";
+						if (ccc[symbol].sidebarElt) ccc[symbol].sidebarElt.innerHTML = "";
 						console.log("Deleted " + symbol + "key.");
 					}
 				}				
