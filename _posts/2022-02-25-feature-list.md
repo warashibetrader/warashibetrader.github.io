@@ -10,10 +10,12 @@ Here is an updated list of some of the more interesting features on Transact:
 
 3. It supports multiple assets: Nano, Banano, Solana, Stellar, Algorand.
 
-4. Public keys and addresses are displayed along side usernames, if provided by the owner.
+4. Public keys and addresses are displayed alongside human-readable aliases/usernames, if provided by the owner.
 
 5. Transactions are paired with invoices and receipts.
 
-6. Merchants can create one-click URLs to accept payments.
+6. Transactions can be searched and filtered.
+
+6. Merchants can create one-click URLs to accept payments and generate invoices and receipts.
 
 7. The app has a single-page design, facilitating speed and efficiency.
