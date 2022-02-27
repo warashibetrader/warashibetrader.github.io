@@ -4,10 +4,10 @@ html {
 }
 
 body {
-	font-family: Segoe UI, Source Sans Pro, Roboto, Helvetica, sans-serif;  
-	line-height: 1.6;
-	color: #333;   
-	margin:0px;
+    font-family: Segoe UI, Source Sans Pro, Roboto, Helvetica, sans-serif;  
+    line-height: 1.6;
+    color: #333;   
+    margin:0px;
 	height:100%;
 	width:100%;
 	overflow:auto;
@@ -71,6 +71,7 @@ input[type=number], input[type=text], input[type=password] {
 	text-overflow: ellipsis;
 	overflow: hidden;	 
 	scroll-margin:20px;
+    -webkit-appearance: none;
 }
 
 input[type=number]:focus, input[type=text]:focus, input[type=password]:focus {  
