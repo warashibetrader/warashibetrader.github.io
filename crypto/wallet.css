@@ -71,7 +71,6 @@ input[type=number], input[type=text], input[type=password] {
 	text-overflow: ellipsis;
 	overflow: hidden;	 
 	scroll-margin:20px;
-    -webkit-appearance: none;
 }
 
 input[type=number]:focus, input[type=text]:focus, input[type=password]:focus {  
