@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="en">	
-<head> 
+<head>
 	<meta charset="UTF-8">
 	<title>Crypto Wallet</title>	
 	<link rel="stylesheet" type="text/css" href="wallet.css">
@@ -25,15 +25,15 @@
 							  position:fixed; left:0px; top:0px; border-radius:5px; pointer-events:none; filter:opacity(0.9);"></strong>
 	<div class="containerdiv">
 	<div id="firstDiv" class="firstDiv">				
-		<div id="quoteDisplay" style="display:none; margin-bottom:15px">
+		<div id="quoteDisplay" style="display:none; margin-bottom:15px;">
 			<img src=""  onclick="toggleQuote();" id="preview" style="cursor:pointer; display:none; margin-left:auto; margin-right:auto; max-width:100%; max-height:200px; border-radius:15px">
 			<div id="quote" style="cursor:pointer; white-space:pre-wrap; font-style:italic; font-size:0.9em" onclick="toggleQuote();"></div>
 			
 			<input type="file" style="display:none" id="filetag" accept="image/*">		
 			<div id="advancedQuote" class="accordion" style="display:flex; align-items:center; position:relative; max-height:0px;">
 				<div style="margin:auto">
-				<button id="imageButton" style="font-size:0.8em;" onclick="toggleImage()">Select Security Image</button>
-				<button id="wipeButton" style="font-size:0.8em;" onclick="toggleWipe()">Clear Keys on Updates</button>
+				<button id="imageButton" style="font-size:0.9em;" onclick="toggleImage()">Select Security Image</button>
+				<button id="wipeButton" style="font-size:0.9em;" onclick="toggleWipe()">Clear Keys on Updates</button>
 				</div>
 				<span style="position:absolute; right:0px">(<a rel="noopener" href="https://warashibetrader.github.io/2022/02/02/security-quote-protocol" target="_blank">?</a>)</span>
 			</div>
@@ -41,7 +41,7 @@
 		
 		<div class="objectWrapper" style="display:none; margin-bottom:10px; flex-shrink:0">
 			<div id="serverMsg" style="white-space:pre-wrap; color:red; font-style:italic; font-size:0.9em" ></div>
-			<div id="serverMsgButton" style="display:none; text-align:center; margin-top:10px; font-size:0.8em"><button onclick="hideServerMsg()">Hide Message</button></div>
+			<div id="serverMsgButton" style="display:none; text-align:center; margin-top:10px; font-size:0.9em"><button onclick="hideServerMsg()">Hide Message</button></div>
 		</div>
 		
 		<div style="display:flex; align-items:center; position:relative; margin-left:18px; margin-right:18px; margin-top:5px; margin-bottom:10px; flex-shrink:0">	
@@ -53,14 +53,14 @@
 				<option value="ALGO">ALGO - Algorand</option>
 			</select>	
 			<div style="position:absolute; right:0px">		
-				<button id="view" style="font-size:0.8em;" onclick="toggleView()" disabled>All Tools</button>
-				<button id="account" style="font-size:0.8em" onclick="toggleAccount()">Account</button>
+				<button id="view" style="font-size:0.9em;" onclick="toggleView()" disabled>All Tools</button>
+				<button id="account" style="font-size:0.9em" onclick="toggleAccount()">Account</button>
 			</div>
 		</div>		
 		
 		<div id="donatePanel" style="text-align:center; margin-bottom:25px; margin-top:auto; width:100%">
-			<button id="nprButton" style="font-size:0.8em" onclick="npr()">NPR</button>	
-			<button id="donateButton" style="font-size:0.8em;" onclick="donate()" disabled>Support the Developer</button>
+			<button id="nprButton" style="font-size:0.9em" onclick="npr()">NPR</button>	
+			<button id="donateButton" style="font-size:0.9em;" onclick="donate()" disabled>Support the Developer</button>
 		</div>
 	</div>
 	<div id="secondDiv" class="secondDiv">
@@ -530,7 +530,7 @@ function displayTransaction(symbol, number, send, address, time, amt, tx) {
 	li.innerHTML = "<div style='display:flex; justify-content:space-between'><strong style='margin-right:10px; overflow:hidden; text-overflow: ellipsis'></strong>"
 	+ "<strong style='text-align:right; overflow:hidden; text-overflow:ellipsis; color:" + color + "'>" + signSymbol + "<span class='clickFlash'></span> " + symbol + "</strong></div>"
 	+ "<div style='display:flex; justify-content:space-between; align-items:center; margin-top:3px; margin-bottom:5px'><div style='overflow:hidden'><div class='address' onclick='clickCopy(this, this.textContent)'></div>"
-	+ "<div style='font-size:0.8em; padding-left:3px; flex-grow:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis'></div></div><button style='font-size:0.8em; margin-left:10px; color:" + color + "'>" + memoType + "</button></div>" 
+	+ "<div style='font-size:0.8em; padding-left:3px; flex-grow:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis'></div></div><button style='font-size:0.9em; margin-left:10px; color:" + color + "'>" + memoType + "</button></div>" 
 	+ "<ul class='accordion' style='text-align:center; margin-left:20px; margin-right:20px; padding-left:0px; list-style: none;'></ul>";
 	
 	li.children[0].children[0].appendChild(displayNameSpan);
@@ -1261,11 +1261,13 @@ function displayName(symbol, divString, address, displayString) {
 //////////////////////////////////////////////////////// Interface with helper functions
 	
 function generateWallet(symbol) {
-	inputEvent(D(`${symbol}-seed`), ccc[symbol].generateSeed());	
-	flash(D(`${symbol}-seed`));
-	navigator.clipboard.writeText(D(`${symbol}-seed`).value);
-	clipboardText = D(`${symbol}-seed`).value;
-	showMsg("New " + ccc[symbol].keyType + " copied to clipboard. Save it securely, elsewhere and now!");
+	if (!ccc[symbol].address || confirm('Clear all data for ' + symbol + ', including the current ' + ccc[symbol].keyType + '?')) {
+		inputEvent(D(`${symbol}-seed`), ccc[symbol].generateSeed());	
+		flash(D(`${symbol}-seed`));
+		navigator.clipboard.writeText(D(`${symbol}-seed`).value);
+		clipboardText = D(`${symbol}-seed`).value;
+		showMsg("New " + ccc[symbol].keyType + " copied to clipboard. Save it securely, elsewhere and now!");
+	}
 }
 
 function importWallet(symbol) {
@@ -1764,7 +1766,7 @@ function addItem(elt) {
 	if (D(symbol + "-invoice").contains(elt)) urlString = "makeInvoiceLink('" + symbol + "');";
 	let outerElt = make('div');
 	outerElt.style = "display:flex; justify-content:space-between; margin-top:15px; align-items:baseline";
-	outerElt.innerHTML = '<input placeholder="Description..." onfocus="scrollPanel(this)" onkeyup="if (event.keyCode == 27) this.value = ' + "''; " + urlString + '" style="flex-grow:2; flex-basis:1px; margin-right:10px" type="text" maxlength="128"><input placeholder="0.00" onkeyup="amtInputHandler(event, this)" style="margin-right:10px; text-align:right; flex-grow:1; flex-basis:1px; overflow:hidden; text-overflow:ellipsis;" type="number" step="0.01" min="0"><button tabindex="-1" style="font-size:0.8em" onclick="addItem(this.parentNode.parentNode)">&#65291;</button>';
+	outerElt.innerHTML = '<input placeholder="Description..." onfocus="scrollPanel(this)" onkeyup="if (event.keyCode == 27) this.value = ' + "''; " + urlString + '" style="flex-grow:2; flex-basis:1px; margin-right:10px" type="text" maxlength="128"><input placeholder="0.00" onkeyup="amtInputHandler(event, this)" style="margin-right:10px; text-align:right; flex-grow:1; flex-basis:1px; overflow:hidden; text-overflow:ellipsis;" type="number" step="0.01" min="0"><button tabindex="-1" style="font-size:0.9em" onclick="addItem(this.parentNode.parentNode)">&#65291;</button>';
 
 	elt.appendChild(outerElt);
 	outerElt.children[0].focus();
@@ -2245,8 +2247,8 @@ function generateHTML(symbol) {
 			
 			<input id="${symbol}-filter" placeholder="Transaction filter..." style="padding-right:30px; flex-grow:1; margin-right:10px" id="${symbol}-dest" type="text" maxlength="128" onkeyup="if (event.keyCode == 27) this.value = ''; filterTransactions('${symbol}');" oninput="filterTransactions('${symbol}')"><button tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
 			
-			<button id="${symbol}-invoice-filter" style="font-size:0.8em; margin-right:5px" onclick="toggleInvoices(this, '${symbol}')">Invoices</button>
-			<button style="font-size:0.8em" onclick="refreshBalance('${symbol}'); ccc['${symbol}'].getTransactions();">Refresh</button>
+			<button id="${symbol}-invoice-filter" style="font-size:0.9em; margin-right:5px" onclick="toggleInvoices(this, '${symbol}')">Invoices</button>
+			<button style="font-size:0.9em" onclick="refreshBalance('${symbol}'); ccc['${symbol}'].getTransactions();">Refresh</button>
 		</div>
 		
 		<ul id="${symbol}-transactions" style="padding-left:0px; max-width:620px; list-style: none; margin-top:25px"></ul>
@@ -2265,16 +2267,16 @@ function generateHTML(symbol) {
 	ccc[symbol].sidebarElt.innerHTML = `
 	<div id="${symbol}-tool1" class="accordion objectWrapper" style="max-height:0px; padding-top:0px; padding-bottom:0px; margin-top:0px">
 		<div style="text-align:center;">
-		<button tabindex="-1" id="${symbol}-generateButton" style="font-size:0.8em" onclick="generateWallet('${symbol}')">Generate Key</button>
-		<button tabindex="-1" id="${symbol}-qrButton1" style="font-size:0.8em" onclick="qrscan('${symbol}', '-seed', this)">Scan QR Code</button>
-		<button style="font-size:0.8em" onclick="if (confirm('Clear all data for ${symbol}, including the current ' + ccc['${symbol}'].keyType + '?'))
+		<button tabindex="-1" id="${symbol}-generateButton" style="font-size:0.9em" onclick="generateWallet('${symbol}')">Generate Key</button>
+		<button tabindex="-1" id="${symbol}-qrButton1" style="font-size:0.9em" onclick="qrscan('${symbol}', '-seed', this)">Scan QR Code</button>
+		<button style="font-size:0.9em" onclick="if (confirm('Clear all data for ${symbol}, including the current ' + ccc['${symbol}'].keyType + '?'))
 													{ clickClearWallet('${symbol}'); showMsg('${symbol} account cleared.'); }">Clear Account</button>
 		</div>
 		<div style="display:flex; justify-content:space-between; margin-top:15px;">
 			<input onfocus="scrollPanel(this)" placeholder="Private key (store securely) ..." id="${symbol}-seed" style="padding-right:30px; flex-grow:1; flex-basis:20px; margin-right:10px;" type="password" autocomplete="off" onclick="this.select()" oninput="importWallet('${symbol}'); D('${symbol}-generateButton').disabled = (this.value.length != 0);">
 			<button  tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
 			<div>
-				<button id="${symbol}-show" tabindex="-1" style="font-size:0.8em" onclick="toggleVisibility('${symbol}')">Show</button>
+				<button id="${symbol}-show" tabindex="-1" style="font-size:0.9em" onclick="toggleVisibility('${symbol}')">Show</button>
 			</div>			
 		</div>
 		<canvas style="width:100%; margin-top:10px;" hidden="" id="${symbol}-qr-canvas-seed"></canvas>
@@ -2286,13 +2288,13 @@ function generateHTML(symbol) {
 	<div class="objectWrapper">
 		<div style="display:flex; align-items:center; justify-content:space-between">
 			<strong><div id="${symbol}-display" style="font-size:1.2em;" class="clickFlash" onclick="toggleEdit('${symbol}'); fetchDisplayName('${symbol}', '-display', ccc['${symbol}'].address, true)">✏️ My Account</div></strong>
-			<button style="font-size:0.8em" onclick="fetchDisplayName('${symbol}', '-display', ccc['${symbol}'].address, true); refreshBalance('${symbol}'); ccc['${symbol}'].getTransactions();">Refresh</button>
+			<button style="font-size:0.9em" onclick="fetchDisplayName('${symbol}', '-display', ccc['${symbol}'].address, true); refreshBalance('${symbol}'); ccc['${symbol}'].getTransactions();">Refresh</button>
 		</div>
 		
 		<div id="${symbol}-editpanel" class="accordion" style="margin-left:10px; margin-right:10px; margin-top:10px; margin-bottom:20px">			
 			<div style="display:flex; justify-content:space-between;">
 				<input placeHolder="Public display name..." onfocus="scrollPanel(this)" id="${symbol}-set-display" style="padding-right:30px; flex-grow:1; margin-right:10px;" type="text" maxlength="64" onkeyup="if (event.keyCode == 13) setName('${symbol}'); if (event.keyCode == 27) this.value = '';"><button  tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
-				<button style="font-size:0.8em" onclick="setName('${symbol}')">Set</button>
+				<button style="font-size:0.9em" onclick="setName('${symbol}')">Set</button>
 			</div>
 		</div>
 		
@@ -2312,7 +2314,7 @@ function generateHTML(symbol) {
 				<strong style="white-space:nowrap">Arriving balance:&nbsp;</strong> 
 				<span id="${symbol}-balance-pending" class="clickFlash" style="max-width:min-content; overflow:hidden; text-overflow:ellipsis;" onclick="clickCopy(this, this.textContent)">0.00</span>&nbsp;${symbol}&nbsp;
 			</div>
-			<button style="font-size:0.8em" onclick="cyclePending('${symbol}', this)">Collect</button>
+			<button style="font-size:0.9em" onclick="cyclePending('${symbol}', this)">Collect</button>
 		</div>
 	</div>
 
@@ -2320,7 +2322,7 @@ function generateHTML(symbol) {
 		<strong>Destination: </strong><span class="flash" id="${symbol}-dest-display"></span>
 		<div style="display:flex; justify-content:space-between; margin-top:5px;">
 			<input placeholder="Destination address..." onfocus="scrollPanel(this)" style="padding-right:30px; flex-grow:1; margin-right:10px" id="${symbol}-dest" type="text" maxlength="128" onclick="this.select()" oninput="fetchDisplayName('${symbol}', '-dest-display', this.value); D('${symbol}-paymentButton').disabled = true;"><button tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
-			<button tabindex="-1" id="${symbol}-qrButton2" style="font-size:0.8em" onclick="qrscan('${symbol}', '-dest', this)">QR</button>
+			<button tabindex="-1" id="${symbol}-qrButton2" style="font-size:0.9em" onclick="qrscan('${symbol}', '-dest', this)">QR</button>
 		</div>		
 		<canvas style="width:100%; margin-top:10px;" hidden="" id="${symbol}-qr-canvas"></canvas>
 		
@@ -2344,7 +2346,7 @@ function generateHTML(symbol) {
 				<div style="display:flex; justify-content:space-between; margin-top:10px; align-items:baseline;">
 					<input placeholder="Description..." onfocus="scrollPanel(this)" onkeyup="if (event.keyCode == 27) this.value = '';" style="flex-grow:2; flex-basis:1px; margin-right:10px" type="text" maxlength="128" value="Network fee" disabled>
 					<input placeholder="0.00" onkeyup="amtInputHandler(event, this)" style="margin-right:10px; text-align:right; flex-grow:1; flex-basis:1px; overflow:hidden; text-overflow:ellipsis;" type="number" step="0.01" min="0" id="${symbol}-withdrawal-fee" disabled>
-					<button tabindex="-1" style="font-size:0.8em; filter:opacity(0)" disabled>&#65291;</button>
+					<button tabindex="-1" style="font-size:0.9em; filter:opacity(0)" disabled>&#65291;</button>
 				</div>
 			</div>
 					
@@ -2377,7 +2379,7 @@ function generateHTML(symbol) {
 			
 		<div style="margin-top:15px; display:flex; align-items:center; justify-content:space-between">
 			<a class="clickFlash" target="_blank" href="" id="${symbol}-invoice-url">Payment Link</a>
-			<a style="font-size:0.8em; text-align:right" class="clickFlash" rel="noopener" target="_blank" href="https://warashibetrader.github.io/2022/02/17/invoices">Advanced Integrations</a>
+			<a style="font-size:0.9em; text-align:right" class="clickFlash" rel="noopener" target="_blank" href="https://warashibetrader.github.io/2022/02/17/invoices">Advanced Integrations</a>
 		</div>
 		<div style="margin-bottom:10px; margin-top:10px;">
 			<div class='address' style="white-space:nowrap" id="${symbol}-invoice-url-literal" onclick="clickCopy(this, this.textContent)">&nbsp;</div>
@@ -2388,7 +2390,7 @@ function generateHTML(symbol) {
 		<strong>Device-to-device communication:</strong>
 		<div style="margin-bottom:10px; display:flex; justify-content:space-between; margin-top:10px;">
 			<input placeholder="Text to QR-encode..." onfocus="scrollPanel(this)" style="padding-right:30px; flex-grow:1; margin-right:10px" id="${symbol}-qr-input" type="text" maxlength="512" onclick="this.select()" oninput="generateQR('${symbol}', this.value)"><button tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
-			<button style="font-size:0.8em" onclick="addressQR('${symbol}')">My Address</button>
+			<button style="font-size:0.9em" onclick="addressQR('${symbol}')">My Address</button>
 		</div>				
 		<strong>Type: </strong><span id="${symbol}-type-display"></span>	
 		<br><strong>Owner: </strong><span class="flash" id="${symbol}-directory-display"></span>	
@@ -2401,7 +2403,7 @@ function generateHTML(symbol) {
 		<strong>New representative: </strong><span class="flash" id="${symbol}-new-rep-display"></span>	
 		<div style="display:flex; justify-content:space-between; margin-top:5px;">
 			<input placeholder="New representative address..." onfocus="scrollPanel(this)" style="padding-right:30px; flex-grow:1; margin-right:10px" id="${symbol}-new-rep" type="text" maxlength="128" onclick="this.select()" oninput="fetchDisplayName('${symbol}', '-new-rep-display', this.value)" onkeyup="if (event.keyCode == 13) setRep('${symbol}', this)"><button tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
-			<button style="font-size:0.8em" onclick="suggestRep('${symbol}')">Suggest</button>
+			<button style="font-size:0.9em" onclick="suggestRep('${symbol}')">Suggest</button>
 		</div>
 		<div style="text-align:center;">
 		<button style="margin-top:15px" onclick="setRep('${symbol}', this)">Set Representative</button>	
