@@ -1274,9 +1274,6 @@ D('filetag').addEventListener("change", function(e) {
 function setName(symbol) {
 	if (D(symbol + "-set-display").value.length > 64) showMsg("64 characters or fewer.");
 	else {
-		console.log(byteArrayToHex(ccc[symbol].encryptKey.publicKey));
-		console.log(D(symbol + "-set-display").value);		
-		console.log(ccc[symbol].sign(D(symbol + "-set-display").value + byteArrayToHex(ccc[symbol].encryptKey.publicKey)));
 		if (ws.emit("setNameCue", {address: ccc[symbol].address, currency: symbol, 
 									display:D(symbol + "-set-display").value,
 									publicKey:byteArrayToHex(ccc[symbol].encryptKey.publicKey),
