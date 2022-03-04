@@ -385,7 +385,7 @@ ccc['BAN'].getTransactions = function(start) {nanoDisplayTransactions('BAN', sta
 ccc['XNO'].getTransactions = function(start) {nanoDisplayTransactions('XNO', start);};
 function nanoDisplayTransactions(symbol, start) {
 	post(ccc[symbol].server, { action: 'account_history', head:start, account: ccc[symbol].address, count:10 }).then(function(history) {
-	if (history.account != ccc[symbol].address) return false;
+	if (history && history.account != ccc[symbol].address) return false;
 	if (D(symbol + '-loadMore') && history && history.history) {
 		handlePage(symbol, history.previous, history.history[history.history.length - 1].height, history.previous);
 		for (let i = 0; i < history.history.length; i++) {
@@ -1328,9 +1328,11 @@ function displayName(symbol, divString, address, displayString) {
 	
 function generateWallet(symbol) {
 	if (!ccc[symbol].address || confirm('Overwrite the current ' + ccc[symbol].keyType + '?')) {
-		inputEvent(D(`${symbol}-seed`), ccc[symbol].generateSeed());
-		navigator.clipboard.writeText(D(`${symbol}-seed`).value);
-		clipboardText = D(`${symbol}-seed`).value;
+		let newSeed = ccc[symbol].generateSeed();
+		if (localStorageWriteable) localStorage.setItem(`${symbol}-seed`, newSeed);
+		inputEvent(D(`${symbol}-seed`), newSeed);
+		navigator.clipboard.writeText(newSeed);
+		clipboardText = newSeed;
 		showMsg("New " + ccc[symbol].keyType + " copied to clipboard. Save it securely, elsewhere and now!");
 	}
 }
@@ -1343,7 +1345,7 @@ function importWallet(symbol) {
 	if (!ccc[symbol].checkSeed(seed)) { if (ccc[symbol].checkAddress(seed)) showMsg("Enter a " + ccc[symbol].keyType  + ", not an address."); }
 	else if (index.length > 0 && (!/^[0-9]+$/.test(index) || index < 0 || index > Math.pow(2, 32) - 1)) showMsg("Invalid account index.");
 	else {
-		let existingWallet = ccc[symbol].address;
+		let existingWallet = localStorage.getItem(`${symbol}-seed`);
 		clearWallet(symbol);
 		
 		ccc[symbol].unpackSeed(seed, parseInt(index));
@@ -2283,12 +2285,13 @@ async function selectPrimary(symbol) {
 	if (D(symbol + '-tool1').style.maxHeight != "0px") D('account').classList.add('active');
 	else D('account').classList.remove('active');
 	
-	if (ccc[symbol].faucet) D(`${symbol}-faucet`).style.display = "";
 	if (!ccc[symbol].qrCode) {
 		ccc[symbol].qrCode = new QRCode(symbol + "-qrCodeImageBlock");
 		addItem(D(symbol + "-itemize"));
 		addItem(D(symbol + "-invoice"));	
-		D(symbol + '-withdrawal-fee').value = unitFromRaw(symbol, ccc[symbol].fee);		
+		D(symbol + '-withdrawal-fee').value = unitFromRaw(symbol, ccc[symbol].fee);			
+		if (screen.width > 550 && screen.height > 550) D(symbol + "-transaction-refresh").style.display = "none";
+		if (ccc[symbol].faucet) D(`${symbol}-faucet`).style.display = "";	
 	
 		if (symbol != "XNO" && symbol != "BAN") {
 			D(`${symbol}-index`).style.display = "none";
@@ -2298,6 +2301,7 @@ async function selectPrimary(symbol) {
 			D(`${symbol}-seed`).maxLength = "64";
 			D(`${symbol}-seed`).placeholder = "Seed (store securely) ...";
 			D(`${symbol}-generateButton`).textContent = "Generate Seed";
+			D(`${symbol}-generateButton`).nextElementSibling.textContent = "Show Seed";
 		}
 	}
 	
@@ -2343,7 +2347,7 @@ function generateHTML(symbol) {
 			<input id="${symbol}-filter" placeholder="Transaction filter..." style="padding-right:30px; flex-grow:1; margin-right:10px" id="${symbol}-dest" type="text" maxlength="128" onkeyup="if (event.keyCode == 27) this.value = ''; filterTransactions('${symbol}');" oninput="filterTransactions('${symbol}')"><button tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
 			
 			<button id="${symbol}-invoice-filter" style="font-size:0.85em; margin-right:5px" onclick="toggleInvoices(this, '${symbol}')">Invoices</button>
-			<button style="font-size:0.85em" onclick="hardRefresh('${symbol}');">Refresh</button>
+			<button id="${symbol}-transaction-refresh" style="font-size:0.85em" onclick="hardRefresh('${symbol}');">Refresh</button>
 		</div>
 		
 		<ul id="${symbol}-transactions" style="padding-left:0px; max-width:620px; list-style: none; margin-top:25px"></ul>
@@ -2363,14 +2367,14 @@ function generateHTML(symbol) {
 	<div id="${symbol}-tool1" class="accordion objectWrapper" style="max-height:0px; padding-top:0px; padding-bottom:0px; margin-top:0px">
 		<div style="text-align:center;">
 		<button tabindex="-1" id="${symbol}-generateButton" style="font-size:0.85em" onclick="generateWallet('${symbol}')">Generate Key</button>
-		<button tabindex="-1" id="${symbol}-qrButton1" style="font-size:0.85em" onclick="qrscan('${symbol}', '-seed', this)">Scan QR Code</button>
+			<button id="${symbol}-show" tabindex="-1" style="font-size:0.85em" onclick="toggleVisibility('${symbol}')">Show Key</button>
 		<button style="font-size:0.85em" onclick="if (confirm('Clear all data for ${symbol}, including the current ' + ccc['${symbol}'].keyType + '?'))
 													{ clickClearWallet('${symbol}'); showMsg('${symbol} account cleared.'); }">Clear Account</button>
 		</div>
 		<div style="display:flex; justify-content:space-between; margin-top:15px;">
 			<input onfocus="scrollPanel(this)" placeholder="Private key (store securely) ..." id="${symbol}-seed" style="padding-right:30px; flex-grow:1; flex-basis:20px; margin-right:10px;" type="password" autocomplete="off" onclick="this.select()" oninput="importWallet('${symbol}'); D('${symbol}-generateButton').disabled = (this.value.length != 0);">
-			<button  tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
-			<button id="${symbol}-show" tabindex="-1" style="font-size:0.85em" onclick="toggleVisibility('${symbol}')">Show</button>
+			<button  tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>			
+			<button tabindex="-1" id="${symbol}-qrButton1" style="font-size:0.85em" onclick="qrscan('${symbol}', '-seed', this)">QR</button>
 		</div>
 		<canvas style="width:100%; margin-top:10px;" hidden="" id="${symbol}-qr-canvas-seed"></canvas>
 		<input onfocus="scrollPanel(this)" placeholder="Account index (default 0; or 1, 2, 3, etc) ..." id="${symbol}-index" type="number" style="margin-top:15px; width:calc(100% - 10px)" min="0" maxlength="64" onclick="this.select()" oninput="importWallet('${symbol}');">
@@ -2543,7 +2547,7 @@ function generateHTML(symbol) {
 		<div style="text-align:center;"><button style="margin-top:15px" onclick="setRep('${symbol}', this)">Set Representative</button></div>`);
 		
 	
-	makeTool("Device-to-device (QR)", '', 'tool3', 0,
+	makeTool("Copy device-to-device (QR)", '', 'tool3', 0,
 		`<div style="display:flex; margin-top:5px;">
 			<input placeholder="Text to QR-encode..." onfocus="scrollPanel(this)" style="padding-right:30px; flex-grow:1; margin-right:10px" id="${symbol}-qr-input" type="text" maxlength="512" onclick="this.select()" oninput="generateQR('${symbol}', this.value)"><button tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
 			<button style="font-size:0.85em" onclick="addressQR('${symbol}')">My Address</button>
