@@ -82,8 +82,6 @@ input[type=number]:disabled, input[type=text]:disabled {
 	background-color:white;
 	border-bottom: 0px;
 	color: #333;
-	padding:0px;
-	font-size:1em;
 	opacity:1;
 }
 
@@ -93,7 +91,7 @@ input[type=number] {
 }
 
 option {
-	background-color:#f1f4f4;
+	background-color:#fff;
 }
 
 .close-icon {
@@ -129,17 +127,17 @@ select {
 	color: #333;
 	border-radius: 15px;
 	border: 0px solid #fff;
-	background-color:#f1f4f4;
+	background-color:#fff;
 	font-size:1em;
 	-webkit-appearance:none;
 }
 
-select:hover {	
-	background-color: #e4e7e7;
+select:hover {
+	cursor:pointer;
 }
 
 select:disabled:hover {	
-	background-color: #f1f4f4;
+	background-color: #fff;
 }
 
 button {
@@ -179,15 +177,32 @@ a:hover {
     color: #333;
 }
 
+.leftRightBase {
+	display:flex; 
+	justify-content:space-between; 
+	align-items:baseline;
+	margin-right:5px;
+	margin-top:15px;
+}
+
+.rightData {
+	overflow:hidden; 
+	text-overflow:ellipsis;
+	text-align:right;
+	margin-left:5px;
+}
+
 .address {
 	cursor:pointer; 
-	font-size:0.8em;
+	font-size:0.85em;
 	overflow:hidden; 
 	text-overflow:ellipsis;
 	max-width:min-content;
 	border-radius:5px;
 	padding-left:3px;
 	padding-right:3px;
+	margin-top:5px;
+	white-space:nowrap;
 }
 
 .clickFlash {
@@ -201,6 +216,26 @@ a:hover {
 	border-radius:5px;
 	padding-left:2px;
 	padding-right:2px;
+}
+
+.textbox:empty:before{
+	content:attr(placeholder);
+	opacity:0.8;
+}
+
+.textbox:focus {
+	border: solid 2px #333;
+}
+
+.textbox {    
+	outline: none;
+	padding: 5px;
+	overflow-wrap: break-word;  
+	word-break: break-word;
+	overflow: auto;	
+	border: solid 2px white;	
+	border-bottom: solid 2px #e4e7e7;	
+	border-radius:5px;
 }
 
 /*-----------*/
@@ -232,7 +267,6 @@ ul::-webkit-scrollbar-thumb:hover {
 		overflow:auto;
 	}
 	body {
-		font-size:14px;
 		scroll-snap-type: x mandatory;
 	}
 		
@@ -249,11 +283,11 @@ ul::-webkit-scrollbar-thumb:hover {
 	}
 
 	select {
-		padding: 10px 10px;		
+		padding: 8px 10px;		
 	}
 	
 	button {
-		padding: 10px 10px;
+		padding: 8px 10px;
 		cursor: initial;
 	}
 	
