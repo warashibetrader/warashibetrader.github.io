@@ -1365,7 +1365,7 @@ function hardRefresh(symbol) {
 	if (ccc[symbol].address) {
 		fetchDisplayName(symbol, "", ccc[symbol].address, true);
 		refreshBalance(symbol);
-		ccc[symbol].getTransactions();
+		if (!paymentWindow) ccc[symbol].getTransactions();
 	}
 }
 
@@ -1608,7 +1608,7 @@ function cyclePending(symbol, elt) {
 					count++;
 				}
 				if (count) {
-					ccc[symbol].getTransactions();	
+					if (!paymentWindow) ccc[symbol].getTransactions();	
 					refreshBalance(symbol);
 					D(`${symbol}-balance-pending`).textContent = "0.00";
 					if (elt) showMsg("Arriving " + symbol + " collected.");	
