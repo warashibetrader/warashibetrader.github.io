@@ -1014,17 +1014,17 @@ function setupWebsocket(restart) {
 			let receipt = [];
 			let ul = D(data.div).parentNode.parentNode.parentNode.lastElementChild;
 			let but = ul.previousElementSibling.lastElementChild;
-			let type = "";
+			let type = "Encrypted";
 			if (data.receipt) {
 				receipt = JSON.parse(data.receipt);
 				if (!ccc[data.currency].verify(data.receipt, data.signature, data.address) &&
-					!ccc[data.currency].verify(data.receipt, data.signature, ccc[data.currency].address)) type = "\xa0(unsigned)";
-					else type = "\xa0(public)";
+					!ccc[data.currency].verify(data.receipt, data.signature, ccc[data.currency].address)) type = "Public, no signature";
+					else type = "Public, signed";
 			} else if (data.receiptCipher && data.nonce) {
 				try { 
 					receipt = JSON.parse(dec.decode(nacl.box.open(hexToByteArray(data.receiptCipher), hexToByteArray(data.nonce), hexToByteArray(keyCache[data.address]), ccc[data.currency].encryptKey.secretKey)));
-				} catch { type = "\xa0(decryption\xa0failed)";  }
-			} else type = "\xa0(no\xa0details)"; 
+				} catch { type = "Encrypted - decryption failed";  }
+			} else type = "No invoice/receipt"; 
 			
 			but.classList.add('active');
 			ul.style.maxHeight = "0px";
@@ -1058,10 +1058,20 @@ function setupWebsocket(restart) {
 			}
 			
 			let li = make('li');
-			li.style = "overflow:hidden; text-overflow:ellipsis; padding-left:5px; padding-right:5px;";
+			li.style = "overflow:hidden; text-overflow:ellipsis; padding-left:5px; padding-right:5px; white-space:nowrap";
 			
 			let itemSpan = make('span');
-			itemSpan.textContent = "Transaction" + type + ":\xa0";
+			itemSpan.textContent = type;
+			itemSpan.style.fontSize = "0.85em";		
+			
+			li.appendChild(itemSpan);
+			ul.appendChild(li);
+			
+			li = make('li');
+			li.style = "overflow:hidden; text-overflow:ellipsis; padding-left:5px; padding-right:5px; white-space:nowrap";
+			
+			itemSpan = make('span');
+			itemSpan.textContent = "Transaction ID: ";
 			itemSpan.style.fontSize = "0.85em";
 			
 			let amtSpan = make('span');
@@ -1552,11 +1562,11 @@ function prepareTotalTab(symbol, elt) {
 	}
 	
 	let privacyString = "Public (<a class='clickFlash' rel='noopener' target='_blank' href='https://warashibetrader.github.io/2022/03/05/end-to-end'>?</a>)";
-	if (keyCache[D(`${symbol}-dest`).value]) privacyString = "Private";
+	if (keyCache[D(`${symbol}-dest`).value]) privacyString = "Encrypted";
 	if (D(symbol + "-dest-privacy").innerHTML != privacyString) {
 		D(symbol + "-dest-privacy").innerHTML = privacyString;
 		flash(D(symbol + '-dest-privacy').parentNode);	
-		if (privacyString == "Private") D(symbol + "-dest-privacy").style.color = "#097";
+		if (privacyString == "Encrypted") D(symbol + "-dest-privacy").style.color = "#097";
 		else D(symbol + "-dest-privacy").style.color = "";
 	}
 	
@@ -2549,7 +2559,7 @@ function generateHTML(symbol) {
 		</div>
 		
 		<div class="flash leftRightBase" style="margin-top:5px;">				
-			<strong>Receipt</strong>
+			<strong>Privacy</strong>
 			<span id="${symbol}-dest-privacy" class="rightData"></span>
 		</div>
 		
