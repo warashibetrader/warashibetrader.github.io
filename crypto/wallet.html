@@ -1294,8 +1294,8 @@ function fetchDisplayName(symbol, divString, cache) {
 	if (D(symbol + '-' + divString)) {
 		address = D(symbol + '-' + divString).value;
 		if (!address) address = D(symbol + '-' + divString).textContent;
+		if (ccc[symbol].checkSeed(address)) address = ccc[symbol].addressFromSeed(address);
 	}
-	if (ccc[symbol].checkSeed(address)) address = ccc[symbol].addressFromSeed(address);
 	
 	if (ccc[symbol].checkAddress(address)) {
 		let displayString = nameCache[address];
@@ -1318,6 +1318,7 @@ function displayName(symbol, divString, address, displayString) {
 	if (D(symbol + '-' + divString)) {
 		let checkAddress = D(symbol + '-' + divString).value;
 		if (!checkAddress) checkAddress = D(symbol + '-' + divString).textContent;
+		if (ccc[symbol].checkSeed(checkAddress)) checkAddress = ccc[symbol].addressFromSeed(checkAddress);
 		if (address != checkAddress) return false;
 	}
 	
