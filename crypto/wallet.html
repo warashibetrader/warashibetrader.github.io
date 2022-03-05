@@ -1014,15 +1014,17 @@ function setupWebsocket(restart) {
 			let receipt = [];
 			let ul = D(data.div).parentNode.parentNode.parentNode.lastElementChild;
 			let but = ul.previousElementSibling.lastElementChild;
+			let type = "";
 			if (data.receipt) {
 				receipt = JSON.parse(data.receipt);
 				if (!ccc[data.currency].verify(data.receipt, data.signature, data.address) &&
-					!ccc[data.currency].verify(data.receipt, data.signature, ccc[data.currency].address)) showMsg('Invoice/receipt is not signed.');
+					!ccc[data.currency].verify(data.receipt, data.signature, ccc[data.currency].address)) type = "\xa0(unsigned)";
+					else type = "\xa0(public)";
 			} else if (data.receiptCipher && data.nonce) {
 				try { 
 					receipt = JSON.parse(dec.decode(nacl.box.open(hexToByteArray(data.receiptCipher), hexToByteArray(data.nonce), hexToByteArray(keyCache[data.address]), ccc[data.currency].encryptKey.secretKey)));
-				} catch { showMsg('Decryption failed.'); }
-			} else showMsg('No detailed invoice/receipt found.');
+				} catch { type = "\xa0(decryption\xa0failed)";  }
+			} else type = "\xa0(no\xa0details)"; 
 			
 			but.classList.add('active');
 			ul.style.maxHeight = "0px";
@@ -1059,7 +1061,7 @@ function setupWebsocket(restart) {
 			li.style = "overflow:hidden; text-overflow:ellipsis; padding-left:5px; padding-right:5px;";
 			
 			let itemSpan = make('span');
-			itemSpan.textContent = "Transaction\xa0ID:\xa0";
+			itemSpan.textContent = "Transaction" + type + ":\xa0";
 			itemSpan.style.fontSize = "0.85em";
 			
 			let amtSpan = make('span');
