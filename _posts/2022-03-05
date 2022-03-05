@@ -1,0 +1,13 @@
+---
+title: "End-to-end encryption of receipts/invoices"
+---
+
+[Transact](https://transactcc.github.io/) now supports end-to-end encryption of receipt and invoice data. Everything that is not encrypted is, at the least, signed.
+
+But why would receipts sometimes still public? 
+
+End-to-end encryption requires both parties to first set up a "mailbox." Literally, this corresponds to generating and publishing (to Transact's servers) a public encryption key, using their private keys. 
+
+In the context of cryptocurrency, everyone conveniently already has a private key/seed: the one that corresponds to their crypto funds. However, they still need to publish their public key. On Transact, this happens automatically when you set up a public display name.
+
+If you are trying to transfer crypto to an address and Transact says that the receipt will be public, this means that the destination address has never set up a public display name with Transact.
