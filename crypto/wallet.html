@@ -1016,28 +1016,32 @@ function setupWebsocket(restart) {
 			let but = ul.previousElementSibling.lastElementChild;
 			let sender = (but.textContent == "Receipt");
 			let type = "Encrypted, no signatures (should not happen!)";
-			if (data.receipt) {
-				type = "Public, no signatures (should not happen!)";
-				receipt = JSON.parse(data.receipt);
-				if (!sender && ccc[data.currency].verify(data.receipt + data.tx, data.signature, data.address)) type = "Public, sender signature only";
-				if (sender && ccc[data.currency].verify(data.receipt + data.tx, data.signature, ccc[data.currency].address)) type = "Public, my signature only";
-				
-				if (data.invoice) type += " " + data.invoice;
-			} else if (data.receiptCipher && data.nonce) {
+		
+			if (data.rNonce) {
 				try { 
-					receipt = JSON.parse(dec.decode(nacl.box.open(hexToByteArray(data.receiptCipher), hexToByteArray(data.nonce), hexToByteArray(keyCache[data.address]), ccc[data.currency].encryptKey.secretKey)));
+					receipt = JSON.parse(dec.decode(nacl.box.open(hexToByteArray(data.receipt), hexToByteArray(data.rNonce), hexToByteArray(keyCache[data.address]), ccc[data.currency].encryptKey.secretKey)));
 				} catch { showMsg('Decryption failed.'); return false;  }
 				
-				if (!sender && ccc[data.currency].verify(data.receiptCipher + data.tx, data.signature, data.address)) type = "Encrypted, sender signature only";
-				if (sender && ccc[data.currency].verify(data.receiptCipher + data.tx, data.signature, ccc[data.currency].address)) type = "Encrypted, my signature only";
+				console.log(data.receipt);
+				console.log(data.rSig);
+				console.log(data.address);
+				if (!sender && ccc[data.currency].verify(data.receipt + data.tx, data.rSig, data.address)) type = "Encrypted, sender signature only";
+				if (sender && ccc[data.currency].verify(data.receipt + data.tx, data.rSig, ccc[data.currency].address)) type = "Encrypted, my signature only";
 				
-				if (data.invoiceCipher && data.invoiceNonse) {
+				if (data.iNonce) {
 					try { 
-						let invoice = JSON.parse(dec.decode(nacl.box.open(hexToByteArray(data.invoiceCipher), hexToByteArray(data.invoiceNonce), hexToByteArray(keyCache[data.address]), ccc[data.currency].encryptKey.secretKey)));
+						let invoice = dec.decode(nacl.box.open(hexToByteArray(data.invoice), hexToByteArray(data.iNonce), hexToByteArray(keyCache[data.address]), ccc[data.currency].encryptKey.secretKey));
 						type += " " + invoice;
 					} catch { showMsg('Decryption failed.'); return false;  }
 					
 				}
+			} else if (data.receipt) {
+				type = "Public, no signatures (should not happen!)";
+				receipt = JSON.parse(data.receipt);
+				if (!sender && ccc[data.currency].verify(data.receipt + data.tx, data.rSig, data.address)) type = "Public, sender signature only";
+				if (sender && ccc[data.currency].verify(data.receipt + data.tx, data.rSig, ccc[data.currency].address)) type = "Public, my signature only";
+				
+				if (data.invoice) type += " " + data.invoice;
 			} else type = "No invoice/receipt"; 
 			
 			but.classList.add('active');
@@ -1452,8 +1456,8 @@ function freezePayment(symbol, finalize) {
 		memoList[i].children[1].placeholder = "-";	
 	}		
 	if ((memoList[memoList.length - 1] && memoList[memoList.length - 1].children[1].value) || finalize) {	
-		memoList[i].children[1].disabled = true;		
-		memoList[i].children[1].placeholder = "-";
+		memoList[memoList.length - 1].children[1].disabled = true;		
+		memoList[memoList.length - 1].children[1].placeholder = "-";
 	}
 	
 	for (let i = 0; i < memoList.length; i++) {	
@@ -1722,25 +1726,21 @@ async function withdraw(symbol, elt) {
 			showMsg(symbol + " transfer initiated...", null, true);
 			let sendResp = await ccc[symbol].sendTo(D(`${symbol}-dest`).value, (totalAmt - BigInt(rawFromUnit(symbol, D(symbol + '-withdrawal-fee').value))).toString());
 			if (sendResp) {
-				console.log(sendResp);				
-				let receipt = JSON.stringify(packageItems(symbol, "itemize"));
-				let receiptPackage = {currency: symbol, tx:sendResp};
+				console.log(sendResp);
+				let receiptPackage = {currency: symbol, tx:sendResp, receipt: JSON.stringify(packageItems(symbol, "itemize"))};
+				if (paymentWindow) receiptPackage.invoice = paymentWindow;
 				if (keyCache[D(`${symbol}-dest`).value]) {
-					receiptPackage.nonce = nacl.randomBytes(24);
-					receiptPackage.receiptCipher = byteArrayToHex(nacl.box(enc.encode(receipt), receiptPackage.nonce, hexToByteArray(keyCache[D(`${symbol}-dest`).value]), ccc[symbol].encryptKey.secretKey));
-					receiptPackage.nonce = byteArrayToHex(receiptPackage.nonce);
-					receiptPackage.signature = ccc[symbol].sign(receiptPackage.receiptCipher + receiptPackage.tx);
+					receiptPackage.rNonce = nacl.randomBytes(24);
+					receiptPackage.receipt = byteArrayToHex(nacl.box(enc.encode(receiptPackage.receipt), receiptPackage.rNonce, hexToByteArray(keyCache[D(`${symbol}-dest`).value]), ccc[symbol].encryptKey.secretKey));
+					receiptPackage.rNonce = byteArrayToHex(receiptPackage.rNonce);
 					
 					if (paymentWindow) {
-						receiptPackage.invoiceNonce = nacl.randomBytes(24);
-						receiptPackage.invoiceCipher = byteArrayToHex(nacl.box(enc.encode(paymentWindow), receiptPackage.invoiceNonce, hexToByteArray(keyCache[D(`${symbol}-dest`).value]), ccc[symbol].encryptKey.secretKey));
-						receiptPackage.invoiceNonce = byteArrayToHex(receiptPackage.invoiceNonce);
+						receiptPackage.iNonce = nacl.randomBytes(24);
+						receiptPackage.invoice = byteArrayToHex(nacl.box(enc.encode(paymentWindow), receiptPackage.iNonce, hexToByteArray(keyCache[D(`${symbol}-dest`).value]), ccc[symbol].encryptKey.secretKey));
+						receiptPackage.iNonce = byteArrayToHex(receiptPackage.iNonce);
 					}
-				} else {
-					receiptPackage.receipt = receipt;
-					receiptPackage.signature = ccc[symbol].sign(receiptPackage.receipt + receiptPackage.tx);
-					if (paymentWindow) receiptPackage.invoice = paymentWindow;
-				}
+				} 
+				receiptPackage.rSig = ccc[symbol].sign(receiptPackage.receipt + receiptPackage.tx);
 				ws.emit("setReceiptCue", receiptPackage);
 				
 				showMsg(amt + " " + symbol + " transferred.");
