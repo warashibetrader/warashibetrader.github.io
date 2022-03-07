@@ -1015,34 +1015,27 @@ function setupWebsocket(restart) {
 			let ul = D(data.div).parentNode.parentNode.parentNode.lastElementChild;
 			let but = ul.previousElementSibling.lastElementChild;
 			let sender = (but.textContent == "Receipt");
-			let type = "Encrypted, no signatures (should not happen!)";
-		
+			
+			let type = "Encrypted";		
 			if (data.rNonce) {
 				try { 
 					receipt = JSON.parse(dec.decode(nacl.box.open(hexToByteArray(data.receipt), hexToByteArray(data.rNonce), hexToByteArray(keyCache[data.address]), ccc[data.currency].encryptKey.secretKey)));
 				} catch { showMsg('Decryption failed.'); return false;  }
-				
-				console.log(data.receipt);
-				console.log(data.rSig);
-				console.log(data.address);
-				if (!sender && ccc[data.currency].verify(data.receipt + data.tx, data.rSig, data.address)) type = "Encrypted, sender signature only";
-				if (sender && ccc[data.currency].verify(data.receipt + data.tx, data.rSig, ccc[data.currency].address)) type = "Encrypted, my signature only";
-				
-				if (data.iNonce) {
-					try { 
-						let invoice = dec.decode(nacl.box.open(hexToByteArray(data.invoice), hexToByteArray(data.iNonce), hexToByteArray(keyCache[data.address]), ccc[data.currency].encryptKey.secretKey));
-						type += " " + invoice;
-					} catch { showMsg('Decryption failed.'); return false;  }
-					
-				}
 			} else if (data.receipt) {
-				type = "Public, no signatures (should not happen!)";
-				receipt = JSON.parse(data.receipt);
-				if (!sender && ccc[data.currency].verify(data.receipt + data.tx, data.rSig, data.address)) type = "Public, sender signature only";
-				if (sender && ccc[data.currency].verify(data.receipt + data.tx, data.rSig, ccc[data.currency].address)) type = "Public, my signature only";
-				
-				if (data.invoice) type += " " + data.invoice;
+				type = "Public";
+				receipt = JSON.parse(data.receipt);				
 			} else type = "No invoice/receipt"; 
+			
+			if (!sender && ccc[data.currency].verify(data.receipt + data.tx, data.rSig, data.address)) type += ", sender signature only";
+			else if (sender && ccc[data.currency].verify(data.receipt + data.tx, data.rSig, ccc[data.currency].address)) type += ", my signature only";
+			else type += ", no signatures (should not happen!)";
+			
+			if (data.iNonce) {
+				try { 
+					let invoice = dec.decode(nacl.box.open(hexToByteArray(data.invoice), hexToByteArray(data.iNonce), hexToByteArray(keyCache[data.address]), ccc[data.currency].encryptKey.secretKey));
+					type += " " + invoice;
+				} catch { showMsg('Decryption failed.'); return false;  }
+			} else if (data.invoice) type += " " + data.invoice;
 			
 			but.classList.add('active');
 			ul.style.maxHeight = "0px";
