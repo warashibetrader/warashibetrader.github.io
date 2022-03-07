@@ -384,13 +384,15 @@ ccc['ALGO'].getAccountInfo = function() {
 ccc['BAN'].getTransactions = function(start) {nanoDisplayTransactions('BAN', start);};
 ccc['XNO'].getTransactions = function(start) {nanoDisplayTransactions('XNO', start);};
 function nanoDisplayTransactions(symbol, start) {
-	post(ccc[symbol].server, { action: 'account_history', head:start, account: ccc[symbol].address, count:10 }).then(function(history) {
+	post(ccc[symbol].server, { action: 'account_history', head:start, raw:true, account: ccc[symbol].address, count:10 }).then(function(history) {
 	if (history && history.account != ccc[symbol].address) return false;
 	if (D(symbol + '-loadMore') && history && history.history) {
 		handlePage(symbol, history.previous, history.history[history.history.length - 1].height, history.previous);
 		for (let i = 0; i < history.history.length; i++) {
 			if (!D(symbol + '-' + history.history[i].height)) {
-				displayTransaction(symbol, history.history[i].height, (history.history[i].type == "send"), history.history[i].account, history.history[i].local_timestamp * 1000, history.history[i].amount, history.history[i].hash);
+				let send = (history.history[i].subtype == "send");
+				if (!send) history.history[i].hash = history.history[i].link;
+				displayTransaction(symbol, history.history[i].height, send, history.history[i].account, history.history[i].local_timestamp * 1000, history.history[i].amount, history.history[i].hash);
 			}
 		}
 	}
@@ -846,8 +848,6 @@ async function postBlock(symbol, subtype, workInput, previous, representative, b
 		link: link.replace('ban_', 'nano_')
 	});
 	
-	ws.emit('getReceiptCue', {currency:symbol, tx: link, txReceive: block.hash});
-	
 	if (symbol == "BAN") {
 		block.block.representative = block.block.representative.replace('nano_', 'ban_');
 		block.block.representative = block.block.representative.replace('xrb_', 'ban_');
@@ -1014,16 +1014,30 @@ function setupWebsocket(restart) {
 			let receipt = [];
 			let ul = D(data.div).parentNode.parentNode.parentNode.lastElementChild;
 			let but = ul.previousElementSibling.lastElementChild;
-			let type = "Encrypted";
+			let sender = (but.textContent == "Receipt");
+			let type = "Encrypted, no signatures (should not happen!)";
 			if (data.receipt) {
+				type = "Public, no signatures (should not happen!)";
 				receipt = JSON.parse(data.receipt);
-				if (!ccc[data.currency].verify(data.receipt, data.signature, data.address) &&
-					!ccc[data.currency].verify(data.receipt, data.signature, ccc[data.currency].address)) type = "Public, no signature";
-					else type = "Public, signed";
+				if (!sender && ccc[data.currency].verify(data.receipt + data.tx, data.signature, data.address)) type = "Public, sender signature only";
+				if (sender && ccc[data.currency].verify(data.receipt + data.tx, data.signature, ccc[data.currency].address)) type = "Public, my signature only";
+				
+				if (data.invoice) type += " " + data.invoice;
 			} else if (data.receiptCipher && data.nonce) {
 				try { 
 					receipt = JSON.parse(dec.decode(nacl.box.open(hexToByteArray(data.receiptCipher), hexToByteArray(data.nonce), hexToByteArray(keyCache[data.address]), ccc[data.currency].encryptKey.secretKey)));
 				} catch { showMsg('Decryption failed.'); return false;  }
+				
+				if (!sender && ccc[data.currency].verify(data.receiptCipher + data.tx, data.signature, data.address)) type = "Encrypted, sender signature only";
+				if (sender && ccc[data.currency].verify(data.receiptCipher + data.tx, data.signature, ccc[data.currency].address)) type = "Encrypted, my signature only";
+				
+				if (data.invoiceCipher && data.invoiceNonse) {
+					try { 
+						let invoice = JSON.parse(dec.decode(nacl.box.open(hexToByteArray(data.invoiceCipher), hexToByteArray(data.invoiceNonce), hexToByteArray(keyCache[data.address]), ccc[data.currency].encryptKey.secretKey)));
+						type += " " + invoice;
+					} catch { showMsg('Decryption failed.'); return false;  }
+					
+				}
 			} else type = "No invoice/receipt"; 
 			
 			but.classList.add('active');
@@ -1048,7 +1062,8 @@ function setupWebsocket(restart) {
 				itemSpan.style.paddingRight = "5px";
 				
 				let amtSpan = make('span');
-				amtSpan.textContent = twoDigit(receipt[i].amt);
+				amtSpan.textContent = receipt[i].amt;
+				if (!amtSpan.textContent) amtSpan.textContent = receipt[i][data.currency];
 				
 				li.onmouseenter = function() { this.style.backgroundColor = ccc[data.currency].flashColor; };
 				li.onmouseleave = function() { this.style.backgroundColor = "";	};				
@@ -1084,17 +1099,6 @@ function setupWebsocket(restart) {
 			ul.appendChild(li);
 			
 			showAccordion(ul);
-		} else if (!data.div) {
-			let receiptPackage = {currency: data.currency, tx:data.txReceive};
-			if (data.receipt) receiptPackage.receipt = data.receipt;
-			else if (data.receiptCipher) {
-				receiptPackage.receiptCipher = data.receiptCipher;
-				receiptPackage.nonce = data.nonce;
-			} else {
-				receiptPackage.receipt = data.receipt;
-				receiptPackage.signature = data.signature;
-			}
-			ws.emit('setReceiptCue', receiptPackage);
 		}
 	});
 }
@@ -1136,7 +1140,7 @@ if (urlParams.has('preferred') && urlParams.has('addresses') && urlParams.has('i
 }
 
 function loadPaymentsPage(data) {
-	paymentWindow = true;
+	paymentWindow = JSON.stringify(data);
 	let symbol = data.preferred;
 	D('primary').value = symbol;
 	D('primary').disabled = true;
@@ -1159,7 +1163,7 @@ function loadPaymentsPage(data) {
 		
 		for (let i = 0; i < data.items.length; i++) {
 			if (data.items[i].item || data.items[i][symbol]) {			
-				if (data.items[i][symbol]) D(symbol + "-itemize").lastElementChild.children[1].value = data.items[i][symbol];
+				if (data.items[i][symbol]) D(symbol + "-itemize").lastElementChild.children[1].value = twoDigit(data.items[i][symbol]);
 				if (data.items[i].item) D(symbol + "-itemize").lastElementChild.children[0].value = data.items[i].item;
 				if (i < data.items.length - 1) addItem(D(symbol + "-itemize"));
 			}
@@ -1437,22 +1441,29 @@ function clearPaymentSummary(symbol) {
 
 function freezePayment(symbol, finalize) {
 	let memoList = D(symbol + "-itemize").children;
+	
+	for (let i = 0; i < memoList.length; i++) {		
+		memoList[i].children[2].disabled = true;
+		memoList[i].children[2].style.filter = "opacity(0)";	
+		memoList[i].children[2].innerHTML = '&#x2715;';	
+	}	
+	for (let i = 0; i < memoList.length - 1; i++) {
+		memoList[i].children[1].disabled = true;		
+		memoList[i].children[1].placeholder = "-";	
+	}		
+	if ((memoList[memoList.length - 1] && memoList[memoList.length - 1].children[1].value) || finalize) {	
+		memoList[i].children[1].disabled = true;		
+		memoList[i].children[1].placeholder = "-";
+	}
+	
 	for (let i = 0; i < memoList.length; i++) {	
-		if (memoList[i].children[1].value || finalize || i < memoList.length - 1) {
-			memoList[i].children[1].value = twoDigit(memoList[i].children[1].value);
-			memoList[i].children[1].disabled = true;		
-			memoList[i].children[1].placeholder = "-";
-		} 
 		if (memoList[i].children[0].value || finalize || (memoList[i].children[1].value && memoList[i].children[1].value != "0.00")) {
 			memoList[i].children[0].disabled = true;	
 			memoList[i].children[0].placeholder = "-";
 		} else if (memoList[i].children[1].value == "0.00") {
 			memoList[i].children[0].placeholder = "Message...";
 			memoList[i].children[1].value = "";
-		}		 
-		memoList[i].children[2].disabled = true;
-		memoList[i].children[2].style.filter = "opacity(0)";	
-		memoList[i].children[2].innerHTML = '&#x2715;';		
+		}		 	
 	}
 }
 
@@ -1577,25 +1588,31 @@ function prepareTotalTab(symbol, elt) {
 	elt.parentNode.parentNode.parentNode.nextElementSibling.style.padding = "";
 }
 
+function packageItems(symbol, type) {
+	let elt = D(symbol + "-" + type);
+	let items = [];
+	for (let i = 0; i < elt.children.length; i++) {
+		let newItem = elt.children[i].children[0].value;
+		let newAmt = elt.children[i].children[1].value;
+		if (newItem || newAmt) {
+			let obj = {item:newItem};
+			obj[symbol] = newAmt;
+			items.push(obj);
+		}
+	}
+	return items;
+}
+
 var invoiceWaiter;
 function makeInvoiceLink(symbol) {
 	if (!invoiceWaiter) {
 		if (D(symbol + "-invoice")) {
-			let items = [];
-			for (let i = 0; i < D(symbol + "-invoice").children.length; i++) {
-				let newItem = D(symbol + "-invoice").children[i].children[0].value;
-				let newAmt = D(symbol + "-invoice").children[i].children[1].value;
-				if (newItem || newAmt) {
-					let obj = {item:newItem};
-					obj[symbol] = newAmt;
-					items.push(obj);
-				}
-			}
 			let addresses = {};
 			addresses[symbol] = ccc[symbol].address;
-			D(symbol + '-invoice-url').href = makePaymentURL(symbol, addresses, items);
-			flash(D(symbol + '-invoice-url-literal'), makePaymentURL(symbol, addresses, items));
+			let theURL = makePaymentURL(symbol, addresses, packageItems(symbol, "invoice"));
+			D(symbol + '-invoice-url').href = theURL;
 			flash(D(symbol + '-invoice-url'));
+			flash(D(symbol + '-invoice-url-literal'), theURL);
 			D(symbol + '-invoice-url').style.opacity = "";
 			D(symbol + '-invoice-url-literal').style.opacity = "";
 			invoiceWaiter = setTimeout(function() {	invoiceWaiter = ""; }, 500);
@@ -1635,7 +1652,7 @@ function verifySignature(symbol) {
 			flash(D(symbol + "-signature-conclude"), "Confirmed");
 			D(symbol + "-signature-conclude").style.color = "#097";
 		} else {
-			D(symbol + "-signature-conclude").textContent = "Unconfirmed";
+			D(symbol + "-signature-conclude").textContent = "-";
 			D(symbol + "-signature-conclude").style.color = "";
 		}
 	}
@@ -1705,21 +1722,24 @@ async function withdraw(symbol, elt) {
 			showMsg(symbol + " transfer initiated...", null, true);
 			let sendResp = await ccc[symbol].sendTo(D(`${symbol}-dest`).value, (totalAmt - BigInt(rawFromUnit(symbol, D(symbol + '-withdrawal-fee').value))).toString());
 			if (sendResp) {
-				console.log(sendResp);
-				let receipt = [];
-				for (let i = 0; i < D(symbol + "-itemize").children.length; i++) {
-					let newItem = D(symbol + "-itemize").children[i].children[0].value;
-					let newAmt = D(symbol + "-itemize").children[i].children[1].value;
-					if (newItem || newAmt) receipt.push({item:newItem, amt:newAmt});
-				}
+				console.log(sendResp);				
+				let receipt = JSON.stringify(packageItems(symbol, "itemize"));
 				let receiptPackage = {currency: symbol, tx:sendResp};
 				if (keyCache[D(`${symbol}-dest`).value]) {
 					receiptPackage.nonce = nacl.randomBytes(24);
-					receiptPackage.receiptCipher = byteArrayToHex(nacl.box(enc.encode(JSON.stringify(receipt)), receiptPackage.nonce, hexToByteArray(keyCache[D(`${symbol}-dest`).value]), ccc[symbol].encryptKey.secretKey));
+					receiptPackage.receiptCipher = byteArrayToHex(nacl.box(enc.encode(receipt), receiptPackage.nonce, hexToByteArray(keyCache[D(`${symbol}-dest`).value]), ccc[symbol].encryptKey.secretKey));
 					receiptPackage.nonce = byteArrayToHex(receiptPackage.nonce);
+					receiptPackage.signature = ccc[symbol].sign(receiptPackage.receiptCipher + receiptPackage.tx);
+					
+					if (paymentWindow) {
+						receiptPackage.invoiceNonce = nacl.randomBytes(24);
+						receiptPackage.invoiceCipher = byteArrayToHex(nacl.box(enc.encode(paymentWindow), receiptPackage.invoiceNonce, hexToByteArray(keyCache[D(`${symbol}-dest`).value]), ccc[symbol].encryptKey.secretKey));
+						receiptPackage.invoiceNonce = byteArrayToHex(receiptPackage.invoiceNonce);
+					}
 				} else {
-					receiptPackage.receipt = JSON.stringify(receipt);
-					receiptPackage.signature = ccc[symbol].sign(receiptPackage.receipt);
+					receiptPackage.receipt = receipt;
+					receiptPackage.signature = ccc[symbol].sign(receiptPackage.receipt + receiptPackage.tx);
+					if (paymentWindow) receiptPackage.invoice = paymentWindow;
 				}
 				ws.emit("setReceiptCue", receiptPackage);
 				
@@ -1827,6 +1847,11 @@ function hideAccordion(obj) {
 	obj.style.marginTop = "0px";
 }
 
+function hideAccordionPadding(obj) {
+	obj.style.paddingTop = "0px";
+	obj.style.paddingBottom = "0px";
+}
+
 function toggleSubAccordion(but) {
 	let obj = but.parentNode.lastElementChild;
 	if (obj.style.maxHeight == "0px") {
@@ -1845,11 +1870,6 @@ function openSubAccordion(but) {
 		showAccordion(obj);	
 		setTimeout(function() { if (obj.style.maxHeight != "0px") obj.style.maxHeight = ""; }, 100);
 	}
-}
-
-function hideAccordionPadding(obj) {
-	obj.style.paddingTop = "0px";
-	obj.style.paddingBottom = "0px";
 }
 
 function toggleAccount(symbol) {
@@ -1928,9 +1948,13 @@ function amtInputHandler(event, elt) {
 	addTotal(elt.parentNode.parentNode); 
 }
 
+function prepTwoDigit(elt) {
+	if (elt.validationMessage != 'Please enter a number.') elt.value = twoDigit(elt.value);
+}
 function addItem(elt) {
 	if (elt.lastElementChild) {
 		elt.lastElementChild.lastElementChild.innerHTML = '&#x2715;';
+		elt.lastElementChild.lastElementChild.style.backgroundColor = "#fff";
 		elt.lastElementChild.lastElementChild.onclick = function() {
 			remove(this.parentNode);
 			addTotal(elt);
@@ -1942,7 +1966,7 @@ function addItem(elt) {
 	if (D(symbol + "-invoice").contains(elt)) urlString = "makeInvoiceLink('" + symbol + "');";
 	let outerElt = make('div');
 	outerElt.style = "display:flex; justify-content:space-between; margin-top:15px; align-items:baseline";
-	outerElt.innerHTML = '<input placeholder="Description..." onfocus="scrollPanel(this)" onkeyup="if (event.keyCode == 27) this.value = ' + "''; " + urlString + '" style="flex-grow:2; flex-basis:1px; margin-right:10px" type="text" maxlength="128"><input placeholder="0.00" onkeyup="amtInputHandler(event, this)" style="margin-right:10px; text-align:right; flex-grow:1; flex-basis:1px; overflow:hidden; text-overflow:ellipsis;" type="number" step="0.01" min="0"><button tabindex="-1" style="font-size:0.85em" onclick="addItem(this.parentNode.parentNode)">&#65291;</button>';
+	outerElt.innerHTML = '<input placeholder="Description..." onfocus="scrollPanel(this)" onkeyup="if (event.keyCode == 27) this.value = ' + "''; " + urlString + '" style="flex-grow:2; flex-basis:1px; margin-right:10px" type="text" maxlength="128"><input placeholder="0.00" onblur="prepTwoDigit(this)" onkeyup="amtInputHandler(event, this)" style="margin-right:10px; text-align:right; flex-grow:1; flex-basis:1px; overflow:hidden; text-overflow:ellipsis;" type="number" step="0.01" min="0"><button tabindex="-1" style="font-size:0.85em" onclick="addItem(this.parentNode.parentNode)">&#65291;</button>';
 
 	elt.appendChild(outerElt);
 	outerElt.children[0].focus();
@@ -2553,15 +2577,8 @@ function generateHTML(symbol) {
 			<input id="${symbol}-withdrawal-amount-total" placeholder="0.00" style="text-align:right; flex-grow:1; flex-basis:1px" type="number" step="0.01" min="0" disabled>&nbsp;${symbol}
 		</div>
 		
-		<div class="flash leftRightBase" style="margin-top:5px;">				
-			<strong>Destination</strong>
-			<span id="${symbol}-dest-display-confirm" class="rightData"></span>
-		</div>
-		
-		<div class="flash leftRightBase" style="margin-top:5px;">				
-			<strong>Privacy</strong>
-			<span id="${symbol}-dest-privacy" class="rightData"></span>
-		</div>
+		<div class="flash leftRightBase" style="margin-top:5px;"><strong>Destination</strong><span id="${symbol}-dest-display-confirm" class="rightData"></span></div>		
+		<div class="flash leftRightBase" style="margin-top:5px;"><strong>Privacy</strong><span id="${symbol}-dest-privacy" class="rightData"></span></div>
 		
 		<div style="text-align:center; margin-top:15px;">
 			<button id="${symbol}-paymentButton" onclick="withdraw('${symbol}', this)" disabled>Transfer ${symbol}</button>
@@ -2586,16 +2603,13 @@ function generateHTML(symbol) {
 		<div id="${symbol}-invoice-url-literal" class='address' onclick="clickCopy(this, this.textContent)">&nbsp;</div>
 		
 		<div style="text-align:center; margin-top:15px;">
-			<a style="font-size:0.9em;" class="clickFlash" rel="noopener" target="_blank" href="https://warashibetrader.github.io/2022/02/17/invoices">Advanced Integrations</a>
+			<a style="font-size:0.9em;" class="clickFlash" rel="noopener" target="_blank" href="https://warashibetrader.github.io/2022/02/17/invoices">Other Payment Integrations</a>
 		</div>`);
 	
 	makeTool("Sign", "", 'sign', 0, 	
 		`<div id="${symbol}-contract" style="font-size:0.9em; margin-top:5px; margin-right:10px;" class="textbox" onkeyup="if (this.textContent.length == 0) this.innerHTML = ''; makeSignature('${symbol}')" placeholder="Contract..." contenteditable="true">Now if I carry out this oath, and break it not, may I gain for ever reputation among all men for my life and for my art; but if I break it and forswear myself, may the opposite befall me.</div>	
 
-		<div style="margin-top:10px">
-			<strong>Signature</strong> 
-			<div id="${symbol}-signature" class='address' style="max-width:min-content; overflow:hidden; text-overflow:ellipsis;" onclick="clickCopy(this, this.textContent)"></div>
-		</div>`);
+		<div style="margin-top:10px"><strong>Signature</strong><div id="${symbol}-signature" class='address' onclick="clickCopy(this, this.textContent)"></div></div>`);
 		
 	makeTool("Validate", 'signer-display', 'verify', 0, 
 		`<div style="display:flex; margin-top:5px;">
@@ -2608,18 +2622,12 @@ function generateHTML(symbol) {
 			<button tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
 		</div>	
 		
-		<div class="leftRightBase">				
-			<strong>Validation</strong>
-			<span id="${symbol}-signature-conclude" class="flash rightData">Unconfirmed</span>
-		</div>`);
+		<div class="leftRightBase"><strong>Validation</strong><span id="${symbol}-signature-conclude" class="flash rightData">-</span></div>`);
 	
 	makeTool("Representative", 'rep-display', 'tool2', 20, 
-		`<div class='address' id="${symbol}-rep" onclick="clickCopy(this, this.textContent)">&nbsp;</div>
+		`<div class='address' id="${symbol}-rep" onclick="clickCopy(this, this.textContent)">&nbsp;</div>		
+		<div class="leftRightBase"><strong>New representative</strong><span class="flash rightData" id="${symbol}-new-rep-display"></span></div>
 		
-		<div class="leftRightBase">
-			<strong>New representative</strong>
-			<span class="flash rightData" id="${symbol}-new-rep-display"></span>	
-		</div>
 		<div style="display:flex; justify-content:space-between; margin-top:10px;">
 			<input placeholder="New representative address..." onfocus="scrollPanel(this)" style="padding-right:30px; flex-grow:1; margin-right:10px" id="${symbol}-new-rep" type="text" maxlength="128" onclick="this.select()" oninput="fetchDisplayName('${symbol}', 'new-rep')" onkeyup="if (event.keyCode == 13) setRep('${symbol}', this)"><button tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
 			<button style="font-size:0.85em" onclick="suggestRep('${symbol}')">Suggest</button>
@@ -2633,15 +2641,8 @@ function generateHTML(symbol) {
 			<button style="font-size:0.85em" onclick="addressQR('${symbol}')">My Address</button>
 		</div>				
 		
-		<div class="leftRightBase">				
-			<strong>Type</strong>
-			<span id="${symbol}-type-display" class="flash rightData"></span>
-		</div>
-		<div class="leftRightBase" style="margin-top:5px;">				
-			<strong>Owner</strong>
-			<span id="${symbol}-qr-input-display" class="flash rightData">Unconfirmed</span>
-		</div>
-		
+		<div class="leftRightBase"><strong>Type</strong><span id="${symbol}-type-display" class="flash rightData"></span></div>
+		<div class="leftRightBase" style="margin-top:5px;"><strong>Owner</strong><span id="${symbol}-qr-input-display" class="flash rightData"></span></div>		
 		<div style="margin-top:20px; display:flex; justify-content:center" id="${symbol}-qrCodeImageBlock"></div><div style="margin-top:10px"></div>`);
 	
 }
