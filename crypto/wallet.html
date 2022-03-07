@@ -539,7 +539,7 @@ function displayTransaction(symbol, number, send, address, time, amt, tx) {
 		signSymbol = "-";
 	}
 
-	li.innerHTML = "<div style='display:flex; justify-content:space-between'><strong style='margin-right:10px; overflow:hidden; text-overflow: ellipsis'></strong>"
+	li.innerHTML = "<div class='clickFlash' style='display:flex; justify-content:space-between'><strong style='margin-right:10px; overflow:hidden; text-overflow: ellipsis'></strong>"
 	+ "<strong style='text-align:right; overflow:hidden; text-overflow:ellipsis; color:" + color + "'>" + signSymbol + "<span class='clickFlash'></span> " + symbol + "</strong></div>"
 	+ "<div style='display:flex; justify-content:space-between; align-items:center;'><div style='overflow:hidden; margin-left:10px'><div class='address' onclick='clickCopy(this, this.textContent)'></div>"
 	+ "<div style='font-size:0.85em; padding-left:3px;'></div></div><button style='font-size:0.85em; margin-left:10px; color:" + color + "'>" + memoType + "</button></div>" 
@@ -547,7 +547,10 @@ function displayTransaction(symbol, number, send, address, time, amt, tx) {
 	
 	li.children[0].children[0].appendChild(displayNameSpan);
 	li.children[0].children[1].children[0].textContent = unitFromRaw(symbol, amt);
-	li.children[0].children[1].children[0].onclick = function() { clickCopy(this, this.textContent); };
+	li.children[0].children[1].children[0].onclick = function() { 
+		event.stopPropagation();
+		clickCopy(this, this.textContent); 
+	};
 	
 	let bottomRow = li.children[1].children[0].children[0];
 	bottomRow.textContent = address;
@@ -575,6 +578,9 @@ function displayTransaction(symbol, number, send, address, time, amt, tx) {
     bottomRow.nextSibling.textContent = h + ':' + min + '\xa0' + ampm + ' ' + mm + '/' + dd + '/' + yyyy + ": #" + number;
 	
 	li.lastChild.previousElementSibling.lastChild.onclick = function() {
+		if (!ws.emit('getReceiptCue', {currency:symbol, tx: tx, div: displayNameSpan.id, address:address })) showMsg("Unable to connect to directory.");
+	}
+	li.firstChild.onclick = function() {
 		if (!ws.emit('getReceiptCue', {currency:symbol, tx: tx, div: displayNameSpan.id, address:address })) showMsg("Unable to connect to directory.");
 	}
 	
@@ -1019,27 +1025,27 @@ function setupWebsocket(restart) {
 			let sender = (but.textContent == "Receipt");
 			let memoType = "invoice";
 			if (sender) memoType = "receipt";
-			let type = "Encrypted invoice/receipt";		
+			let type = "Encrypted";		
+			let error = false;
 			if (data.rNonce) {
 				try { 
 					receipt = JSON.parse(dec.decode(nacl.box.open(hexToByteArray(data.receipt), hexToByteArray(data.rNonce), hexToByteArray(keyCache[data.address]), ccc[data.currency].encryptKey.secretKey)));
 				} catch { showMsg('Decryption failed.'); return false;  }
 			} else if (data.receipt) {
-				type = "Public invoice/receipt";
+				type = "Public";
 				receipt = JSON.parse(data.receipt);				
 			} else type = "No invoice/receipt"; 
 			
 			if (data.receipt) {
-				if (!sender && ccc[data.currency].verify(data.receipt + data.tx, data.rSig, data.address)) type += ", sender signature only";
-				else if (sender && ccc[data.currency].verify(data.receipt + data.tx, data.rSig, ccc[data.currency].address)) type += ", my signature only";
-				else type += ", no signatures (should not happen!)";
+				if (!sender && ccc[data.currency].verify(data.receipt + data.tx, data.rSig, data.address)) type += ", receipt signed by sender";
+				else if (sender && ccc[data.currency].verify(data.receipt + data.tx, data.rSig, ccc[data.currency].address)) type += ", receipt signed by me";
+				else type += ", receipt unsigned (should not happen!)";
 			}
 			
 			let invoiceString = "";
 			if (data.iNonce) {
 				try { 
-					let invoice = dec.decode(nacl.box.open(hexToByteArray(data.invoice), hexToByteArray(data.iNonce), hexToByteArray(keyCache[data.address]), ccc[data.currency].encryptKey.secretKey));
-					invoiceString = invoice;
+					invoiceString = dec.decode(nacl.box.open(hexToByteArray(data.invoice), hexToByteArray(data.iNonce), hexToByteArray(keyCache[data.address]), ccc[data.currency].encryptKey.secretKey));
 				} catch { showMsg('Decryption failed.'); return false;  }
 			} else if (data.invoice) invoiceString = data.invoice;
 			
@@ -1047,6 +1053,16 @@ function setupWebsocket(restart) {
 			ul.style.maxHeight = "0px";
 			
 			but.onclick = function() {
+				if (ul.style.maxHeight != "0px") {
+					ul.style.maxHeight = "0px";
+					but.classList.remove('active');
+				} else {
+					showAccordion(ul);
+					but.classList.add('active');
+				}
+			};
+			
+			D(data.div).parentNode.parentNode.onclick = function() {
 				if (ul.style.maxHeight != "0px") {
 					ul.style.maxHeight = "0px";
 					but.classList.remove('active');
@@ -1076,25 +1092,25 @@ function setupWebsocket(restart) {
 			}
 			
 			let li = make('li');
-			li.style = "overflow:hidden; text-overflow:ellipsis; padding-left:3px; margin-left:10px; margin-top:5px; white-space:nowrap";
+			li.style = "overflow:hidden; text-overflow:ellipsis; padding-left:3px; margin-left:10px; margin-top:10px; white-space:nowrap";
 				
 			let labelSpan = make('span');
-			labelSpan.textContent = "ID:\xa0";
-			labelSpan.style.fontSize = "0.85em";
+			labelSpan.textContent = "Network ID:";
+			labelSpan.style = "font-size: 0.85em; margin-right:5px";
 			
 			let idSpan = make('span');
 			idSpan.textContent = data.tx;			
 			idSpan.classList.add('address');
-			idSpan.onclick = function() { clickCopy(idSpan, idSpan.textContent);	};
+			idSpan.onclick = function() { clickCopy(idSpan, idSpan.textContent); };
 
 			let detailSpan = make('div');
 			detailSpan.textContent = type;
 			detailSpan.style = "font-size: 0.85em; padding-right:3px";
-			
+			if (error) detailSpan.style.color = "red";
 			
 			let invoiceLabelSpan = make('span');
-			invoiceLabelSpan.textContent = "Payment link:\xa0";
-			invoiceLabelSpan.style.fontSize = "0.85em";
+			invoiceLabelSpan.textContent = "Initial link:";
+			invoiceLabelSpan.style = "font-size: 0.85em; margin-right:5px";
 			
 			let invoiceSpan = make('a');
 			if (invoiceString) {
@@ -1105,16 +1121,32 @@ function setupWebsocket(restart) {
 				invoiceSpan.href = invoiceSpan.textContent;
 				invoiceSpan.target = "_blank";
 				invoiceSpan.rel='noopener';
-				invoiceSpan.classList.add('address');
-				// invoiceSpan.onclick = function() { clickCopy(invoiceSpan, invoiceSpan.textContent);	};			
+				invoiceSpan.classList.add('address');		
 			}
 				
 			li.appendChild(labelSpan);
-			li.appendChild(idSpan);		
+			li.appendChild(idSpan);	
 			li.appendChild(detailSpan);
 			if (invoiceString) {
 				li.appendChild(invoiceLabelSpan);
 				li.appendChild(invoiceSpan);
+			}
+			
+			if (receipt.length > 0) {
+				let buttonli = make('li');
+				buttonli.style = "font-size:0.85em; text-align: center; margin-top:5px;";
+				
+				let transferButton = make('button');
+				transferButton.textContent = "Populate Transfer";
+				transferButton.style.marginRight = "3px";
+				transferButton.onclick = function() { populateItems(data.currency, data.address, receipt, "itemize"); };
+				buttonli.appendChild(transferButton);
+				
+				let invoiceButton = make('button');
+				invoiceButton.textContent = "Populate Invoice";
+				invoiceButton.onclick = function() { populateItems(data.currency, data.address, receipt, "invoice"); };
+				buttonli.appendChild(invoiceButton);
+				ul.appendChild(buttonli);
 			}
 			
 			ul.appendChild(li);
@@ -1173,25 +1205,31 @@ function loadPaymentsPage(data) {
 		D('firstDiv').style = "box-shadow:initial; overflow:initial; width:initial; max-width:620px; min-width:350px;";
 	}
 	
-	selectPrimary(symbol).then(function() {	
-		clearPayment(symbol);
-		openSubAccordion(D(symbol + "-dest").parentNode.parentNode.parentNode);		
-		inputEvent(D(symbol + "-dest"), data.addresses[symbol]);
-		
+	selectPrimary(symbol).then(function() {		
+		populateItems(symbol, data.addresses[symbol], data.items, "itemize");
 		D(symbol + "-dest").disabled = true;
 		D(symbol + "-dest").nextElementSibling.style.display = "none";
 		D(symbol + "-dest").nextElementSibling.nextElementSibling.style.display = "none";
-		
-		for (let i = 0; i < data.items.length; i++) {
-			if (data.items[i].item || data.items[i][symbol]) {			
-				if (data.items[i][symbol]) D(symbol + "-itemize").lastElementChild.children[1].value = twoDigit(data.items[i][symbol]);
-				if (data.items[i].item) D(symbol + "-itemize").lastElementChild.children[0].value = data.items[i].item;
-				if (i < data.items.length - 1) addItem(D(symbol + "-itemize"));
-			}
-		}
-		addTotal(D(symbol + "-itemize"));
 		freezePayment(symbol);
 	});
+}
+
+function populateItems(symbol, address, items, type) {
+	let elt = D(symbol + "-" + type);
+	if (type == "itemize") clearPayment(symbol);
+	else clearMemoList(symbol, "-invoice");
+	openSubAccordion(elt.parentNode.parentNode);
+	if (type == "itemize") inputEvent(D(symbol + "-dest"), address);
+	
+	for (let i = 0; i < items.length; i++) {
+		if (items[i].item || items[i][symbol]) {
+			elt.lastElementChild.children[1].value = twoDigit(items[i].amt);
+			if (!elt.lastElementChild.children[1].value) elt.lastElementChild.children[1].value = twoDigit(items[i][symbol]);
+			if (items[i].item) elt.lastElementChild.children[0].value = items[i].item;
+			if (i < items.length - 1) addItem(elt);
+		}
+	}
+	addTotal(elt);
 }
 
 //////////////////////////////////////////////////////// Other global eventlisteners
@@ -1605,8 +1643,8 @@ function prepareTotalTab(symbol, elt) {
 	if (D(symbol + "-withdrawal-amount").value && D(symbol + "-dest-display").textContent) D(symbol + "-paymentButton").disabled = false;
 	else D(symbol + "-paymentButton").disabled = true;
 		
-	showAccordion(elt.parentNode.parentNode.parentNode.nextElementSibling);	
-	elt.parentNode.parentNode.parentNode.nextElementSibling.style.padding = "";
+	showAccordion(D(symbol + "-payTool").nextElementSibling);	
+	D(symbol + "-payTool").nextElementSibling.style.padding = "";
 }
 
 function packageItems(symbol, type) {
@@ -1632,7 +1670,7 @@ function makeInvoiceLink(symbol) {
 			addresses[symbol] = ccc[symbol].address;
 			let theURL = makePaymentURL(symbol, addresses, packageItems(symbol, "invoice"));
 			D(symbol + '-invoice-url').href = theURL;
-			flash(D(symbol + '-invoice-url'));
+			//flash(D(symbol + '-invoice-url'));
 			flash(D(symbol + '-invoice-url-literal'), theURL);
 			D(symbol + '-invoice-url').style.opacity = "";
 			D(symbol + '-invoice-url-literal').style.opacity = "";
@@ -1838,6 +1876,13 @@ function toggleVisibility(symbol) {
 	if (x.type === "password") {
 		x.type = "text";
 		D(symbol + '-show').classList.add('active');
+		if (x.value.length == 0) {
+			let seed = localStorage.getItem(`${symbol}-seed`);
+			if (seed) {
+				D(`${symbol}-seed`).value = seed;
+				D(`${symbol}-generateButton`).disabled = true;
+			}
+		}
 	} else {
 		x.type = "password";		
 		D(symbol + '-show').classList.remove('active');
@@ -1993,7 +2038,7 @@ function donate() {
 	let symbol = D('primary').value;
 	D(symbol + "-dest").parentNode.scrollIntoView({block:"center", behavior:"auto"});
 	inputEvent(D(symbol + "-dest"), ccc[symbol].donation);
-	openSubAccordion(D(symbol + "-dest").parentNode.parentNode.parentNode);
+	openSubAccordion(D(symbol + "-payTool"));
 }
 
 function toggleWipe() {
