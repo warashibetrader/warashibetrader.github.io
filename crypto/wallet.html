@@ -389,10 +389,12 @@ function nanoDisplayTransactions(symbol, start) {
 	if (D(symbol + '-loadMore') && history && history.history) {
 		handlePage(symbol, history.previous, history.history[history.history.length - 1].height, history.previous);
 		for (let i = 0; i < history.history.length; i++) {
-			if (!D(symbol + '-' + history.history[i].height)) {
-				let send = (history.history[i].subtype == "send");
-				if (!send) history.history[i].hash = history.history[i].link;
-				displayTransaction(symbol, history.history[i].height, send, history.history[i].account, history.history[i].local_timestamp * 1000, history.history[i].amount, history.history[i].hash);
+			if (history.history[i].subtype != "change") {
+				if (!D(symbol + '-' + history.history[i].height)) {
+					let send = (history.history[i].subtype == "send");
+					if (!send) history.history[i].hash = history.history[i].link;
+					displayTransaction(symbol, history.history[i].height, send, history.history[i].account, history.history[i].local_timestamp * 1000, history.history[i].amount, history.history[i].hash);
+				}
 			}
 		}
 	}
@@ -1015,20 +1017,23 @@ function setupWebsocket(restart) {
 			let ul = D(data.div).parentNode.parentNode.parentNode.lastElementChild;
 			let but = ul.previousElementSibling.lastElementChild;
 			let sender = (but.textContent == "Receipt");
-			
-			let type = "Encrypted";		
+			let memoType = "invoice";
+			if (sender) memoType = "receipt";
+			let type = "Encrypted invoice/receipt";		
 			if (data.rNonce) {
 				try { 
 					receipt = JSON.parse(dec.decode(nacl.box.open(hexToByteArray(data.receipt), hexToByteArray(data.rNonce), hexToByteArray(keyCache[data.address]), ccc[data.currency].encryptKey.secretKey)));
 				} catch { showMsg('Decryption failed.'); return false;  }
 			} else if (data.receipt) {
-				type = "Public";
+				type = "Public invoice/receipt";
 				receipt = JSON.parse(data.receipt);				
 			} else type = "No invoice/receipt"; 
 			
-			if (!sender && ccc[data.currency].verify(data.receipt + data.tx, data.rSig, data.address)) type += ", sender signature only";
-			else if (sender && ccc[data.currency].verify(data.receipt + data.tx, data.rSig, ccc[data.currency].address)) type += ", my signature only";
-			else type += ", no signatures (should not happen!)";
+			if (data.receipt) {
+				if (!sender && ccc[data.currency].verify(data.receipt + data.tx, data.rSig, data.address)) type += ", sender signature only";
+				else if (sender && ccc[data.currency].verify(data.receipt + data.tx, data.rSig, ccc[data.currency].address)) type += ", my signature only";
+				else type += ", no signatures (should not happen!)";
+			}
 			
 			let invoiceString = "";
 			if (data.iNonce) {
