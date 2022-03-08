@@ -54,7 +54,7 @@
 			</select>	
 			<div style="position:absolute; right:0px">
 				<button id="account" style="font-size:0.85em" onclick="toggleAccount()">Account</button>				
-				<button style="font-size:0.85em" onclick="event.stopPropagation(); hardRefresh();">Refresh</button>
+				<button id="${symbol}-refresh" style="font-size:0.85em" onclick="hardRefresh();">Refresh</button>
 			</div>
 		</div>		
 		
@@ -381,10 +381,10 @@ ccc['ALGO'].getAccountInfo = function() {
 	});}).catch(function() { return networkFailMsg(); });
 };
 
-ccc['BAN'].getTransactions = function(start) {nanoDisplayTransactions('BAN', start);};
-ccc['XNO'].getTransactions = function(start) {nanoDisplayTransactions('XNO', start);};
+ccc['BAN'].getTransactions = function(start) { return nanoDisplayTransactions('BAN', start);};
+ccc['XNO'].getTransactions = function(start) { return nanoDisplayTransactions('XNO', start);};
 function nanoDisplayTransactions(symbol, start) {
-	post(ccc[symbol].server, { action: 'account_history', head:start, raw:true, account: ccc[symbol].address, count:10 }).then(function(history) {
+	return post(ccc[symbol].server, { action: 'account_history', head:start, raw:true, account: ccc[symbol].address, count:10 }).then(function(history) {
 	if (history && history.account != ccc[symbol].address) return false;
 	if (D(symbol + '-loadMore') && history && history.history) {
 		handlePage(symbol, history.previous, history.history[history.history.length - 1].height, history.previous);
@@ -435,7 +435,7 @@ ccc['XLM'].getTransactions = function(start) {
 	let caller;
 	if (start) caller = start();
 	else caller = ccc[symbol].server.payments().forAccount(ccc[symbol].address).order("desc").limit(10).call();
-	caller.then(function(history) {
+	return caller.then(function(history) {
 	if (D(symbol + '-loadMore') && history) {
 		handlePage(symbol, history.records.length > 9, history.records[history.records.length - 1].id, history.next);
 		for (let i = 0; i < history.records.length; i++) {
@@ -461,8 +461,8 @@ ccc['XLM'].getTransactions = function(start) {
 ccc['ALGO'].getTransactions = function(start) {
 	let symbol = 'ALGO';
 	if (!start) start = "";
-	fetch(ccc[symbol].server + 'transactions?limit=10&tx-type=pay&sig-type=sig&address=' + ccc[symbol].address + start).then(function(response) { 
-	response.json().then(function(history) {
+	return fetch(ccc[symbol].server + 'transactions?limit=10&tx-type=pay&sig-type=sig&address=' + ccc[symbol].address + start).then(function(response) { 
+	return response.json().then(function(history) {
 	if (D(symbol + '-loadMore') && history) {
 		handlePage(symbol, history.transactions.length > 9, history.transactions[history.transactions.length - 1]['confirmed-round'], "&next=" + history['next-token']);	
 		for (let i = 0; i < history.transactions.length; i++) {
@@ -485,7 +485,10 @@ function handlePage(symbol, condition, lastNumber, restart) {
 		if (!D(symbol + '-' + lastNumber)) {
 			D(symbol + '-loadMore').style.display = "";
 			D(symbol + '-gettingStarted').style.display = "none";
-			D(symbol + '-loadMore').onclick = function() {ccc[symbol].getTransactions(restart);};
+			D(symbol + '-loadMore').onclick = function() { 				
+				D(symbol + '-loadMore').disabled = true; 
+				ccc[symbol].getTransactions(restart).then(function() { D(symbol + '-loadMore').disabled = false; });
+			};
 		}
 	} else {
 		D(symbol + '-loadMore').style.display = "none";				
@@ -1432,9 +1435,22 @@ function hardRefresh(symbol) {
 	if (!symbol) symbol = D('primary').value;
 	if (ccc[symbol].address) {
 		fetchDisplayName(symbol, "address");
-		refreshBalance(symbol);
-		if (!paymentWindow) ccc[symbol].getTransactions();
+		refreshData(symbol);
 	}
+}
+
+function refreshData(symbol) {
+	D(symbol + "-transaction-refresh").disabled = true;
+	D(symbol + "-refresh").disabled = true;	
+	let balance = refreshBalance(symbol);
+	let transaction = new Promise(function(resolve, reject) { resolve(true); });
+	if (!paymentWindow) transaction = ccc[symbol].getTransactions();
+	balance.then(function() {
+		transaction.then(function () {
+			D(symbol + "-transaction-refresh").disabled = false;
+			D(symbol + "-refresh").disabled = false;
+		});
+	});
 }
 
 function loadDisplay(symbol, keepAccount) {
@@ -1738,8 +1754,7 @@ function cyclePending(symbol, elt) {
 					count++;
 				}
 				if (count) {
-					if (!paymentWindow) ccc[symbol].getTransactions();	
-					refreshBalance(symbol);
+					refreshData(symbol);
 					D(`${symbol}-balance-pending`).textContent = "0.00";
 					if (elt) showMsg("Arriving " + symbol + " collected.");	
 					if (!keyCache[ccc[symbol].address]) setName(symbol, nameCache[ccc[symbol].address]);
@@ -1779,12 +1794,10 @@ async function withdraw(symbol, elt) {
 				
 				showMsg(amt + " " + symbol + " transferred.");
 				if (!keyCache[ccc[symbol].address]) setName(symbol, nameCache[ccc[symbol].address]);
-				refreshBalance(symbol);
 				
-				if (!paymentWindow) {
-					ccc[symbol].getTransactions();
-					clearPayment(symbol);
-				} else {
+				refreshData(symbol);
+				if (!paymentWindow) clearPayment(symbol);
+				else {
 					freezePayment(symbol, true);						
 					let sp = make('div');
 					sp.textContent = "Thank you!";
