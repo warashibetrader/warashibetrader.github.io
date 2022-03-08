@@ -402,14 +402,14 @@ function nanoDisplayTransactions(symbol, start) {
 	
 ccc['SOL'].getTransactions = function(start) {
 	let symbol = 'SOL';
-	return ccc[symbol].server.getSignaturesForAddress(ccc[symbol].publicKey, {limit:10, before: start}).then(async function(history) {
-	if (D(symbol + '-loadMore') && history && history.length > 0) {
+	return ccc[symbol].server.getSignaturesForAddress(ccc[symbol].publicKey, {limit:10, before: start}).then(function(history) {
+	if (D(symbol + '-loadMore') && history) {
 		let details = [];
 		for (let i = 0; i < history.length; i++) {			
 			details[i] = history[i].signature;  
 		}
-		let historyDetails = await ccc[symbol].server.getParsedConfirmedTransactions(details);
-		if (D(symbol + '-loadMore') && historyDetails && historyDetails.length > 0) {
+		return ccc[symbol].server.getParsedConfirmedTransactions(details).then(function(historyDetails) {
+		if (D(symbol + '-loadMore') && historyDetails) {
 			handlePage(symbol, history.length > 9, history[history.length - 1].slot, history[history.length - 1].signature);
 			for (let i = 0; i < historyDetails.length; i++) {			
 				if (!D(symbol + '-' + history[i].slot)) {
@@ -426,7 +426,7 @@ ccc['SOL'].getTransactions = function(start) {
 					displayTransaction(symbol, history[i].slot, send, actualAddress, history[i].blockTime * 1000, change, history[i].signature);	
 				}
 			}
-		}
+		}}).catch(function() {networkFailMsg();});
 	}}).catch(function() {networkFailMsg();});
 };
 
@@ -463,7 +463,7 @@ ccc['ALGO'].getTransactions = function(start) {
 	if (!start) start = "";
 	fetch(ccc[symbol].server + 'transactions?limit=10&tx-type=pay&sig-type=sig&address=' + ccc[symbol].address + start).then(function(response) { 
 	response.json().then(function(history) {
-	if (D(symbol + '-loadMore') && history && history.transactions.length > 0) {
+	if (D(symbol + '-loadMore') && history) {
 		handlePage(symbol, history.transactions.length > 9, history.transactions[history.transactions.length - 1]['confirmed-round'], "&next=" + history['next-token']);	
 		for (let i = 0; i < history.transactions.length; i++) {
 			if (!D(symbol + '-' + history.transactions[i]['confirmed-round'])) {
