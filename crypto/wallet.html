@@ -436,6 +436,7 @@ ccc['SOL'].getTransactions = function(start) {
 						} else if (j < 2) {
 							let actualAddress = historyDetails[i].transaction.message.accountKeys[j].pubkey.toBase58();
 							let tx = li.children[1].children[0].children[0].textContent;
+							console.log(tx);
 							li.children[1].children[0].children[0].textContent = actualAddress;
 							fetchDisplayName(symbol, historyDetails[i].slot, true);								
 							li.children[0].children[0].children[0].onclick = function() { fetchDisplayName(symbol, historyDetails[i].slot);	};
