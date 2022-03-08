@@ -977,7 +977,10 @@ function setupWebsocket(restart) {
 	
 	ws.on('setNameCompletedCue', async function(data) {
 		if (ccc[data.currency].verify(data.display + data.publicKey, data.signature, data.address)) {
-			keyCache[data.address] = data.publicKey;
+			if (!keyCache[data.address]) {
+				keyCache[data.address] = data.publicKey;
+				localStorage.setItem("publicKeys", JSON.stringify(keyCache));
+			}			
 			displayName(data.currency, "address", data.address, data.display);
 		}
 	});
@@ -991,7 +994,10 @@ function setupWebsocket(restart) {
 			showMsg("Corrupt signature for " + data.display);
 			return false;
 		}
-		if (data.publicKey) keyCache[data.address] = data.publicKey;
+		if (data.publicKey && !keyCache[data.address]) {
+			keyCache[data.address] = data.publicKey;
+			localStorage.setItem("publicKeys", JSON.stringify(keyCache));
+		}
 		displayName(data.currency, data.div, data.address, data.display);
 	});
 	
