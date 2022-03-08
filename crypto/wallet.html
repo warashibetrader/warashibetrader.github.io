@@ -442,6 +442,7 @@ ccc['SOL'].getTransactions = function(start) {
 							li.children[0].children[0].children[0].onclick = function() { fetchDisplayName(symbol, historyDetails[i].slot);	};
 							
 							but.onclick = function() {
+								console.log({currency:symbol, tx: tx, div: historyDetails[i].slot, address:actualAddress });
 								if (!ws.emit('getReceiptCue', {currency:symbol, tx: tx, div: historyDetails[i].slot, address:actualAddress })) showMsg("Unable to connect to directory.");
 							}
 							li.firstChild.onclick = function() {
