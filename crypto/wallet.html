@@ -143,9 +143,11 @@ if (imgsrc) {
 }
 
 var nameCache = localStorage.getItem("names");
-if (!nameCache) nameCache = {};
-else nameCache = JSON.parse(nameCache);
-var keyCache = {};
+if (nameCache) nameCache = JSON.parse(nameCache);
+else nameCache = {};
+var keyCache = localStorage.getItem("publicKeys");
+if (keyCache) keyCache = JSON.parse(keyCache);
+else keyCache = {};
 var backupCache = {};
 
 const video = document.createElement("video");
