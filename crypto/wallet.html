@@ -54,7 +54,7 @@
 			</select>	
 			<div style="position:absolute; right:0px">
 				<button id="account" style="font-size:0.85em" onclick="toggleAccount()">Account</button>				
-				<button id="${symbol}-refresh" style="font-size:0.85em" onclick="hardRefresh();">Refresh</button>
+				<button id="refresh" style="font-size:0.85em" onclick="hardRefresh();">Refresh</button>
 			</div>
 		</div>		
 		
@@ -1441,14 +1441,14 @@ function hardRefresh(symbol) {
 
 function refreshData(symbol) {
 	D(symbol + "-transaction-refresh").disabled = true;
-	D(symbol + "-refresh").disabled = true;	
+	D("refresh").disabled = true;	
 	let balance = refreshBalance(symbol);
 	let transaction = new Promise(function(resolve, reject) { resolve(true); });
 	if (!paymentWindow) transaction = ccc[symbol].getTransactions();
 	balance.then(function() {
 		transaction.then(function () {
 			D(symbol + "-transaction-refresh").disabled = false;
-			D(symbol + "-refresh").disabled = false;
+			D("refresh").disabled = false;
 		});
 	});
 }
@@ -2423,6 +2423,7 @@ async function selectPrimary(symbol) {
 	qrclose();
 	D('firstDiv').style.backgroundColor = ccc[symbol].bgColor;
 	D('donateButton').disabled = true;
+	D("refresh").disabled = false;
 	
 	D('quoteDisplay').style.display = "none";
 	D('firstDiv').insertBefore(D('quoteDisplay'), D('firstDiv').children[0]);	
