@@ -152,20 +152,17 @@ button {
 	cursor: pointer;
 }
 
-button:hover:enabled {  
+button:disabled, button[disabled] {
+	color:#aaa;
+	cursor:initial;
+}
+
+button:hover {  
 	background-color: #e4e7e7;
 }
 
 button.active {
 	background-color: #d4d7d7;	
-}
-button.active:disabled {
-	background-color: #f1f4f4;	
-}
-
-button:disabled, button[disabled]{
-	color:#aaa;
-	cursor:initial;
 }
 
 a {
@@ -291,7 +288,7 @@ ul::-webkit-scrollbar-thumb:hover {
 		cursor: initial;
 	}
 	
-	button:hover:enabled {  
+	button:hover {  
 		background-color: #f1f4f4;
 	}
 	
