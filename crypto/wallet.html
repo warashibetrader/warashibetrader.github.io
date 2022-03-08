@@ -416,34 +416,40 @@ ccc['SOL'].getTransactions = function(start) {
 		if (details.length > 0) {
 			let historyDetails = await ccc[symbol].server.getParsedConfirmedTransactions(details);
 			if (historyDetails.length > 0) {
-			console.log(historyDetails);
-				for (let i = 0; i < historyDetails.length; i++) {
-					if (D(symbol + '-' + historyDetails[i].slot)) {
-						let li = D(symbol + '-' + historyDetails[i].slot).parentNode.parentNode.parentNode;
-						for (let j = 0; j < historyDetails[i].transaction.message.accountKeys.length; j++) {
-							if (historyDetails[i].transaction.message.accountKeys[j].pubkey.toBase58() == ccc[symbol].address) {
-								let change = historyDetails[i].meta.postBalances[j] - historyDetails[i].meta.preBalances[j];
-								let amtDisplay = li.children[0].children[1];								
-								let but = li.lastElementChild.previousElementSibling.lastElementChild;
-								if (historyDetails[i].transaction.message.accountKeys[j].signer) {
-									change = -change;
-								} else {
-									amtDisplay.innerHTML =  '+' + "<span class='clickFlash'></span> " + symbol;
-									but.textContent = "Invoice";
-									amtDisplay.style.color = "#097";
-									but.style.color = "#097";
-								}
-								amtDisplay.children[0].textContent = unitFromRaw(symbol, change);
-								amtDisplay.children[0].onclick = function() { clickCopy(this, this.textContent); };			
-							} else if (j < 2) {
-								let actualAddress = historyDetails[i].transaction.message.accountKeys[j].pubkey.toBase58()
-								li.children[1].children[0].children[0].textContent = actualAddress;
-								fetchDisplayName(symbol, historyDetails[i].slot, true);								
-								li.children[0].children[0].children[0].onclick = function() { fetchDisplayName(symbol, historyDetails[i].slot);	};
+			for (let i = 0; i < historyDetails.length; i++) {
+				if (D(symbol + '-' + historyDetails[i].slot)) {
+					let li = D(symbol + '-' + historyDetails[i].slot).parentNode.parentNode.parentNode;
+					let but = li.lastElementChild.previousElementSibling.lastElementChild;
+					let amtDisplay = li.children[0].children[1];
+					for (let j = 0; j < historyDetails[i].transaction.message.accountKeys.length; j++) {
+						if (historyDetails[i].transaction.message.accountKeys[j].pubkey.toBase58() == ccc[symbol].address) {
+							let change = historyDetails[i].meta.postBalances[j] - historyDetails[i].meta.preBalances[j];
+							if (historyDetails[i].transaction.message.accountKeys[j].signer) change = -change;
+							else {
+								amtDisplay.innerHTML =  '+' + "<span class='clickFlash'></span> " + symbol;
+								but.textContent = "Invoice";
+								amtDisplay.style.color = "#097";
+								but.style.color = "#097";
+							}
+							amtDisplay.children[0].textContent = unitFromRaw(symbol, change);
+							amtDisplay.children[0].onclick = function() { clickCopy(this, this.textContent); };			
+						} else if (j < 2) {
+							let actualAddress = historyDetails[i].transaction.message.accountKeys[j].pubkey.toBase58();
+							let tx = li.children[1].children[0].children[0].textContent;
+							li.children[1].children[0].children[0].textContent = actualAddress;
+							fetchDisplayName(symbol, historyDetails[i].slot, true);								
+							li.children[0].children[0].children[0].onclick = function() { fetchDisplayName(symbol, historyDetails[i].slot);	};
+							
+							but.onclick = function() {
+								if (!ws.emit('getReceiptCue', {currency:symbol, tx: tx, div: historyDetails[i].slot, address:actualAddress })) showMsg("Unable to connect to directory.");
+							}
+							li.firstChild.onclick = function() {
+								if (!ws.emit('getReceiptCue', {currency:symbol, tx: tx, div: historyDetails[i].slot, address:actualAddress })) showMsg("Unable to connect to directory.");
 							}
 						}
 					}
 				}
+			}
 			}
 		}
 	} else {
@@ -1029,9 +1035,6 @@ function setupWebsocket(restart) {
 			let type = "Encrypted";		
 			let error = false;
 			if (data.rNonce) {
-				console.log(hexToByteArray(keyCache[data.address]));
-				console.log(keyCache[data.address]);
-				console.log(data.address);
 				try { 
 					receipt = JSON.parse(dec.decode(nacl.box.open(hexToByteArray(data.receipt), hexToByteArray(data.rNonce), hexToByteArray(keyCache[data.address]), ccc[data.currency].encryptKey.secretKey)));
 				} catch (error) { console.error(error); showMsg('Decryption failed.'); return false;  }
