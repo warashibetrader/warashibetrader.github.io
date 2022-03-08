@@ -584,6 +584,7 @@ function displayTransaction(symbol, number, send, address, time, amt, tx) {
 		if (!ws.emit('getReceiptCue', {currency:symbol, tx: tx, div: displayNameSpan.id, address:address })) showMsg("Unable to connect to directory.");
 	}
 	
+	li.lastChild.previousElementSibling.lastChild.title = tx;
 	li.title = number;	
 	addOrdered(li, D(symbol + '-transactions'));
 	if (ccc[symbol].checkAddress(address)) fetchDisplayName(symbol, number, true);
@@ -1092,7 +1093,7 @@ function setupWebsocket(restart) {
 			}
 			
 			let li = make('li');
-			li.style = "overflow:hidden; text-overflow:ellipsis; padding-left:3px; margin-left:10px; margin-top:10px; white-space:nowrap";
+			li.style = "overflow:hidden; text-overflow:ellipsis; padding-left:3px; margin-left:10px; white-space:nowrap";
 				
 			let labelSpan = make('span');
 			labelSpan.textContent = "Network ID:";
@@ -1134,7 +1135,7 @@ function setupWebsocket(restart) {
 			
 			if (receipt.length > 0) {
 				let buttonli = make('li');
-				buttonli.style = "font-size:0.85em; text-align: center; margin-top:5px;";
+				buttonli.style = "font-size:0.85em; text-align: center; margin-top:10px; margin-bottom:10px;";
 				
 				let transferButton = make('button');
 				transferButton.textContent = "Populate Transfer";
@@ -1711,7 +1712,7 @@ function verifySignature(symbol) {
 			flash(D(symbol + "-signature-conclude"), "Confirmed");
 			D(symbol + "-signature-conclude").style.color = "#097";
 		} else {
-			D(symbol + "-signature-conclude").textContent = "-";
+			D(symbol + "-signature-conclude").textContent = "\xa0\xa0-\xa0\xa0";
 			D(symbol + "-signature-conclude").style.color = "";
 		}
 	}
@@ -2137,9 +2138,10 @@ function checkli(li, item, symbol) {
 	let restricted = D(symbol + "-invoice-filter").classList.contains('active');
 	if (restricted && li.children[1].children[1].textContent + 's' != D(symbol + "-invoice-filter").textContent) li.style.display = "none";
 	else {
+		let txid = li.lastChild.previousElementSibling.lastChild.title.toLowerCase();
 		let displayName = li.children[0].children[0].textContent.toLowerCase();
 		let address = li.children[1].children[0].children[0].textContent.toLowerCase();
-		if (displayName.indexOf(item) != -1 || address.indexOf(item) != -1) li.style.display = "";
+		if (displayName.indexOf(item) != -1 || address.indexOf(item) != -1 || txid.indexOf(item) != -1) li.style.display = "";
 		else li.style.display = "none";
 	}
 }
@@ -2684,7 +2686,7 @@ function generateHTML(symbol) {
 			<button tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
 		</div>	
 		
-		<div class="leftRightBase"><strong>Validation</strong><span id="${symbol}-signature-conclude" class="flash rightData">-</span></div>`);
+		<div class="leftRightBase"><strong>Validation</strong><span id="${symbol}-signature-conclude" class="flash rightData">&nbsp;&nbsp;-&nbsp;&nbsp;</span></div>`);
 	
 	makeTool("Representative", 'rep-display', 'tool2', 20, 
 		`<div class='address' id="${symbol}-rep" onclick="clickCopy(this, this.textContent)">&nbsp;</div>		
