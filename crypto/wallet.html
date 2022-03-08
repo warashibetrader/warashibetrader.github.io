@@ -443,10 +443,10 @@ ccc['SOL'].getTransactions = function(start) {
 							
 							but.onclick = function() {
 								console.log({currency:symbol, tx: tx, div: historyDetails[i].slot, address:actualAddress });
-								if (!ws.emit('getReceiptCue', {currency:symbol, tx: tx, div: historyDetails[i].slot, address:actualAddress })) showMsg("Unable to connect to directory.");
+								if (!ws.emit('getReceiptCue', {currency:symbol, tx: tx, div: `${symbol}-${historyDetails[i].slot}-display`, address:actualAddress })) showMsg("Unable to connect to directory.");
 							}
 							li.firstChild.onclick = function() {
-								if (!ws.emit('getReceiptCue', {currency:symbol, tx: tx, div: historyDetails[i].slot, address:actualAddress })) showMsg("Unable to connect to directory.");
+								if (!ws.emit('getReceiptCue', {currency:symbol, tx: tx, div: `${symbol}-${historyDetails[i].slot}-display`, address:actualAddress })) showMsg("Unable to connect to directory.");
 							}
 						}
 					}
