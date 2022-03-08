@@ -1029,6 +1029,9 @@ function setupWebsocket(restart) {
 			let type = "Encrypted";		
 			let error = false;
 			if (data.rNonce) {
+				console.log(hexToByteArray(keyCache[data.address]));
+				console.log(keyCache[data.address]);
+				console.log(data.address);
 				try { 
 					receipt = JSON.parse(dec.decode(nacl.box.open(hexToByteArray(data.receipt), hexToByteArray(data.rNonce), hexToByteArray(keyCache[data.address]), ccc[data.currency].encryptKey.secretKey)));
 				} catch (error) { console.error(error); showMsg('Decryption failed.'); return false;  }
