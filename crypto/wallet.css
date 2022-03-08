@@ -220,7 +220,7 @@ a:hover {
 
 .textbox:empty:before{
 	content:attr(placeholder);
-	opacity:0.8;
+	opacity:0.6;
 }
 
 .textbox:focus {
