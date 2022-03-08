@@ -436,13 +436,11 @@ ccc['SOL'].getTransactions = function(start) {
 						} else if (j < 2) {
 							let actualAddress = historyDetails[i].transaction.message.accountKeys[j].pubkey.toBase58();
 							let tx = li.children[1].children[0].children[0].textContent;
-							console.log(tx);
 							li.children[1].children[0].children[0].textContent = actualAddress;
 							fetchDisplayName(symbol, historyDetails[i].slot, true);								
 							li.children[0].children[0].children[0].onclick = function() { fetchDisplayName(symbol, historyDetails[i].slot);	};
 							
 							but.onclick = function() {
-								console.log({currency:symbol, tx: tx, div: historyDetails[i].slot, address:actualAddress });
 								if (!ws.emit('getReceiptCue', {currency:symbol, tx: tx, div: `${symbol}-${historyDetails[i].slot}-display`, address:actualAddress })) showMsg("Unable to connect to directory.");
 							}
 							li.firstChild.onclick = function() {
@@ -1048,7 +1046,10 @@ function setupWebsocket(restart) {
 			if (data.receipt) {
 				if (!sender && ccc[data.currency].verify(data.receipt + data.tx, data.rSig, data.address)) type += ", receipt signed by sender";
 				else if (sender && ccc[data.currency].verify(data.receipt + data.tx, data.rSig, ccc[data.currency].address)) type += ", receipt signed by me";
-				else type += ", receipt unsigned (should not happen!)";
+				else {
+					type += ", no receipt signature (should not happen!)";
+					error = true;
+				}
 			}
 			
 			let invoiceString = "";
@@ -1101,7 +1102,7 @@ function setupWebsocket(restart) {
 			}
 			
 			let li = make('li');
-			li.style = "overflow:hidden; text-overflow:ellipsis; padding-left:3px; margin-left:10px; white-space:nowrap";
+			li.style = "overflow:hidden; text-overflow:ellipsis; padding-left:3px; margin-left:10px; white-space:nowrap; text-align:center";
 				
 			let labelSpan = make('span');
 			labelSpan.textContent = "Network ID:";
@@ -1133,13 +1134,13 @@ function setupWebsocket(restart) {
 				invoiceSpan.classList.add('address');		
 			}
 				
-			li.appendChild(labelSpan);
-			li.appendChild(idSpan);	
-			li.appendChild(detailSpan);
 			if (invoiceString) {
 				li.appendChild(invoiceLabelSpan);
 				li.appendChild(invoiceSpan);
 			}
+			li.appendChild(detailSpan);
+			li.appendChild(labelSpan);
+			li.appendChild(idSpan);	
 			
 			if (receipt.length > 0) {
 				let buttonli = make('li');
@@ -2668,14 +2669,15 @@ function generateHTML(symbol) {
 		</div>
 		
 		<div class="leftRightBase" style="margin-right:0px;">				
-			<strong>Payment link</strong>
-			<a id="${symbol}-invoice-url" class="flash" target="_blank" href=""><button style="font-size:0.85em">Demo</button></a>
+			<strong style="margin-right:5px;">Payment link</strong>			
+			<a style="font-size:0.9em; text-align:right" class="clickFlash" rel="noopener" target="_blank" href="https://warashibetrader.github.io/2022/02/17/invoices">More Payment Integrations</a>
+			
 		</div>
 		
 		<div id="${symbol}-invoice-url-literal" class='address' onclick="clickCopy(this, this.textContent)">&nbsp;</div>
 		
 		<div style="text-align:center; margin-top:15px;">
-			<a style="font-size:0.9em;" class="clickFlash" rel="noopener" target="_blank" href="https://warashibetrader.github.io/2022/02/17/invoices">Other Payment Integrations</a>
+			<a id="${symbol}-invoice-url" class="flash" target="_blank" href=""><button style="font-size:0.85em">Link Demo</button></a>
 		</div>`);
 	
 	makeTool("Sign", "", 'sign', 0, 	
