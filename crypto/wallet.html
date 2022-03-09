@@ -1639,8 +1639,10 @@ function prepareTotalTab(symbol, elt) {
 	
 	if (paymentWindow) {
 		D(symbol + "-dest-sig").parentNode.style.display = "";
-		if (ccc[data.currency].verify(JSON.stringify(paymentWindow.invoice), paymentWindow.iSig, D(symbol + "-dest").value)) D(symbol + "-dest-sig").textContent = "Yes";
-		else D(symbol + "-dest-sig").textContent = "No";
+		if (ccc[symbol].verify(JSON.stringify(paymentWindow.invoice), paymentWindow.iSig, D(symbol + "-dest").value)) {
+			D(symbol + "-dest-sig").textContent = "Yes";
+			D(symbol + "-dest-sig").style.color = "#097";
+		} else D(symbol + "-dest-sig").textContent = "No";
 	}
 	
 	let privacyString = "Public (<a class='clickFlash' rel='noopener' target='_blank' href='https://warashibetrader.github.io/2022/03/05/end-to-end'>?</a>)";
