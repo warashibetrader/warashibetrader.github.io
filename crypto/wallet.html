@@ -1005,38 +1005,31 @@ function setupWebsocket(restart) {
 	
 	ws.on('getReceiptReplyCue', function(data) {
 		if (D(data.div)) {
-			let receipt = [];
 			let ul = D(data.div).parentNode.parentNode.parentNode.lastElementChild;
 			let but = ul.previousElementSibling.lastElementChild;
+			
+			let rEnvelope = {};
 			let sender = (but.textContent == "Receipt");
-			let memoType = "invoice";
-			if (sender) memoType = "receipt";
-			let type = "Encrypted";		
+			let type = "Encrypted";	
 			let error = false;
+			
 			if (data.rNonce) {
 				try { 
-					receipt = JSON.parse(dec.decode(nacl.box.open(hexToByteArray(data.receipt), hexToByteArray(data.rNonce), hexToByteArray(keyCache[data.address]), ccc[data.currency].encryptKey.secretKey)));
+					rEnvelope = JSON.parse(dec.decode(nacl.box.open(hexToByteArray(data.rEnvelope), hexToByteArray(data.rNonce), hexToByteArray(keyCache[data.address]), ccc[data.currency].encryptKey.secretKey)));
 				} catch (error) { console.error(error); showMsg('Decryption failed.'); return false;  }
-			} else if (data.receipt) {
+			} else if (data.rEnvelope) {
 				type = "Public";
-				receipt = JSON.parse(data.receipt);				
+				rEnvelope = JSON.parse(data.rEnvelope);
 			} else type = "No invoice/receipt"; 
 			
-			if (data.receipt) {
-				if (!sender && ccc[data.currency].verify(data.receipt + data.tx, data.rSig, data.address)) type += ", receipt signed by sender";
-				else if (sender && ccc[data.currency].verify(data.receipt + data.tx, data.rSig, ccc[data.currency].address)) type += ", receipt signed by me";
+			if (data.rEnvelope) {			
+				if (!sender && ccc[data.currency].verify(data.rEnvelope + data.tx, data.rSig, data.address)) type += ", receipt signed by sender";
+				else if (sender && ccc[data.currency].verify(data.rEnvelope + data.tx, data.rSig, ccc[data.currency].address)) type += ", receipt signed by me";
 				else {
 					type += ", no receipt signature (should not happen!)";
 					error = true;
 				}
 			}
-			
-			let invoiceString = "";
-			if (data.iNonce) {
-				try { 
-					invoiceString = dec.decode(nacl.box.open(hexToByteArray(data.invoice), hexToByteArray(data.iNonce), hexToByteArray(keyCache[data.address]), ccc[data.currency].encryptKey.secretKey));
-				} catch { showMsg('Decryption failed.'); return false;  }
-			} else if (data.invoice) invoiceString = data.invoice;
 			
 			but.classList.add('active');
 			ul.style.maxHeight = "0px";
@@ -1061,23 +1054,25 @@ function setupWebsocket(restart) {
 				}
 			};
 			
-			for (let i = 0; i < receipt.length; i++) {
-				let li = make('li');
-				li.style = "display:flex; justify-content:space-between; font-size:0.9em; border-radius:5px; padding-left:5px; padding-right:5px;";
-				
-				let itemSpan = make('span');
-				itemSpan.textContent = receipt[i].item;
-				itemSpan.style.paddingRight = "5px";
-				
-				let amtSpan = make('span');
-				amtSpan.textContent = receipt[i].amt;
-				if (!amtSpan.textContent) amtSpan.textContent = receipt[i][data.currency];
-				
-				li.onmouseenter = function() { this.style.backgroundColor = ccc[data.currency].flashColor; };
-				li.onmouseleave = function() { this.style.backgroundColor = "";	};				
-				li.appendChild(itemSpan);
-				li.appendChild(amtSpan);
-				ul.appendChild(li);
+			if (rEnvelope.receipt) {
+				for (let i = 0; i < rEnvelope.receipt.length; i++) {
+					let li = make('li');
+					li.style = "display:flex; justify-content:space-between; font-size:0.9em; border-radius:5px; padding-left:5px; padding-right:5px;";
+					
+					let itemSpan = make('span');
+					itemSpan.textContent = rEnvelope.receipt[i].item;
+					itemSpan.style.paddingRight = "5px";
+					
+					let amtSpan = make('span');
+					amtSpan.textContent = rEnvelope.receipt[i].amt;
+					if (!amtSpan.textContent) amtSpan.textContent = rEnvelope.receipt[i][data.currency];
+					
+					li.onmouseenter = function() { this.style.backgroundColor = ccc[data.currency].flashColor; };
+					li.onmouseleave = function() { this.style.backgroundColor = "";	};				
+					li.appendChild(itemSpan);
+					li.appendChild(amtSpan);
+					ul.appendChild(li);
+				}
 			}
 			
 			let li = make('li');
@@ -1098,42 +1093,45 @@ function setupWebsocket(restart) {
 			if (error) detailSpan.style.color = "red";
 			
 			let invoiceLabelSpan = make('span');
-			invoiceLabelSpan.textContent = "Initial link:";
+			invoiceLabelSpan.textContent = "Invoice link:";
 			invoiceLabelSpan.style = "font-size: 0.85em; margin-right:5px";
 			
 			let invoiceSpan = make('a');
-			if (invoiceString) {
+			if (rEnvelope.invoice) {
 				let addresses = {};
 				if (sender) addresses[data.currency] = data.address;
 				else addresses[data.currency] = ccc[data.currency].address;
-				invoiceSpan.textContent = makePaymentURL(data.currency, addresses, JSON.parse(invoiceString));
+				invoiceSpan.textContent = makePaymentURL(data.currency, addresses, rEnvelope.invoice);
 				invoiceSpan.href = invoiceSpan.textContent;
 				invoiceSpan.target = "_blank";
 				invoiceSpan.rel='noopener';
-				invoiceSpan.classList.add('address');		
-			}
-				
-			if (invoiceString) {
+				invoiceSpan.classList.add('address');	
+
 				li.appendChild(invoiceLabelSpan);
-				li.appendChild(invoiceSpan);
+				li.appendChild(invoiceSpan);				
+				
+				if (ccc[data.currency].verify(JSON.stringify(rEnvelope.invoice), rEnvelope.iSig, data.address)) {
+					console.log("cool");
+				} else console.loog("not cool");
 			}
+			
 			li.appendChild(detailSpan);
 			li.appendChild(labelSpan);
 			li.appendChild(idSpan);	
 			
-			if (receipt.length > 0) {
+			if (rEnvelope.receipt && rEnvelope.receipt.length > 0) {
 				let buttonli = make('li');
 				buttonli.style = "font-size:0.85em; text-align: center; margin-top:10px; margin-bottom:10px;";
 				
 				let transferButton = make('button');
 				transferButton.textContent = "Populate Transfer";
 				transferButton.style.marginRight = "3px";
-				transferButton.onclick = function() { populateItems(data.currency, data.address, receipt, "itemize"); };
+				transferButton.onclick = function() { populateItems(data.currency, data.address, rEnvelope.receipt, "itemize"); };
 				buttonli.appendChild(transferButton);
 				
 				let invoiceButton = make('button');
 				invoiceButton.textContent = "Populate Invoice";
-				invoiceButton.onclick = function() { populateItems(data.currency, data.address, receipt, "invoice"); };
+				invoiceButton.onclick = function() { populateItems(data.currency, data.address, rEnvelope.receipt, "invoice"); };
 				buttonli.appendChild(invoiceButton);
 				ul.appendChild(buttonli);
 			}
@@ -1147,9 +1145,10 @@ function setupWebsocket(restart) {
 
 //////////////////////////////////////////////////////// Final display setup
 
-function makePaymentURL(preferred, addresses, items) {
+function makePaymentURL(preferred, addresses, items, iSig) {
+	if (!iSig) iSig = "";
     const url = new URL(thisURL);
-    url.search = new URLSearchParams({preferred:preferred, addresses:encodeURIComponent(JSON.stringify(addresses)), items:encodeURIComponent(JSON.stringify(items))});
+    url.search = new URLSearchParams({preferred:preferred, addresses:encodeURIComponent(JSON.stringify(addresses)), items:encodeURIComponent(JSON.stringify(items)), iSig:iSig});
     return url;
 }
 
@@ -1168,7 +1167,8 @@ const urlParams = new URLSearchParams(window.location.search);
 if (urlParams.has('preferred') && urlParams.has('addresses') && urlParams.has('items')) {
 	loadPaymentsPage({preferred: urlParams.get('preferred'), 
 						addresses: JSON.parse(decodeURIComponent(urlParams.get('addresses'))), 
-						items: JSON.parse(decodeURIComponent(urlParams.get('items')))});
+						items: JSON.parse(decodeURIComponent(urlParams.get('items'))),
+						iSig: urlParams.get('iSig')});
 } else {
 	if (localStorage.getItem('symbol')) D('primary').value = localStorage.getItem('symbol');
 	selectPrimary(D('primary').value);
@@ -1182,7 +1182,7 @@ if (urlParams.has('preferred') && urlParams.has('addresses') && urlParams.has('i
 }
 
 function loadPaymentsPage(data) {
-	paymentWindow = JSON.stringify(data.items);
+	paymentWindow = {invoice:data.items, iSig:data.iSig};
 	let symbol = data.preferred;
 	D('primary').value = symbol;
 	D('primary').disabled = true;
@@ -1605,7 +1605,9 @@ function clearWallet(symbol) {
 	
 	// invoice tool
 	D(symbol + '-invoice-url').href = "";
+	D(symbol + '-invoice-url-signed').href = "";
 	flash(D(symbol + '-invoice-url-literal'), "\xa0");
+	flash(D(symbol + '-invoice-url-literal-signed'), "\xa0");
 	
 	// signature tool
 	flash(D(symbol + '-signature'), "\xa0");
@@ -1673,16 +1675,24 @@ function makeInvoiceLink(symbol) {
 			addresses[symbol] = ccc[symbol].address;
 			let theURL = makePaymentURL(symbol, addresses, packageItems(symbol, "invoice"));
 			D(symbol + '-invoice-url').href = theURL;
-			//flash(D(symbol + '-invoice-url'));
 			flash(D(symbol + '-invoice-url-literal'), theURL);
+			
+			let items = packageItems(symbol, "invoice");
+			theURL = makePaymentURL(symbol, addresses, items, ccc[symbol].sign(JSON.stringify(items)));
+			D(symbol + '-invoice-url-signed').href = theURL;
+			flash(D(symbol + '-invoice-url-literal-signed'), theURL);
 			D(symbol + '-invoice-url').style.opacity = "";
+			D(symbol + '-invoice-url-signed').style.opacity = "";
 			D(symbol + '-invoice-url-literal').style.opacity = "";
+			D(symbol + '-invoice-url-literal-signed').style.opacity = "";
 			invoiceWaiter = setTimeout(function() {	invoiceWaiter = ""; }, 500);
 		}
 	} else {
 		clearTimeout(invoiceWaiter);
 		D(symbol + '-invoice-url').style.opacity = "0.3";
+		D(symbol + '-invoice-url-signed').style.opacity = "0.3";
 		D(symbol + '-invoice-url-literal').style.opacity = "0.3";
+		D(symbol + '-invoice-url-literal-signed').style.opacity = "0.3";
 		invoiceWaiter = setTimeout(function() {
 			invoiceWaiter = ""; 
 			makeInvoiceLink(symbol);
@@ -1790,20 +1800,17 @@ async function withdraw(symbol, elt) {
 			let sendResp = await ccc[symbol].sendTo(D(`${symbol}-dest`).value, (totalAmt - BigInt(rawFromUnit(symbol, D(symbol + '-withdrawal-fee').value))).toString());
 			if (sendResp) {
 				console.log(sendResp);
-				let receiptPackage = {currency: symbol, tx:sendResp, receipt: JSON.stringify(packageItems(symbol, "itemize"))};
-				if (paymentWindow) receiptPackage.invoice = paymentWindow;
+				let rEnvelope = paymentWindow;
+				if (!rEnvelope) rEnvelope = {};
+				rEnvelope.receipt = packageItems(symbol, "itemize");				
+				let receiptPackage = {currency: symbol, tx:sendResp, rEnvelope: JSON.stringify(rEnvelope)};
+				
 				if (keyCache[D(`${symbol}-dest`).value]) {
 					receiptPackage.rNonce = nacl.randomBytes(24);
-					receiptPackage.receipt = byteArrayToHex(nacl.box(enc.encode(receiptPackage.receipt), receiptPackage.rNonce, hexToByteArray(keyCache[D(`${symbol}-dest`).value]), ccc[symbol].encryptKey.secretKey));
+					receiptPackage.rEnvelope = byteArrayToHex(nacl.box(enc.encode(receiptPackage.rEnvelope), receiptPackage.rNonce, hexToByteArray(keyCache[D(`${symbol}-dest`).value]), ccc[symbol].encryptKey.secretKey));
 					receiptPackage.rNonce = byteArrayToHex(receiptPackage.rNonce);
-					
-					if (paymentWindow) {
-						receiptPackage.iNonce = nacl.randomBytes(24);
-						receiptPackage.invoice = byteArrayToHex(nacl.box(enc.encode(paymentWindow), receiptPackage.iNonce, hexToByteArray(keyCache[D(`${symbol}-dest`).value]), ccc[symbol].encryptKey.secretKey));
-						receiptPackage.iNonce = byteArrayToHex(receiptPackage.iNonce);
-					}
 				} 
-				receiptPackage.rSig = ccc[symbol].sign(receiptPackage.receipt + receiptPackage.tx);
+				receiptPackage.rSig = ccc[symbol].sign(receiptPackage.rEnvelope + receiptPackage.tx);
 				ws.emit("setReceiptCue", receiptPackage);
 				
 				showMsg(amt + " " + symbol + " transferred.");
@@ -2664,17 +2671,22 @@ function generateHTML(symbol) {
 			<strong style="margin-right:5px;">Subtotal</strong>
 			<input placeholder="0.00" style="text-align:right; flex-grow:1; flex-basis:1px" type="number" step="0.01" min="0" disabled>&nbsp;${symbol}
 		</div>
+		<hr style="margin-top:15px;">
 		
 		<div class="leftRightBase" style="margin-right:0px;">				
-			<strong style="margin-right:5px;">Payment link</strong>			
-			<a style="font-size:0.9em; text-align:right" class="clickFlash" rel="noopener" target="_blank" href="https://warashibetrader.github.io/2022/02/17/invoices">More Payment Integrations</a>
-			
-		</div>
-		
+			<strong style="margin-right:5px;">Unsigned invoice link</strong>	
+			<a id="${symbol}-invoice-url" class="flash" target="_blank" href=""><button style="font-size:0.85em">Link Demo</button></a>
+		</div>		
 		<div id="${symbol}-invoice-url-literal" class='address' onclick="clickCopy(this, this.textContent)">&nbsp;</div>
 		
-		<div style="text-align:center; margin-top:15px;">
-			<a id="${symbol}-invoice-url" class="flash" target="_blank" href=""><button style="font-size:0.85em">Link Demo</button></a>
+		<div class="leftRightBase" style="margin-right:0px;">				
+			<strong style="margin-right:5px;">Signed invoice link</strong>	
+			<a id="${symbol}-invoice-url-signed" class="flash" target="_blank" href=""><button style="font-size:0.85em">Link Demo</button></a>
+		</div>		
+		<div id="${symbol}-invoice-url-literal-signed" class='address' onclick="clickCopy(this, this.textContent)">&nbsp;</div>
+		
+		<div style="text-align:center; margin-top:15px;">			
+			<a style="font-size:0.9em;" class="clickFlash" rel="noopener" target="_blank" href="https://warashibetrader.github.io/2022/02/17/invoices">More Payment Integrations</a>
 		</div>`);
 	
 	makeTool("Sign", "", 'sign', 0, 	
