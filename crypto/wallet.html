@@ -1011,6 +1011,7 @@ function setupWebsocket(restart) {
 			let rEnvelope = {};
 			let sender = (but.textContent == "Receipt");
 			let type = "Encrypted";	
+			let receiptString = "";
 			let error = false;
 			
 			if (data.rNonce) {
@@ -1020,16 +1021,16 @@ function setupWebsocket(restart) {
 			} else if (data.rEnvelope) {
 				type = "Public";
 				rEnvelope = JSON.parse(data.rEnvelope);
-			} else type = "No invoice/receipt"; 
+			} else type = "none"; 
 			
 			if (data.rEnvelope) {			
-				if (!sender && ccc[data.currency].verify(data.rEnvelope + data.tx, data.rSig, data.address)) type += ", receipt signed by sender";
-				else if (sender && ccc[data.currency].verify(data.rEnvelope + data.tx, data.rSig, ccc[data.currency].address)) type += ", receipt signed by me";
+				if (!sender && ccc[data.currency].verify(data.rEnvelope + data.tx, data.rSig, data.address)) receiptString = type + " receipt signed by other party";
+				else if (sender && ccc[data.currency].verify(data.rEnvelope + data.tx, data.rSig, ccc[data.currency].address)) receiptString = type + " receipt signed by me";
 				else {
-					type += ", no receipt signature (should not happen!)";
+					receiptString = type + " receipt with no signature (should not happen!)";
 					error = true;
 				}
-			}
+			} else receiptString = "No invoice/receipt found";
 			
 			but.classList.add('active');
 			ul.style.maxHeight = "0px";
@@ -1088,12 +1089,11 @@ function setupWebsocket(restart) {
 			idSpan.onclick = function() { clickCopy(idSpan, idSpan.textContent); };
 
 			let detailSpan = make('div');
-			detailSpan.textContent = type;
+			detailSpan.textContent = receiptString;
 			detailSpan.style = "font-size: 0.85em; padding-right:3px";
 			if (error) detailSpan.style.color = "red";
 			
 			let invoiceLabelSpan = make('span');
-			invoiceLabelSpan.textContent = "Invoice link:";
 			invoiceLabelSpan.style = "font-size: 0.85em; margin-right:5px";
 			
 			let invoiceSpan = make('a');
@@ -1101,7 +1101,7 @@ function setupWebsocket(restart) {
 				let addresses = {};
 				if (sender) addresses[data.currency] = data.address;
 				else addresses[data.currency] = ccc[data.currency].address;
-				invoiceSpan.textContent = makePaymentURL(data.currency, addresses, rEnvelope.invoice);
+				invoiceSpan.textContent = makePaymentURL(data.currency, addresses, rEnvelope.invoice, rEnvelope.iSig);
 				invoiceSpan.href = invoiceSpan.textContent;
 				invoiceSpan.target = "_blank";
 				invoiceSpan.rel='noopener';
@@ -1110,9 +1110,10 @@ function setupWebsocket(restart) {
 				li.appendChild(invoiceLabelSpan);
 				li.appendChild(invoiceSpan);				
 				
-				if (ccc[data.currency].verify(JSON.stringify(rEnvelope.invoice), rEnvelope.iSig, data.address)) {
-					console.log("cool");
-				} else console.loog("not cool");
+				if (ccc[data.currency].verify(JSON.stringify(rEnvelope.invoice), rEnvelope.iSig, addresses[data.currency])) {
+					if (!sender) invoiceLabelSpan.textContent = "Invoice signed by me:";
+					else invoiceLabelSpan.textContent = "Invoice signed by other party:";
+				} else invoiceLabelSpan.textContent = "Unsigned invoice:";
 			}
 			
 			li.appendChild(detailSpan);
@@ -1634,6 +1635,12 @@ function prepareTotalTab(symbol, elt) {
 	if (D(symbol + "-dest-display").textContent != D(symbol + "-dest-display-confirm").textContent) {
 		D(symbol + "-dest-display-confirm").textContent = D(symbol + "-dest-display").textContent;
 		flash(D(symbol + '-dest-display-confirm').parentNode);	
+	}
+	
+	if (paymentWindow) {
+		D(symbol + "-dest-sig").parentNode.style.display = "";
+		if (ccc[data.currency].verify(JSON.stringify(paymentWindow.invoice), paymentWindow.iSig, D(symbol + "-dest").value)) D(symbol + "-dest-sig").textContent = "Yes";
+		else D(symbol + "-dest-sig").textContent = "No";
 	}
 	
 	let privacyString = "Public (<a class='clickFlash' rel='noopener' target='_blank' href='https://warashibetrader.github.io/2022/03/05/end-to-end'>?</a>)";
@@ -2654,7 +2661,8 @@ function generateHTML(symbol) {
 			<input id="${symbol}-withdrawal-amount-total" placeholder="0.00" style="text-align:right; flex-grow:1; flex-basis:1px" type="number" step="0.01" min="0" disabled>&nbsp;${symbol}
 		</div>
 		
-		<div class="flash leftRightBase" style="margin-top:5px;"><strong>Destination</strong><span id="${symbol}-dest-display-confirm" class="rightData"></span></div>		
+		<div class="flash leftRightBase" style="margin-top:5px;"><strong>Destination</strong><span id="${symbol}-dest-display-confirm" class="rightData"></span></div>	
+		<div class="flash leftRightBase" style="display:none; margin-top:5px;"><strong>Invoice signature</strong><span id="${symbol}-dest-sig" class="rightData"></span></div>		
 		<div class="flash leftRightBase" style="margin-top:5px;"><strong>Privacy</strong><span id="${symbol}-dest-privacy" class="rightData"></span></div>
 		
 		<div style="text-align:center; margin-top:15px;">
@@ -2671,7 +2679,6 @@ function generateHTML(symbol) {
 			<strong style="margin-right:5px;">Subtotal</strong>
 			<input placeholder="0.00" style="text-align:right; flex-grow:1; flex-basis:1px" type="number" step="0.01" min="0" disabled>&nbsp;${symbol}
 		</div>
-		<hr style="margin-top:15px;">
 		
 		<div class="leftRightBase" style="margin-right:0px;">				
 			<strong style="margin-right:5px;">Unsigned invoice link</strong>	
