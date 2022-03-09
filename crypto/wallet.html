@@ -1640,17 +1640,17 @@ function prepareTotalTab(symbol, elt) {
 	if (paymentWindow) {
 		D(symbol + "-dest-sig").parentNode.style.display = "";
 		if (ccc[symbol].verify(JSON.stringify(paymentWindow.invoice), paymentWindow.iSig, D(symbol + "-dest").value)) {
-			D(symbol + "-dest-sig").textContent = "Signed";
+			D(symbol + "-dest-sig").textContent = "signed";
 			D(symbol + "-dest-sig").style.color = "#097";
-		} else D(symbol + "-dest-sig").textContent = "None";
+		} else D(symbol + "-dest-sig").textContent = "none";
 	}
 	
-	let privacyString = "Public (<a class='clickFlash' rel='noopener' target='_blank' href='https://warashibetrader.github.io/2022/03/05/end-to-end'>?</a>)";
-	if (keyCache[D(`${symbol}-dest`).value]) privacyString = "Encrypted";
+	let privacyString = "public (<a class='clickFlash' rel='noopener' target='_blank' href='https://warashibetrader.github.io/2022/03/05/end-to-end'>?</a>)";
+	if (keyCache[D(`${symbol}-dest`).value]) privacyString = "end-to-end encryption";
 	if (D(symbol + "-dest-privacy").innerHTML != privacyString) {
 		D(symbol + "-dest-privacy").innerHTML = privacyString;
 		flash(D(symbol + '-dest-privacy').parentNode);	
-		if (privacyString == "Encrypted") D(symbol + "-dest-privacy").style.color = "#097";
+		if (privacyString == "end-to-end encryption") D(symbol + "-dest-privacy").style.color = "#097";
 		else D(symbol + "-dest-privacy").style.color = "";
 	}
 	
