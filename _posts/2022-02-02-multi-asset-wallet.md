@@ -4,7 +4,7 @@ title: "A multi-asset, single-page crypto wallet (beta)"
 
 To help myself learn about crypto, I developed a simple multi-asset wallet. You can find it [here](https://transactcc.github.io/).
 
-Update (3/11/2022): You can find an updated feature list [here]({% post_url 2022-02-25-feature-list %}).
+Update (3/11/2022): You can find an up-to-date feature list [here]({% post_url 2022-02-25-feature-list %}).
 
 Here are some reasons it might appeal to other users:
 
