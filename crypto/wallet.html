@@ -1685,10 +1685,10 @@ function preparePaymentTab(symbol) {
 		if (ccc[symbol].verify(JSON.stringify(paymentWindow.invoice), paymentWindow.iSig, D(symbol + "-dest").value)) {
 			D(symbol + "-dest-sig").textContent = "digital signature";
 			D(symbol + "-dest-sig").style.color = "#097";
-		} else D(symbol + "-dest-sig").textContent = "unsigned";
+		} else D(symbol + "-dest-sig").textContent = "no signature";
 	}
 	
-	let privacyString = "public (<a class='clickFlash' rel='noopener' target='_blank' href='https://warashibetrader.github.io/2022/03/05/end-to-end'>?</a>)";
+	let privacyString = "public (<a class='clickFlash' rel='noopener' target='_blank' href='https://warashibetrader.github.io/2022/03/05/end-to-end-encryption'>?</a>)";
 	if (keyCache[D(`${symbol}-dest`).value]) privacyString = "end-to-end encryption";
 	if (D(symbol + "-dest-privacy").innerHTML != privacyString) {
 		D(symbol + "-dest-privacy").innerHTML = privacyString;
