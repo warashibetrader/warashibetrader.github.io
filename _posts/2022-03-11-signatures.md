@@ -1,5 +1,5 @@
 ---
-title: "Invoices and receipt signatures"
+title: "Invoice and receipt signatures"
 ---
 
 [Transact](https://transactcc.github.io/) now supports the signing of invoices and receipts.
