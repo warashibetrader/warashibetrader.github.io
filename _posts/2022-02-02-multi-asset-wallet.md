@@ -4,6 +4,8 @@ title: "A multi-asset, single-page crypto wallet (beta)"
 
 To help myself learn about crypto, I developed a simple multi-asset wallet. You can find it [here](https://transactcc.github.io/).
 
+Update (3/11/2022): You can find an updated feature list [here]({% post_url 2022-02-25-feature-list %}).
+
 Here are some reasons it might appeal to other users:
 
 1. It is a single-page app. This means there is no refresh between actions, like viewing transactions, making payments, etc. This allows for a faster, seamless user experience, and is particularly apt for a crypto wallet due to the the frequency of address copy and pasting.
