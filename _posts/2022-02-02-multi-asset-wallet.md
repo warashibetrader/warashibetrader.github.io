@@ -1,5 +1,5 @@
 ---
-title: "A multi-asset, single-page crypto wallet"
+title: "A multi-asset, single-page crypto wallet (beta)"
 ---
 
 To help myself learn about crypto, I developed a simple multi-asset wallet. You can find it [here](https://transactcc.github.io/).
