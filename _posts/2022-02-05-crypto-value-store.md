@@ -25,8 +25,8 @@ A well-regulated financial system offers protection and insurance against fallin
 
 Cryptocurrencies offer no protection against user error and criminal theft. Further, at the present moment, it's hard for me to believe that most crypto advocates have your best interests in mind when recommending investments.
 
-### Transactions and exchanges
+### Are cryptocurrencies pointless?
 
-My take is that the value of cryptocurrencies lies entirely in their utility toward facilitating transactions.
+Not necessarily. My take is that the value of cryptocurrencies lies entirely in their utility toward facilitating transactions.
 
 There is a case that cryptocurrencies also offer value in facilitating exchanges (namely, through smart contracts). I am still skeptical of this due to the [oracle problem]({% post_url 2022-02-01-crypto-space %}).
