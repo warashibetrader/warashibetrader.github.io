@@ -30,6 +30,6 @@ Updates (3/11/2022):
 
 3. It uses a [security quote protocol]({% post_url 2022-02-02-security-quote-protocol %}), which makes the wallet as secure as a native app or browser extension.
 
-4. The app has a minimal but dense single-page design, facilitating speed and efficiency, while reducing the probability of user error.
+4. The app has a minimal but feature-dense single-page design, facilitating speed and efficiency, while reducing the probability of user error.
 
 5. Transactions can be searched and filtered.
