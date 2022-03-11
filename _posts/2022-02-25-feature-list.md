@@ -11,15 +11,15 @@ Here is an updated list of some of the more interesting features on Transact:
 
 2. Addresses are displayed alongside human-readable aliases/usernames, which are free for the address owner to set and update.
 
-3. Transactions are attached to invoices and receipts, allowing merchants to automatically track and organize customer orders (and giving customers the peace of mind that the merchant will necessarily have a detailed record of their order).
+3. Transactions are attached to invoices and receipts, automatically tracking and organizing orders for the merchant. Meanwhile, the customer has additional peace of mind, as they are able to see in-app exactly the same invoice and receipt that the merchant sees.
 
-4. Invoicing, payments, and receipts are integrated and extremely simple. Merchants create one-click invoice links, from which customers pay using the familiar wallet interface. Receipts are automatically saved and displayed in the app for both parties.
+4. Invoicing, payments, and receipts are integrated and extremely simple. Merchants create one-click invoice links, from which customers pay using the familiar app interface. Receipts are automatically saved and displayed in-app to both parties.
 
 Updates (3/11/2022):
 
 5. Receipts are end-to-end encrypted and hence entirely private.
 
-6. Invoices can be cryptographically signed to give the customer peace of mind. Receipts are always signed to give the merchant peace of mind (by fixing the terms of a transaction).
+6. Invoices can be cryptographically signed to give the customer peace of mind. Receipts are always signed to give the merchant peace of mind (by fixing the terms of the transaction).
 
 
 #### Distribution, security, and user interface
@@ -28,7 +28,7 @@ Updates (3/11/2022):
 
 2. It supports the PWA framework. Saving to homescreen provides a native-app experience.
 
-3. It uses a [security quote protocol]({% post_url 2022-02-02-security-quote-protocol %}), which makes the wallet as secure as a native app or browser extension.
+3. Transact uses a novel [security quote protocol]({% post_url 2022-02-02-security-quote-protocol %}), which makes the web app as secure as a native app or browser extension.
 
 4. The app has a minimal but feature-dense single-page design, facilitating speed and efficiency, while reducing the probability of user error.
 
