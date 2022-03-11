@@ -14,7 +14,7 @@ Suppose Alice wants a bag of groceries from Bob. Alice could show Bob a bank acc
 
 Of course, this scenario in isolation is ludicrous, in the contexts of both traditional finance and the crypto/defi space. The modified account statements mean nothing without validation by others.
 
-In traditional finance, one or a small number of individuals validate the transaction - say, Wells Fargo (in conjunction with a small number of some higher governmental powers which I don't really understand). This system works because Wells Fargo is trustworthy.
+In traditional finance, one or a small number of individuals validates the transaction - say, Wells Fargo (in conjunction with a small number of some higher governmental powers which I don't really understand). This system works because Wells Fargo is trustworthy.
 
 In the crypto space, the goal is to have a large number of participants in the system validate each transaction, without assuming that any one of them is trustworthy. Whatever means by which this validation is achieved - typically some combination of cryptography and network design - is the key innovation behind each cryptocurrency.
 
