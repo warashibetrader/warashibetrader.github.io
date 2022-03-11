@@ -11,7 +11,7 @@ Here is an updated list of some of the more interesting features on Transact:
 
 2. Addresses are displayed alongside human-readable aliases/usernames, which are free for the address owner to set and update.
 
-3. Transactions are attached with invoices and receipts, allowing merchants to automatically organize their orders (and customers to have the peace of mind that the merchant will necessarily have a detailed record of their order).
+3. Transactions are attached to invoices and receipts, allowing merchants to automatically organize their orders (and customers to have the peace of mind that the merchant will necessarily have a detailed record of their order).
 
 4. Invoicing, payments, and receipts are integrated and extremely simple. Merchants create one-click invoice links, from which customers pay using the familiar wallet interface. Receipts are automatically saved and available from the app for both parties.
 
