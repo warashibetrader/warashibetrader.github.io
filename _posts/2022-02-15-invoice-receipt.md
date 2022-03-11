@@ -2,6 +2,8 @@
 title: "Crypto wallet support for invoices, receipts, memos, and click-to-pay"
 ---
 
+Update (3/11/2022): You can find an up-to-date feature list [here]({% post_url 2022-02-25-feature-list %}).
+
 I added some features to my [crypto wallet](https://transactcc.github.io/). The most substantial upgrades include:
 
 1. Support for Algorand.
