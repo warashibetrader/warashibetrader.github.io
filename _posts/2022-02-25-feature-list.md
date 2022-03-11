@@ -1,5 +1,5 @@
 ---
-title: "A growing list of reasons to use Transact: Feature list"
+title: "A growing list of reasons to use Transact"
 ---
 
 Here is an updated list of some of the more interesting features on Transact:
