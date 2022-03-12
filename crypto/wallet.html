@@ -578,7 +578,7 @@ function displayTransaction(symbol, number, send, address, time, amt, tx) {
 
 	let secondRow = make('div');
 	secondRow.style = "display:flex; justify-content:space-between; align-items:center; margin-left:5px; margin-right:5px";
-	secondRow.innerHTML = "<div style='overflow:hidden; margin-right:10px; white-space:nowrap'><div class='address' onclick='clickCopy(this, this.textContent)'></div><div style='display:flex;'><div style='font-size:0.85em; padding-left:3px; display:inline-block'></div><div class='address' style='max-width:50px; display:inline-block; margin-top:0px' onclick='clickCopy(this, this.textContent)'></div></div></div>"
+	secondRow.innerHTML = "<div style='overflow:hidden; margin-right:5px; white-space:nowrap'><div class='address' onclick='clickCopy(this, this.textContent)'></div><div style='display:flex;'><div style='font-size:0.85em; padding-left:3px; display:inline-block'></div><div class='address' style='max-width:50px; display:inline-block; margin-top:0px' onclick='clickCopy(this, this.textContent)'></div></div></div>"
 	+ "<button style='font-size:0.85em; color:" + color + "'>" + memoType + "</button>";
 	
 	secondRow.children[0].children[0].textContent = address;
@@ -602,7 +602,7 @@ function displayTransaction(symbol, number, send, address, time, amt, tx) {
     } else if (hh == 0) h = 12;
 
     // ie: 2014-03-24, 3:00 PM
-    secondRow.children[0].children[1].children[0].textContent = h + ':' + min + '\xa0' + ampm + ' ' + mm + '/' + dd + '/' + yyyy + " #" + number + ", ID:";
+    secondRow.children[0].children[1].children[0].textContent = h + ':' + min + '\xa0' + ampm + ' ' + mm + '/' + dd + '/' + yyyy + " - #" + number + " - ID:";
     secondRow.children[0].children[1].children[1].textContent = tx;			
 	secondRow.lastChild.onclick = function() {
 		if (!ws.emit('getReceiptCue', {currency:symbol, tx: tx, div: displayNameSpan.id, address:address })) showMsg("Unable to connect to directory.");
@@ -1034,6 +1034,10 @@ function setupWebsocket(restart) {
 		}
 	});
 	
+	ws.on('setShippingCompletedCue', async function(data) {
+		showMsg("Shipping address set.");
+	});
+	
 	ws.on('setNameFailedCue', function(data) {	
 		showMsg("\"Open\" this account first by receiving funds.");
 	});	
@@ -1048,6 +1052,13 @@ function setupWebsocket(restart) {
 			localStorage.setItem("publicKeys", JSON.stringify(keyCache));
 		}
 		displayName(data.currency, data.div, data.address, data.display);
+	});
+	
+	ws.on('getShippingReplyCue', function(data) {
+		if (data.shipping) {
+			D(data.currency + "-set-shipping").value = dec.decode(nacl.box.open(hexToByteArray(data.shipping), hexToByteArray(data.nonce), hexToByteArray(keyCache[data.address]), ccc[data.currency].encryptKey.secretKey));
+			flash(D(data.currency + "-set-shipping"));
+		}
 	});
 	
 	ws.on('getReceiptReplyCue', function(data) {
@@ -1183,10 +1194,10 @@ function setupWebsocket(restart) {
 
 //////////////////////////////////////////////////////// Final display setup
 
-function makePaymentURL(preferred, addresses, items, iSig) {
+function makePaymentURL(preferred, addresses, items, iSig, ship) {
 	if (!iSig) iSig = "";
     const url = new URL(thisURL);
-    url.search = new URLSearchParams({preferred:preferred, addresses:encodeURIComponent(JSON.stringify(addresses)), items:encodeURIComponent(JSON.stringify(items)), iSig:iSig});
+    url.search = new URLSearchParams({preferred:preferred, addresses:encodeURIComponent(JSON.stringify(addresses)), items:encodeURIComponent(JSON.stringify(items)), iSig:iSig, ship:ship});
     return url;
 }
 
@@ -1206,7 +1217,8 @@ if (urlParams.has('preferred') && urlParams.has('addresses') && urlParams.has('i
 	loadPaymentsPage({preferred: urlParams.get('preferred'), 
 						addresses: JSON.parse(decodeURIComponent(urlParams.get('addresses'))), 
 						items: JSON.parse(decodeURIComponent(urlParams.get('items'))),
-						iSig: urlParams.get('iSig')});
+						iSig: urlParams.get('iSig'),
+						ship: urlParams.get('ship')});
 } else {
 	if (localStorage.getItem('symbol')) D('primary').value = localStorage.getItem('symbol');
 	selectPrimary(D('primary').value);
@@ -1220,7 +1232,7 @@ if (urlParams.has('preferred') && urlParams.has('addresses') && urlParams.has('i
 }
 
 function loadPaymentsPage(data) {
-	paymentWindow = {invoice:data.items, iSig:data.iSig};
+	paymentWindow = {invoice:data.items, iSig:data.iSig, ship:data.ship};
 	let symbol = data.preferred;
 	D('primary').value = symbol;
 	D('primary').disabled = true;
@@ -1389,6 +1401,20 @@ function setName(symbol, name) {
 	else if (!ws.emit("setNameCue", {address: ccc[symbol].address, currency: symbol, display: name, publicKey: byteArrayToHex(ccc[symbol].encryptKey.publicKey),
 									signature: ccc[symbol].sign(name + byteArrayToHex(ccc[symbol].encryptKey.publicKey)) })) 
 		showMsg("Unable to connect to directory.");
+}
+
+function setShipping(symbol, name) {
+	if (!name) name = D(symbol + "-set-shipping").value;
+	if (name.length > 128) showMsg("64 characters or fewer.");
+	else {
+	//	let shippingPackage = { address: ccc[symbol].address, currency: symbol, nonce: nacl.randomBytes(24) };
+	//	shippingPackage.shipping = byteArrayToHex(nacl.box(enc.encode(name), shippingPackage.nonce, hexToByteArray(keyCache[ccc[symbol].address]), ccc[symbol].encryptKey.secretKey));
+	//	shippingPackage.nonce = byteArrayToHex(shippingPackage.nonce);					
+	//	if (!ws.emit("setShippingCue", shippingPackage)) showMsg("Unable to connect to directory.");
+	
+	localStorage.setItem("shipping", name);
+	flash(D(symbol + "-set-shipping"));
+	}
 }
 
 function fetchDisplayName(symbol, divString, cache) {
@@ -1686,6 +1712,12 @@ function preparePaymentTab(symbol) {
 			D(symbol + "-dest-sig").textContent = "digital signature";
 			D(symbol + "-dest-sig").style.color = "#097";
 		} else D(symbol + "-dest-sig").textContent = "no signature";
+		
+		if (paymentWindow.ship) {
+			D(symbol + "-dest-ship").parentNode.style.display = "";
+			if (localStorage.getItem('shipping')) D(symbol + "-dest-sig").textContent = localStorage.getItem('shipping');
+			else D(symbol + "-dest-sig").textContent = "Set by clicking display name";
+		}
 	}
 	
 	let privacyString = "public (<a class='clickFlash' rel='noopener' target='_blank' href='https://warashibetrader.github.io/2022/03/05/end-to-end-encryption'>?</a>)";
@@ -1697,7 +1729,7 @@ function preparePaymentTab(symbol) {
 		else D(symbol + "-dest-privacy").style.color = "";
 	}
 	
-	if (D(symbol + "-withdrawal-amount").value && D(symbol + "-dest-display").textContent) D(symbol + "-paymentButton").disabled = false;
+	if (D(symbol + "-withdrawal-amount").value && D(symbol + "-dest-display").textContent && (!paymentWindow.ship || localStorage.getItem('shipping'))) D(symbol + "-paymentButton").disabled = false;
 	else D(symbol + "-paymentButton").disabled = true;
 		
 	showAccordion(D(symbol + "-payTool").nextElementSibling);	
@@ -1709,12 +1741,12 @@ function prepareInvoiceTab(symbol) {
 	
 	let addresses = {};
 	addresses[symbol] = ccc[symbol].address;
-	let theURL = makePaymentURL(symbol, addresses, packageItems(symbol, "invoice"));
+	let theURL = makePaymentURL(symbol, addresses, packageItems(symbol, "invoice"), "", D(symbol + "-shipping-button").classList.contains('active'));
 	D(symbol + '-invoice-url').href = theURL;
 	flash(D(symbol + '-invoice-url-literal'), theURL);
 	
 	let items = packageItems(symbol, "invoice");
-	theURL = makePaymentURL(symbol, addresses, items, ccc[symbol].sign(JSON.stringify(items)));
+	theURL = makePaymentURL(symbol, addresses, items, ccc[symbol].sign(JSON.stringify(items)), D(symbol + "-shipping-button").classList.contains('active'));
 	D(symbol + '-invoice-url-signed').href = theURL;
 	flash(D(symbol + '-invoice-url-literal-signed'), theURL);
 	D(symbol + '-invoice-url').style.opacity = "";
@@ -1948,7 +1980,9 @@ function toggleEdit(symbol) {
 	if (obj.style.maxHeight == "0px") {
      	showAccordion(obj);
      	obj.style.marginTop = "10px";
-     	obj.style.marginBottom = "20px";
+     	obj.style.marginBottom = "20px";		
+		// ws.emit('getShippingCue', {currency:symbol, address:ccc[symbol].address });
+		D(symbol + "-set-shipping").value = localStorage.getItem("shipping");
 	} else {	
 		hideAccordion(obj);
      	obj.style.marginBottom = "0px";
@@ -2036,6 +2070,11 @@ function toggleInvoices(elt, symbol) {
 		}
 	} else elt.classList.add('active');
 	filterTransactions(symbol);
+}
+
+function toggleShipping(elt) {
+	if (elt.classList.contains('active')) elt.classList.remove('active');
+	else elt.classList.add('active');
 }
 
 function addTotal(elt) {
@@ -2641,8 +2680,13 @@ function generateHTML(symbol) {
 		
 		<div id="${symbol}-editpanel" class="accordion" style="margin-left:10px; max-height:0px">			
 			<div style="display:flex; justify-content:space-between;">
-				<input placeHolder="Public display name..." onfocus="scrollPanel(this)" id="${symbol}-set-display" style="padding-right:30px; flex-grow:1; margin-right:10px;" type="text" maxlength="64" onkeyup="if (event.keyCode == 13) setName('${symbol}'); if (event.keyCode == 27) this.value = '';"><button  tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
+				<input placeHolder="Display name (public) ..." onfocus="scrollPanel(this)" id="${symbol}-set-display" style="padding-right:30px; flex-grow:1; margin-right:10px;" type="text" maxlength="64" onkeyup="if (event.keyCode == 13) setName('${symbol}'); if (event.keyCode == 27) this.value = '';"><button  tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
 				<button style="font-size:0.85em" onclick="setName('${symbol}')">Set</button>
+			</div>
+					
+			<div style="display:flex; justify-content:space-between; margin-top:15px;">
+				<input placeHolder="Shipping address (private) ..." onfocus="scrollPanel(this)" id="${symbol}-set-shipping" style="padding-right:30px; flex-grow:1; margin-right:10px;" type="text" maxlength="128" onkeyup="if (event.keyCode == 13) setShipping('${symbol}'); if (event.keyCode == 27) this.value = '';"><button  tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
+				<button style="font-size:0.85em" onclick="setShipping('${symbol}')">Set</button>
 			</div>
 		</div>		
 		
@@ -2725,6 +2769,7 @@ function generateHTML(symbol) {
 		</div>
 		
 		<div class="flash leftRightBase" style="margin-top:5px;"><strong>Destination</strong><span id="${symbol}-dest-display-confirm" class="rightData"></span></div>	
+		<div class="flash leftRightBase" style="display:none; margin-top:5px;"><strong>Shipping address</strong><span id="${symbol}-dest-ship" class="rightData"></span></div>	
 		<div class="flash leftRightBase" style="display:none; margin-top:5px;"><strong>Invoice integrity</strong><span id="${symbol}-dest-sig" class="rightData"></span></div>		
 		<div class="flash leftRightBase" style="margin-top:5px;"><strong>Receipt privacy</strong><span id="${symbol}-dest-privacy" class="rightData"></span></div>
 		
@@ -2742,8 +2787,10 @@ function generateHTML(symbol) {
 			<strong style="margin-right:5px;">Subtotal</strong>
 			<input placeholder="0.00" style="text-align:right; flex-grow:1; flex-basis:1px" type="number" step="0.01" min="0" disabled>&nbsp;${symbol}
 		</div>
+			
+		<div class="leftRightBase" style="margin-top:10px; margin-right:0px"><strong>Shipping address</strong><button id="${symbol}-shipping-button" style="font-size:0.85em" onclick="toggleShipping(this)">Require</button></div>
 		
-		<div style="text-align:center; margin-top:10px;"><button style="font-size:0.85em" onclick="prepareInvoiceTab('${symbol}')">Generate and Sign</button>`);
+		<div style="text-align:center; margin-top:15px;"><button style="font-size:0.85em" onclick="prepareInvoiceTab('${symbol}')">Generate and Sign</button>`);
 		
 		
 	loginDiv.innerHTML += `<div class="accordion objectWrapper" style="max-height:0px; padding-top:0px; padding-bottom:0px; margin-top:0px;">	
