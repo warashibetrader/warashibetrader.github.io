@@ -1218,7 +1218,7 @@ if (urlParams.has('preferred') && urlParams.has('addresses') && urlParams.has('i
 						addresses: JSON.parse(decodeURIComponent(urlParams.get('addresses'))), 
 						items: JSON.parse(decodeURIComponent(urlParams.get('items'))),
 						iSig: urlParams.get('iSig'),
-						ship: urlParams.get('ship')});
+						ship: JSON.parse(urlParams.get('ship')}));
 } else {
 	if (localStorage.getItem('symbol')) D('primary').value = localStorage.getItem('symbol');
 	selectPrimary(D('primary').value);
@@ -1715,8 +1715,8 @@ function preparePaymentTab(symbol) {
 		
 		if (paymentWindow.ship) {
 			D(symbol + "-dest-ship").parentNode.style.display = "";
-			if (localStorage.getItem('shipping')) D(symbol + "-dest-sig").textContent = localStorage.getItem('shipping');
-			else D(symbol + "-dest-sig").textContent = "Set by clicking display name";
+			if (localStorage.getItem('shipping')) D(symbol + "-dest-ship").textContent = localStorage.getItem('shipping');
+			else D(symbol + "-dest-ship").textContent = "Set by clicking account name";
 		}
 	}
 	
@@ -2769,7 +2769,7 @@ function generateHTML(symbol) {
 		</div>
 		
 		<div class="flash leftRightBase" style="margin-top:5px;"><strong>Destination</strong><span id="${symbol}-dest-display-confirm" class="rightData"></span></div>	
-		<div class="flash leftRightBase" style="display:none; margin-top:5px;"><strong>Shipping address</strong><span id="${symbol}-dest-ship" class="rightData"></span></div>	
+		<div class="flash leftRightBase" style="display:none; margin-top:5px;"><strong>My shipping address</strong><span id="${symbol}-dest-ship" class="rightData"></span></div>	
 		<div class="flash leftRightBase" style="display:none; margin-top:5px;"><strong>Invoice integrity</strong><span id="${symbol}-dest-sig" class="rightData"></span></div>		
 		<div class="flash leftRightBase" style="margin-top:5px;"><strong>Receipt privacy</strong><span id="${symbol}-dest-privacy" class="rightData"></span></div>
 		
