@@ -1218,7 +1218,7 @@ if (urlParams.has('preferred') && urlParams.has('addresses') && urlParams.has('i
 						addresses: JSON.parse(decodeURIComponent(urlParams.get('addresses'))), 
 						items: JSON.parse(decodeURIComponent(urlParams.get('items'))),
 						iSig: urlParams.get('iSig'),
-						ship: JSON.parse(urlParams.get('ship')}));
+						ship: JSON.parse(urlParams.get('ship'))});
 } else {
 	if (localStorage.getItem('symbol')) D('primary').value = localStorage.getItem('symbol');
 	selectPrimary(D('primary').value);
