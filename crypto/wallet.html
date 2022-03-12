@@ -2075,6 +2075,8 @@ function toggleInvoices(elt, symbol) {
 function toggleShipping(elt) {
 	if (elt.classList.contains('active')) elt.classList.remove('active');
 	else elt.classList.add('active');
+	
+	shadeInvoice(D('primary').value);
 }
 
 function addTotal(elt) {
@@ -2768,10 +2770,10 @@ function generateHTML(symbol) {
 			<input id="${symbol}-withdrawal-amount-total" placeholder="0.00" style="text-align:right; flex-grow:1; flex-basis:1px" type="number" step="0.01" min="0" disabled>&nbsp;${symbol}
 		</div>
 		
-		<div class="flash leftRightBase" style="margin-top:5px;"><strong>Destination</strong><span id="${symbol}-dest-display-confirm" class="rightData"></span></div>	
-		<div class="flash leftRightBase" style="display:none; margin-top:5px;"><strong>My shipping address</strong><span id="${symbol}-dest-ship" class="rightData"></span></div>	
-		<div class="flash leftRightBase" style="display:none; margin-top:5px;"><strong>Invoice integrity</strong><span id="${symbol}-dest-sig" class="rightData"></span></div>		
+		<div class="flash leftRightBase" style="margin-top:5px;"><strong>Destination</strong><span id="${symbol}-dest-display-confirm" class="rightData"></span></div>		
 		<div class="flash leftRightBase" style="margin-top:5px;"><strong>Receipt privacy</strong><span id="${symbol}-dest-privacy" class="rightData"></span></div>
+		<div class="flash leftRightBase" style="display:none; margin-top:5px;"><strong>Invoice integrity</strong><span id="${symbol}-dest-sig" class="rightData"></span></div>		
+		<div class="flash leftRightBase" style="display:none; margin-top:5px;"><strong>Shipping address</strong><span id="${symbol}-dest-ship" class="rightData"></span></div>
 		
 		<div style="text-align:center; margin-top:15px;">
 			<button id="${symbol}-paymentButton" onclick="withdraw('${symbol}', this)" disabled>Transfer ${symbol}</button>
