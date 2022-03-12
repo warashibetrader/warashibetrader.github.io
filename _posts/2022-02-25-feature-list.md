@@ -2,8 +2,7 @@
 title: "A growing list of reasons to use Transact"
 ---
 
-Here is an updated list of some of the more interesting features on Transact:
-
+Here is an up-to-date list of some of the more interesting features on [Transact](https://transactcc.github.io/):
 
 #### Features
 
@@ -20,6 +19,8 @@ Updates (3/11/2022):
 5. Receipts are end-to-end encrypted and hence entirely private.
 
 6. Invoices can be cryptographically signed to give the customer peace of mind. Receipts are always signed to give the merchant peace of mind (by fixing the terms of the transaction).
+
+
 
 
 #### Distribution, security, and user interface
