@@ -16,7 +16,7 @@
 	
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">	
 	<meta name="theme-color" content="#fff">	
-	<meta name="description" content="A multi-asset cryptocurrency wallet (Nano, Banano, Solana, Stellar, and Algorand), integrated with a complete humanizing layer featuring a public directory of addresses, receipts, and invoices. Designed as a single page application emphasizing security, speed, and simplicity. Supports Progressive Web App (PWA) installation.">	
+	<meta name="description" content="A multi-asset cryptocurrency wallet (Nano, Banano, Solana, Stellar, and Algorand), integrated with a secure humanizing layer of usernames with end-to-end encrypted receipts and invoices. Designed as a single page application emphasizing security, speed, and simplicity. Supports Progressive Web App (PWA) installation.">	
 </head>
 	
 <body>
@@ -132,6 +132,7 @@ if (localStorage.getItem('symbol')) document.getElementById('firstDiv').style.ba
 //////////////////////////////////////////////////////// global data
 
 var thisURL = 'https://warashibetrader.github.io/crypto/wallet';
+// var thisURL = 'file:///C:/Users/aialb/OneDrive/x1%20yoga%202%20190301/Overheard/warashibe%20211213/walletsrc/wallet.html';
 var paymentWindow = false;
 let imgsrc = localStorage.getItem("image");
 if (imgsrc) {
@@ -166,36 +167,36 @@ ccc['XNO'] = {shift:30, flashColor:'#def', keyType:'seed', min:0, fee:0, donatio
 				server:'https://proxy.powernode.cc/proxy',				
 				gettingStarted:'https://nanolinks.info/',
 				
-					faucet: 'https://nanodrop.io/',
-					representative:'nano_1natrium1o3z5519ifou7xii8crpxpk8y65qmkih8e8bpsjri651oza8imdd',
-					repRec:'https://mynano.ninja/api/accounts/verified'};
+				faucet: 'https://nanodrop.io/',
+				representative:'nano_1natrium1o3z5519ifou7xii8crpxpk8y65qmkih8e8bpsjri651oza8imdd',
+				repRec:'https://mynano.ninja/api/accounts/verified'};
 						
 ccc['BAN'] = {shift:29, flashColor:'#ffc', keyType:'seed', min:0, fee:0, donation:'ban_1gpquwssoy8491ajmxp9cxjb3o38imcxidissob7cxc38o6h6r4d8gg639b7',
 				server:'https://kaliumapi.appditto.com/api',				
 				gettingStarted:'https://banano.how/links/',
 				
-					faucet: 'https://monkeytalks.cc/',
-					representative:'ban_1ka1ium4pfue3uxtntqsrib8mumxgazsjf58gidh1xeo5te3whsq8z476goo',
-					repRec:'https://api.spyglass.pw/banano/v1/representatives/scores'};
+				faucet: 'https://monkeytalks.cc/',
+				representative:'ban_1ka1ium4pfue3uxtntqsrib8mumxgazsjf58gidh1xeo5te3whsq8z476goo',
+				repRec:'https://api.spyglass.pw/banano/v1/representatives/scores'};
 						
 ccc['SOL'] = {shift:9, flashColor:'#e0faf0', keyType:'private key', min:0, fee:5000, donation:'9uugZyizr3QCrTcCgDGHpYwik636GGJVQTYBFRtd2rvG',
 				server: 'mainnet-beta',	// devnet
 				gettingStarted:'https://solana.com/',
 					
-					faucet: 'https://solfaucet.togatech.org/'};
+				faucet: 'https://solfaucet.togatech.org/'};
 				
 ccc['XLM'] = {shift:7, flashColor:'#edf', keyType:'private key', min:1, fee: 100, donation:'GCOYMN3XAUD4OM4OTNC536TG6MEB6TK3IGSPKDJJJ7V36S3NNGKVBLTC',
 				server: "https://horizon.stellar.org/", //https://horizon-testnet.stellar.org				
 				gettingStarted:'https://www.stellar.org',
 				
-					passphrase: "Public Global Stellar Network ; September 2015"}; // "Public Global Stellar Network ; September 2015" "Test SDF Network ; September 2015"
+				passphrase: "Public Global Stellar Network ; September 2015"}; // "Public Global Stellar Network ; September 2015" "Test SDF Network ; September 2015"
 					
 ccc['ALGO'] = {shift:6, flashColor:'#ebd', keyType:'private key', min:0.1, fee: 1000, donation:'EWB5J4POIJXWGOFS54HY7BGJ3MQW4HMJGQOKNECE7WANYNSKZS25E3G3NA',
-				server: 'https://algoindexer.algoexplorerapi.io/v2/',		 // 'https://algoindexer.testnet.algoexplorerapi.io/v2/'		
+				server: 'https://algoindexer.algoexplorerapi.io/v2/', // 'https://algoindexer.testnet.algoexplorerapi.io/v2/'		
 				gettingStarted:'https://www.algorand.com/',
 				
-					faucet: 'https://thealgofaucet.com/',
-					sendServer: 'https://node.algoexplorerapi.io/'}; // 'https://node.testnet.algoexplorerapi.io/'
+				faucet: 'https://thealgofaucet.com/',
+				sendServer: 'https://node.algoexplorerapi.io/'}; // 'https://node.testnet.algoexplorerapi.io/'
 					
 for (let symbol in ccc) { 
 	ccc[symbol].queue = new Promise(function(resolve, reject) { resolve(true); });
@@ -214,8 +215,8 @@ ccc['SOL'].generateSeed = function() { return "[" + solanaWeb3.Keypair.generate(
 ccc['XLM'].generateSeed = function() { return StellarSdk.Keypair.random().secret(); };
 ccc['ALGO'].generateSeed = function() { return algosdk.secretKeyToMnemonic(algosdk.generateAccount().sk); };
 
-ccc['BAN'].checkSeed = function(seed) { return typeof seed === "string" && /^[0-9a-fA-F]{64}$/.test(seed);};
 ccc['XNO'].checkSeed = function(seed) {	return typeof seed === "string" && /^[0-9a-fA-F]{64}$/.test(seed);};
+ccc['BAN'].checkSeed = function(seed) { return typeof seed === "string" && /^[0-9a-fA-F]{64}$/.test(seed);};
 ccc['SOL'].checkSeed = function(seed) {	
 	let arrSeed = seed.split(',');
 	for (let i = 0; i < arrSeed.length; i++) {
@@ -256,72 +257,36 @@ ccc['SOL'].checkAddress = function(address) { return typeof address === "string"
 ccc['XLM'].checkAddress = function(address) { return StellarSdk.StrKey.isValidEd25519PublicKey(address); };
 ccc['ALGO'].checkAddress = function(address) { return algosdk.isValidAddress(address); };
 
-ccc['BAN'].addressFromSeed = function(seed) {
-	let privateKey = ccc['BAN'].derivePrivateKey(seed, 0);
-	let publicKey = ccc['BAN'].derivePublicKey(privateKey);
-	return ccc['BAN'].deriveAddress(publicKey);	
-}
 ccc['XNO'].addressFromSeed = function(seed) {
 	let privateKey = ccc['XNO'].derivePrivateKey(seed, 0);
-	let publicKey = ccc['XNO'].derivePublicKey(privateKey);
-	return ccc['XNO'].deriveAddress(publicKey);	
+	let publicKey = ccc['XNO'].pubFromPriv(privateKey);
+	return ccc['XNO'].addrFromPub(publicKey);	
 }
+ccc['BAN'].addressFromSeed = function(seed) { return ccc['XNO'].addressFromSeed(seed).replace('nano_', 'ban_'); };
 ccc['SOL'].addressFromSeed = function(seed) {
 	let arrSeed = seed.split(',');
 	for (let i = 0; i < arrSeed.length; i++) {
 		arrSeed[i] = parseInt(arrSeed[i].replace(/\D/g,''));
 	}
-	return solanaWeb3.Keypair.fromSecretKey(new Uint8Array(arrSeed)).publicKey.toBase58()
+	return solanaWeb3.Keypair.fromSecretKey(new Uint8Array(arrSeed)).publicKey.toBase58();
 }
 ccc['XLM'].addressFromSeed = function(seed) { return StellarSdk.Keypair.fromSecret(seed).publicKey(); };
 ccc['ALGO'].addressFromSeed = function(seed) { return algosdk.mnemonicToSecretKey(seed).addr; };
 
-ccc['XNO'].derivePrivateKey = function(seed, index) {
-  const indexBuffer = new ArrayBuffer(4)
-  const indexView = new DataView(indexBuffer)
-  indexView.setUint32(0, index)
-  const indexBytes = new Uint8Array(indexBuffer)
-
-  const context = blake2bInit(32)
-  blake2bUpdate(context, hexToByteArray(seed))
-  blake2bUpdate(context, indexBytes)
-  return byteArrayToHex(blake2bFinal(context))
-}
-ccc['BAN'].derivePrivateKey = ccc['XNO'].derivePrivateKey;
-
-ccc['XNO'].derivePublicKey = function(secretKeyOrAddress) {
-	let publicKeyBytes;
-	if (!ccc['XNO'].checkAddress(secretKeyOrAddress)) publicKeyBytes = derivePublicFromSecret(hexToByteArray(secretKeyOrAddress));
-	else publicKeyBytes = decodeNanoBase32(secretKeyOrAddress.substr(5, 52));
-	return byteArrayToHex(publicKeyBytes);
-}
-ccc['BAN'].derivePublicKey = function(secretKeyOrAddress) {
-	let publicKeyBytes;
-	if (!ccc['BAN'].checkAddress(secretKeyOrAddress)) publicKeyBytes = derivePublicFromSecret(hexToByteArray(secretKeyOrAddress));
-	else publicKeyBytes = decodeNanoBase32(secretKeyOrAddress.substr(4, 52));
-	return byteArrayToHex(publicKeyBytes);
-}
-
-ccc['XNO'].deriveAddress = function(publicKey) {
-  const checksum = blake2b(hexToByteArray(publicKey), null, 5).reverse();
-  return 'nano_' + encodeNanoBase32(hexToByteArray(publicKey)) + encodeNanoBase32(checksum);
-}
-ccc['BAN'].deriveAddress = function(publicKey) { return ccc['XNO'].deriveAddress(publicKey).replace('nano_', 'ban_'); };
-
-ccc['BAN'].unpackSeed = function(seed, index) {
-	ccc['BAN'].privateKey = ccc['BAN'].derivePrivateKey(seed, index);
-	ccc['BAN'].publicKey = ccc['BAN'].derivePublicKey(ccc['BAN'].privateKey);
-	ccc['BAN'].address = ccc['BAN'].deriveAddress(ccc['BAN'].publicKey);	
-	ccc['BAN'].index = parseInt(index);
-	ccc['BAN'].encryptKey = nacl.box.keyPair.fromSecretKey(hexToByteArray(ccc['BAN'].privateKey));
-};
 ccc['XNO'].unpackSeed = function(seed, index) {
 	ccc['XNO'].privateKey = ccc['XNO'].derivePrivateKey(seed, index);
-	ccc['XNO'].publicKey = ccc['XNO'].derivePublicKey(ccc['XNO'].privateKey);
-	ccc['XNO'].address = ccc['XNO'].deriveAddress(ccc['XNO'].publicKey);
+	ccc['XNO'].publicKey = ccc['XNO'].pubFromPriv(ccc['XNO'].privateKey);
+	ccc['XNO'].address = ccc['XNO'].addrFromPub(ccc['XNO'].publicKey);
 	ccc['XNO'].index = parseInt(index);
 	ccc['XNO'].encryptKey = nacl.box.keyPair.fromSecretKey(hexToByteArray(ccc['XNO'].privateKey));
 }
+ccc['BAN'].unpackSeed = function(seed, index) {
+	ccc['BAN'].privateKey = ccc['XNO'].derivePrivateKey(seed, index);
+	ccc['BAN'].publicKey = ccc['XNO'].pubFromPriv(ccc['BAN'].privateKey);
+	ccc['BAN'].address = ccc['XNO'].addrFromPub(ccc['BAN'].publicKey).replace('nano_', 'ban_');
+	ccc['BAN'].index = parseInt(index);
+	ccc['BAN'].encryptKey = nacl.box.keyPair.fromSecretKey(hexToByteArray(ccc['BAN'].privateKey));
+};
 ccc['SOL'].unpackSeed = function(seed) {
 	let arrSeed = seed.split(',');
 	for (let i = 0; i < arrSeed.length; i++) {
@@ -345,6 +310,23 @@ ccc['ALGO'].unpackSeed = function(seed) {
 	ccc['ALGO'].address = unpack.addr;
 	ccc['ALGO'].encryptKey = nacl.box.keyPair.fromSecretKey(ccc['ALGO'].privateKey.subarray(0, 32));
 }
+
+//////////////////////////////////////////////////////// XNO only
+
+ccc['XNO'].derivePrivateKey = function(seed, index) {
+  const indexBuffer = new ArrayBuffer(4)
+  const indexView = new DataView(indexBuffer)
+  indexView.setUint32(0, index)
+  const indexBytes = new Uint8Array(indexBuffer)
+
+  const context = blake2bInit(32)
+  blake2bUpdate(context, hexToByteArray(seed))
+  blake2bUpdate(context, indexBytes)
+  return byteArrayToHex(blake2bFinal(context))
+}
+ccc['XNO'].pubFromPriv = function(privateKey) { return byteArrayToHex(derivePublicFromSecret(hexToByteArray(privateKey))); };
+ccc['XNO'].addrFromPub = function(publicKey) { return 'nano_' + encodeNanoBase32(hexToByteArray(publicKey)) + encodeNanoBase32(blake2b(hexToByteArray(publicKey), null, 5).reverse()); }
+ccc['XNO'].pubFromAddr = function(address) { return byteArrayToHex(decodeNanoBase32(address.substr(5, 52))); };
 
 //////////////////////////////////////////////////////// information fetch helper functions
 
@@ -635,13 +617,12 @@ ccc['XLM'].sign = function(message) { return byteArrayToHex(StellarSdk.Keypair.f
 ccc['ALGO'].sign = function(message) { return byteArrayToHex(algosdk.signBytes(enc.encode(message), ccc['ALGO'].privateKey)); }
 ccc['SOL'].sign = function(message) { return byteArrayToHex(nacl.sign.detached(enc.encode(message), ccc['SOL'].privateKey.secretKey)); }
 
-
 ccc['XNO'].verify = function(message, signature, address) {
-	try { return verifyDetached(enc.encode(message), hexToByteArray(signature), hexToByteArray(ccc['XNO'].derivePublicKey(address))); }
+	try { return verifyDetached(enc.encode(message), hexToByteArray(signature), hexToByteArray(ccc['XNO'].pubFromAddr(address))); }
 	catch { return false };
 }
 ccc['BAN'].verify = function(message, signature, address) {
-	try { return verifyDetached(enc.encode(message), hexToByteArray(signature), hexToByteArray(ccc['BAN'].derivePublicKey(address))); }
+	try { return verifyDetached(enc.encode(message), hexToByteArray(signature), hexToByteArray(ccc['XNO'].pubFromAddr(address.replace('ban_', 'nano_')))); }
 	catch { return false };
 }
 ccc['XLM'].verify = function(message, signature, address) {
@@ -700,9 +681,7 @@ ccc['XLM'].sendTo = function(destination, amt) {
 		return macroFetch.then(function(transaction) {
 			if (!transaction) return transaction;
 			transaction.sign(sourceKeys);
-			return ccc['XLM'].server.submitTransaction(transaction).then(function(result) {
-				return result.id;
-			});
+			return ccc['XLM'].server.submitTransaction(transaction).then(function(result) {	return result.id; });
 		}).catch(function (error) {
 			console.error("Something went wrong!", error);
 			return unknownFailMsg(); 
@@ -738,7 +717,6 @@ ccc['ALGO'].sendTo = function(destination, amt) {
 	});
 };
 
-
 ccc['BAN'].getBlock = function(hash) { return post(ccc['BAN'].server, {action: 'block_info', json_block: true, hash: hash}); };
 ccc['XNO'].getBlock = function(hash) { return post(ccc['XNO'].server, {action: 'block_info', json_block: true, hash: hash}); };
 ccc['ALGO'].getBlock = function(hash) { return fetch(ccc['ALGO'].server + "transactions/" + hash).then(function(response) { 
@@ -768,16 +746,16 @@ ccc['XNO'].createBlock = function(secretKey, data) {
 	else if (ccc['XNO'].checkAddress(correctedLink)) linkIsAddress = true;
 	if (correctedPrevious === BLANK_HASH && (linkIsAddress || correctedLink === BLANK_HASH)) throw new Error('Block is impossible');
 
-	let publicKey = ccc['XNO'].derivePublicKey(secretKey);
+	let publicKey = ccc['XNO'].pubFromPriv(secretKey);
 	let linkBytes;
-	if (ccc['XNO'].checkAddress(correctedLink)) linkBytes = hexToByteArray(ccc['XNO'].derivePublicKey(correctedLink));
+	if (ccc['XNO'].checkAddress(correctedLink)) linkBytes = hexToByteArray(ccc['XNO'].pubFromAddr(correctedLink));
 	else linkBytes = hexToByteArray(correctedLink);
 	
 	const context = blake2bInit(32)
 	blake2bUpdate(context, STATE_BLOCK_PREAMBLE_BYTES)
 	blake2bUpdate(context, hexToByteArray(publicKey))
 	blake2bUpdate(context, hexToByteArray(correctedPrevious))
-	blake2bUpdate(context, hexToByteArray(ccc['XNO'].derivePublicKey(data.representative)))
+	blake2bUpdate(context, hexToByteArray(ccc['XNO'].pubFromAddr(data.representative)))
 	blake2bUpdate(context, hexToByteArray(BigInt(data.balance).toString(16).padStart(32, '0')))
 	blake2bUpdate(context, linkBytes)
 	const hashBytes = blake2bFinal(context)
@@ -785,14 +763,14 @@ ccc['XNO'].createBlock = function(secretKey, data) {
 	let linkAsAddress
 	if (linkIsAddress) {
 		linkAsAddress = correctedLink
-		link = ccc['XNO'].derivePublicKey(linkAsAddress)
+		link = ccc['XNO'].pubFromAddr(linkAsAddress)
 	} else {
 		link = correctedLink
-		linkAsAddress = ccc['XNO'].deriveAddress(link)
+		linkAsAddress = ccc['XNO'].addrFromPub(link)
 	}
 	const block = {
 		type: 'state',
-		account: ccc['XNO'].deriveAddress(publicKey),
+		account: ccc['XNO'].addrFromPub(publicKey),
 		previous: correctedPrevious,
 		representative: data.representative,
 		balance: data.balance,
@@ -906,7 +884,6 @@ async function postBlock(symbol, subtype, workInput, previous, representative, b
 	return confirmBlock(symbol, block.hash);
 }
 
-
 //////////////////////////////////////////////////////// Exchange websocket set and public username fetch
 
 let nanoCount = 0;
@@ -994,10 +971,8 @@ function setupWebsocket(restart) {
 	ws.customEvents = {};
 	ws.on = function(cueName, eventAction) { ws.customEvents[cueName] = eventAction; };
 	ws.emit = function(cueName, payload) { 
-		if (ws.readyState == 1) {
-			ws.send(JSON.stringify({cueName:cueName, payload:payload})); 
-			return true;
-		} else return false;
+		if (ws.readyState == 1) ws.send(JSON.stringify({cueName:cueName, payload:payload})); 
+		return (ws.readyState == 1);
 	};
 	ws.onmessage = function(event) {
 		let data;
@@ -1035,12 +1010,13 @@ function setupWebsocket(restart) {
 	});
 	
 	ws.on('setShippingCompletedCue', async function(data) {
-		showMsg("Shipping address set.");
-	});
-	
-	ws.on('setNameFailedCue', function(data) {	
-		showMsg("\"Open\" this account first by receiving funds.");
+		if (data.shipping) {
+			showMsg("Shipping address set.");
+			displayShip(data.currency, data);
+			if (D(data.currency + "-set-shipping")) flash(D(data.currency + "-set-shipping"));
+		}
 	});	
+	ws.on('setNameFailedCue', function(data) { showMsg("\"Open\" this account first by receiving funds."); });	
 	
 	ws.on('getNameReplyCue', function(data) {
 		if ((data.display || data.publicKey) && !ccc[data.currency].verify(data.display + data.publicKey, data.signature, data.address)) {
@@ -1052,13 +1028,7 @@ function setupWebsocket(restart) {
 			localStorage.setItem("publicKeys", JSON.stringify(keyCache));
 		}
 		displayName(data.currency, data.div, data.address, data.display);
-	});
-	
-	ws.on('getShippingReplyCue', function(data) {
-		if (data.shipping) {
-			D(data.currency + "-set-shipping").value = dec.decode(nacl.box.open(hexToByteArray(data.shipping), hexToByteArray(data.nonce), hexToByteArray(keyCache[data.address]), ccc[data.currency].encryptKey.secretKey));
-			flash(D(data.currency + "-set-shipping"));
-		}
+		displayShip(data.currency, data);
 	});
 	
 	ws.on('getReceiptReplyCue', function(data) {
@@ -1090,7 +1060,9 @@ function setupWebsocket(restart) {
 				}
 			} else receiptString = "No invoice/receipt found";
 			
-			but.onclick = function() {
+			but.onclick = toggleReceipt;			
+			D(data.div).parentNode.parentNode.onclick = toggleReceipt;
+			function toggleReceipt() {
 				if (ul.style.maxHeight != "0px") {
 					hideAccordion(ul);
 					but.classList.remove('active');
@@ -1098,26 +1070,16 @@ function setupWebsocket(restart) {
 					showAccordion(ul);
 					but.classList.add('active');
 				}
-			};
-			
-			D(data.div).parentNode.parentNode.onclick = function() {
-				if (ul.style.maxHeight != "0px") {
-					ul.style.maxHeight = "0px";
-					but.classList.remove('active');
-				} else {
-					showAccordion(ul);
-					but.classList.add('active');
-				}
-			};
+			}
 			
 			let li = make('li');
 			li.style = "overflow:hidden; text-overflow:ellipsis; margin:10px; padding-left:3px; white-space:nowrap; text-align:center";
 
 			let detailSpan = make('div');
 			detailSpan.textContent = receiptString;
-			detailSpan.style = "font-size: 0.85em;";
+			detailSpan.style = "font-size: 0.85em";
 			if (error) detailSpan.style.color = "red";
-					
+							
 			let invoiceSpan = make('a');
 			invoiceSpan.style = "font-size: 0.85em;";		
 			let invoiceLabelSpan = make('span');
@@ -1127,9 +1089,9 @@ function setupWebsocket(restart) {
 				let addresses = {};
 				if (sender) addresses[data.currency] = data.address;
 				else addresses[data.currency] = ccc[data.currency].address;
-				
+			
 				invoiceSpan.textContent = "Invoice";
-				invoiceSpan.href = makePaymentURL(data.currency, addresses, rEnvelope.invoice, rEnvelope.iSig);
+				invoiceSpan.href = makePaymentURL(data.currency, addresses, rEnvelope.invoice, rEnvelope.iSig, !!rEnvelope.ship);
 				invoiceSpan.target = "_blank";
 				invoiceSpan.rel='noopener';			
 				
@@ -1150,28 +1112,36 @@ function setupWebsocket(restart) {
 			li.appendChild(detailSpan);			
 			ul.appendChild(li);
 			
-			if (rEnvelope.receipt) {
-				for (let i = 0; i < rEnvelope.receipt.length; i++) {
+			if (rEnvelope.receipt) {				
+				function receiptLine(description, value) {							
 					let li = make('li');
 					li.style = "display:flex; justify-content:space-between; font-size:0.9em; border-radius:5px; padding-left:5px; padding-right:5px;";
 					
 					let itemSpan = make('span');
-					itemSpan.textContent = rEnvelope.receipt[i].item;
-					itemSpan.style.paddingRight = "5px";
+					itemSpan.textContent = description;
+					itemSpan.style.marginRight = "5px";
 					
 					let amtSpan = make('span');
-					amtSpan.textContent = rEnvelope.receipt[i].amt;
-					if (!amtSpan.textContent) amtSpan.textContent = rEnvelope.receipt[i][data.currency];
+					amtSpan.textContent = value;
 					
 					li.onmouseenter = function() { this.style.backgroundColor = ccc[data.currency].flashColor; };
 					li.onmouseleave = function() { this.style.backgroundColor = "";	};				
 					li.appendChild(itemSpan);
 					li.appendChild(amtSpan);
 					ul.appendChild(li);
+					return li;
+				}
+				
+				for (let i = 0; i < rEnvelope.receipt.length; i++) {
+					receiptLine(rEnvelope.receipt[i].item, rEnvelope.receipt[i].amt || rEnvelope.receipt[i][data.currency]); 
+				}				
+				if (rEnvelope.ship) {
+					let shipli = receiptLine("Shipping address", rEnvelope.ship);
+					shipli.style.marginTop = "5px";
 				}
 				
 				let buttonli = make('li');
-				buttonli.style = "font-size:0.85em; text-align: center; margin-top:10px; margin-bottom:20px;";
+				buttonli.style = "font-size:0.85em; text-align: center; margin-top:15px; margin-bottom:20px;";
 				
 				let transferButton = make('button');
 				transferButton.textContent = "Autofill Transfer";
@@ -1195,9 +1165,9 @@ function setupWebsocket(restart) {
 //////////////////////////////////////////////////////// Final display setup
 
 function makePaymentURL(preferred, addresses, items, iSig, ship) {
-	if (!iSig) iSig = "";
     const url = new URL(thisURL);
-    url.search = new URLSearchParams({preferred:preferred, addresses:encodeURIComponent(JSON.stringify(addresses)), items:encodeURIComponent(JSON.stringify(items)), iSig:iSig, ship:ship});
+    url.search = new URLSearchParams({preferred:preferred, addresses:encodeURIComponent(JSON.stringify(addresses)), items:encodeURIComponent(JSON.stringify(items)), 
+										iSig:iSig, ship:ship});
     return url;
 }
 
@@ -1225,10 +1195,7 @@ if (urlParams.has('preferred') && urlParams.has('addresses') && urlParams.has('i
 	window.addEventListener("message", function(event) { 
 		if (window.opener && event.source == window.opener && event.data && event.data.cue == "replyCue") loadPaymentsPage(event.data); 
 	});
-	if (window.opener) {
-		console.log("before posting message");
-		window.opener.postMessage({cue:"readyCue"}, "*");
-	}
+	if (window.opener) window.opener.postMessage({cue:"readyCue"}, "*");
 }
 
 function loadPaymentsPage(data) {
@@ -1293,9 +1260,7 @@ window.addEventListener('cut', function(e) {
 	}
 });
 
-window.addEventListener('blur', function(e) { 
-	clipboardText = "";
-});
+window.addEventListener('blur', function(e) { clipboardText = ""; });
 
 window.addEventListener('keydown', function(evt) {
 	if (evt.altKey) {
@@ -1407,17 +1372,21 @@ function setShipping(symbol, name) {
 	if (!name) name = D(symbol + "-set-shipping").value;
 	if (name.length > 128) showMsg("64 characters or fewer.");
 	else {
-	//	let shippingPackage = { address: ccc[symbol].address, currency: symbol, nonce: nacl.randomBytes(24) };
-	//	shippingPackage.shipping = byteArrayToHex(nacl.box(enc.encode(name), shippingPackage.nonce, hexToByteArray(keyCache[ccc[symbol].address]), ccc[symbol].encryptKey.secretKey));
-	//	shippingPackage.nonce = byteArrayToHex(shippingPackage.nonce);					
-	//	if (!ws.emit("setShippingCue", shippingPackage)) showMsg("Unable to connect to directory.");
-	
-	localStorage.setItem("shipping", name);
-	flash(D(symbol + "-set-shipping"));
+		let shippingPackage = { address: ccc[symbol].address, currency: symbol, nonce: nacl.randomBytes(24) };
+		shippingPackage.shipping = byteArrayToHex(nacl.box(enc.encode(name), shippingPackage.nonce, hexToByteArray(keyCache[ccc[symbol].address]), ccc[symbol].encryptKey.secretKey));
+		shippingPackage.nonce = byteArrayToHex(shippingPackage.nonce);					
+		if (!ws.emit("setShippingCue", shippingPackage)) showMsg("Unable to connect to directory.");
 	}
 }
 
 function fetchDisplayName(symbol, divString, cache) {
+	if (divString == "address") {
+		if (nameCache[ccc[symbol].address]) D(symbol + "-set-display").value = nameCache[ccc[symbol].address];
+		else D(symbol + "-set-display").value = "";
+		if (ccc[symbol].address == localStorage.getItem(symbol + "-address") && localStorage.getItem(symbol + "-shipping")) 
+			D(symbol + "-set-shipping").value = localStorage.getItem(symbol + "-shipping");
+		else D(symbol + "-set-shipping").value = "";
+	}
 	let address = "";	
 	if (D(symbol + '-' + divString)) {
 		address = D(symbol + '-' + divString).value;
@@ -1460,13 +1429,22 @@ function displayName(symbol, divString, address, displayString) {
 	if (divString != "address" || div.textContent != displayString) flash(div, displayString);
 	if (D(symbol + "-transactions").contains(div)) checkli(div.parentNode.parentNode.parentNode, D(symbol + "-filter").value.toLowerCase(), symbol);
 }
+	
+function displayShip(symbol, data) {
+	if (data.shipping) {
+		let theShippingAddr = dec.decode(nacl.box.open(hexToByteArray(data.shipping), hexToByteArray(data.nonce), hexToByteArray(keyCache[data.address]), ccc[symbol].encryptKey.secretKey));
+		if (D(symbol + "-set-shipping")) D(symbol + "-set-shipping").value = theShippingAddr;
+		if (ccc[symbol].address != localStorage.getItem(`${symbol}-address`)) clearLocalStorage(symbol);
+		localStorage.setItem(symbol + "-shipping", theShippingAddr);
+	}
+}
 
-//////////////////////////////////////////////////////// Interface with helper functions
+//////////////////////////////////////////////////////// Interface loading and clearing
 	
 function generateWallet(symbol) {
 	if (!ccc[symbol].address || confirm('Overwrite the current ' + ccc[symbol].keyType + '?')) {
 		let newSeed = ccc[symbol].generateSeed();
-		ccc[symbol].address = ccc[symbol].addressFromSeed;
+		ccc[symbol].address = ccc[symbol].addressFromSeed(newSeed);
 		inputEvent(D(`${symbol}-seed`), newSeed);
 		navigator.clipboard.writeText(newSeed);
 		clipboardText = newSeed;
@@ -1494,10 +1472,8 @@ function importWallet(symbol) {
 		if (localStorageWriteable) {
 			localStorage.setItem(`${symbol}-seed`, seed);
 			localStorage.setItem(`${symbol}-index`, index);
-			localStorage.setItem(`${symbol}-address`, ccc[symbol].address);
 		}				
 		loadDisplay(symbol, existingWallet);
-		
 		updateDisplayNames(symbol);
 	}
 }
@@ -1547,6 +1523,8 @@ function clearPayment(symbol) {
 }
 
 function clearInvoice(symbol) {
+	D(symbol + "-invoice-amount").value = "";
+	D(symbol + '-shipping-button').classList.remove('active');
 	clearInvoiceTab(symbol);
 	clearMemoList(symbol, "-invoice");
 }
@@ -1560,10 +1538,10 @@ function clearMemoList(symbol, div) {
 }
 
 function clearInvoiceTab(symbol) {
-	D(symbol + '-invoice-url').href = "";
-	D(symbol + '-invoice-url-signed').href = "";
-	flash(D(symbol + '-invoice-url-literal'), "\xa0");
-	flash(D(symbol + '-invoice-url-literal-signed'), "\xa0");	
+	D(symbol + '-invoiceURL').href = "";
+	D(symbol + '-invoiceURL-signed').href = "";
+	flash(D(symbol + '-invoiceURL-literal'), "\xa0");
+	flash(D(symbol + '-invoiceURL-literal-signed'), "\xa0");	
 	hideAccordion(D(symbol + "-tool4").nextElementSibling);
 	hideAccordionPadding(D(symbol + "-tool4").nextElementSibling);
 }
@@ -1572,6 +1550,7 @@ function clearPaymentTab(symbol) {
 	D(symbol + '-withdrawal-amount-total').value = '';
 	D(symbol + '-dest-display-confirm').textContent = '';
 	D(symbol + '-dest-privacy').textContent = '';
+	D(symbol + '-dest-ship').textContent = '';
 	hideAccordion(D(symbol + "-payTool").nextElementSibling);
 	hideAccordionPadding(D(symbol + "-payTool").nextElementSibling);
 }
@@ -1604,6 +1583,15 @@ function freezePayment(symbol, finalize) {
 	}
 }
 
+function clearLocalStorage(symbol) {
+	localStorage.removeItem(`${symbol}-address`); 
+	localStorage.removeItem(`${symbol}-display`); 
+	localStorage.removeItem(`${symbol}-rep-display`); 
+	localStorage.removeItem(`${symbol}-info`);
+	localStorage.removeItem(`${symbol}-transactions`);
+	localStorage.removeItem(`${symbol}-shipping`);
+}
+
 function clickClearWallet(symbol) {
 	clearWallet(symbol);
 	
@@ -1611,10 +1599,7 @@ function clickClearWallet(symbol) {
 	D(`${symbol}-index`).value = "";
 	
 	// RAM and local storage
-	localStorage.removeItem(`${symbol}-display`); 
-	localStorage.removeItem(`${symbol}-rep-display`); 
-	localStorage.removeItem(`${symbol}-info`);
-	localStorage.removeItem(`${symbol}-transactions`);
+	clearLocalStorage(symbol);
 	
 	// Transaction panel
 	D(symbol + "-filter").value = "";
@@ -1624,6 +1609,9 @@ function clickClearWallet(symbol) {
 	
 	// transfer tool
 	if (!paymentWindow) clearPayment(symbol);
+	
+	// invoice tool
+	clearInvoice(symbol);
 	
 	// signature tool
 	flash(D(`${symbol}-contract`), "Now if I carry out this oath, and break it not, may I gain for ever reputation among all men for my life and for my art; but if I break it and forswear myself, may the opposite befall me.");
@@ -1645,14 +1633,6 @@ function clickClearWallet(symbol) {
 	updateDisplayNames(symbol);
 }
 
-function updateDisplayNames(symbol) {
-	fetchDisplayName(symbol, 'dest');
-	fetchDisplayName(symbol, 'signer');
-	fetchDisplayName(symbol, 'rep');
-	fetchDisplayName(symbol, 'new-rep');
-	fetchDisplayName(symbol, 'qr-input');
-}
-
 function clearWallet(symbol) {
 	qrclose();
 	
@@ -1664,7 +1644,6 @@ function clearWallet(symbol) {
 	ccc[symbol].encryptKey = "";	
 	localStorage.removeItem(`${symbol}-seed`); 
 	localStorage.removeItem(`${symbol}-index`); 
-	localStorage.removeItem(`${symbol}-address`); 
 	
 	// Transaction panel
 	clearDOM(D(symbol + '-transactions'));
@@ -1677,7 +1656,7 @@ function clearWallet(symbol) {
 	flash(D(`${symbol}-balance-pending`), "0.00");
 	
 	// invoice tool
-	clearInvoice(symbol);
+	clearInvoiceTab(symbol);
 	
 	// signature tool
 	flash(D(symbol + '-signature'), "\xa0");
@@ -1690,6 +1669,15 @@ function clearWallet(symbol) {
 	D('donateButton').disabled = true;
 }
 
+function updateDisplayNames(symbol) {
+	fetchDisplayName(symbol, 'dest');
+	fetchDisplayName(symbol, 'signer');
+	fetchDisplayName(symbol, 'rep');
+	fetchDisplayName(symbol, 'new-rep');
+	fetchDisplayName(symbol, 'qr-input');
+}
+
+//////////////////////////////////////////////////////// Interface with helper functions
 
 function preparePaymentTab(symbol) {
 	addTotal(D(symbol + "-itemize"));
@@ -1715,8 +1703,12 @@ function preparePaymentTab(symbol) {
 		
 		if (paymentWindow.ship) {
 			D(symbol + "-dest-ship").parentNode.style.display = "";
-			if (localStorage.getItem('shipping')) D(symbol + "-dest-ship").textContent = localStorage.getItem('shipping');
-			else D(symbol + "-dest-ship").textContent = "Set by clicking account name";
+			if (!localStorage.getItem(symbol + '-shipping') || D(symbol + "-dest-ship").textContent != localStorage.getItem(symbol + '-shipping')) {
+				if (localStorage.getItem(symbol + '-shipping') && ccc[symbol].address == localStorage.getItem(`${symbol}-address`)) 
+					D(symbol + "-dest-ship").textContent = localStorage.getItem(symbol + '-shipping');
+				else D(symbol + "-dest-ship").textContent = "(required - click account name to set)";
+				flash(D(symbol + '-dest-ship').parentNode);
+			}
 		}
 	}
 	
@@ -1724,7 +1716,7 @@ function preparePaymentTab(symbol) {
 	if (keyCache[D(`${symbol}-dest`).value]) privacyString = "end-to-end encryption";
 	if (D(symbol + "-dest-privacy").innerHTML != privacyString) {
 		D(symbol + "-dest-privacy").innerHTML = privacyString;
-		flash(D(symbol + '-dest-privacy').parentNode);	
+		if (!paymentWindow) flash(D(symbol + '-dest-privacy').parentNode);	
 		if (privacyString == "end-to-end encryption") D(symbol + "-dest-privacy").style.color = "#097";
 		else D(symbol + "-dest-privacy").style.color = "";
 	}
@@ -1742,17 +1734,17 @@ function prepareInvoiceTab(symbol) {
 	let addresses = {};
 	addresses[symbol] = ccc[symbol].address;
 	let theURL = makePaymentURL(symbol, addresses, packageItems(symbol, "invoice"), "", D(symbol + "-shipping-button").classList.contains('active'));
-	D(symbol + '-invoice-url').href = theURL;
-	flash(D(symbol + '-invoice-url-literal'), theURL);
+	D(symbol + '-invoiceURL').href = theURL;
+	flash(D(symbol + '-invoiceURL-literal'), theURL);
 	
 	let items = packageItems(symbol, "invoice");
 	theURL = makePaymentURL(symbol, addresses, items, ccc[symbol].sign(JSON.stringify(items)), D(symbol + "-shipping-button").classList.contains('active'));
-	D(symbol + '-invoice-url-signed').href = theURL;
-	flash(D(symbol + '-invoice-url-literal-signed'), theURL);
-	D(symbol + '-invoice-url').style.opacity = "";
-	D(symbol + '-invoice-url-signed').style.opacity = "";
-	D(symbol + '-invoice-url-literal').style.opacity = "";
-	D(symbol + '-invoice-url-literal-signed').style.opacity = "";
+	D(symbol + '-invoiceURL-signed').href = theURL;
+	flash(D(symbol + '-invoiceURL-literal-signed'), theURL);
+	D(symbol + '-invoiceURL').style.opacity = "";
+	D(symbol + '-invoiceURL-signed').style.opacity = "";
+	D(symbol + '-invoiceURL-literal').style.opacity = "";
+	D(symbol + '-invoiceURL-literal-signed').style.opacity = "";
 	
 	showAccordion(D(symbol + "-tool4").nextElementSibling);	
 	D(symbol + "-tool4").nextElementSibling.style.padding = "";
@@ -1803,13 +1795,13 @@ function verifySignature(symbol) {
 	}
 }
 
-function cacheBackup(data, symbol, type) {
-	if (ccc[symbol].address == localStorage.getItem(`${symbol}-address`)) {
-		if (data) localStorage.setItem(symbol + "-" + type, JSON.stringify(data));
-		else {
-			data = localStorage.getItem(symbol + "-" + type);
-			if (data) data = JSON.parse(data);	
-		}
+function cacheBackup(data, symbol, type) {	
+	if (data) {
+		if (ccc[symbol].address != localStorage.getItem(`${symbol}-address`)) clearLocalStorage(symbol);
+		localStorage.setItem(symbol + "-" + type, JSON.stringify(data));
+	} else {
+		if (ccc[symbol].address == localStorage.getItem(`${symbol}-address`)) data = localStorage.getItem(symbol + "-" + type);
+		if (data) data = JSON.parse(data);	
 	}
 	return data;
 }
@@ -1875,7 +1867,8 @@ async function withdraw(symbol, elt) {
 				console.log(sendResp);
 				let rEnvelope = paymentWindow;
 				if (!rEnvelope) rEnvelope = {};
-				rEnvelope.receipt = packageItems(symbol, "itemize");				
+				rEnvelope.receipt = packageItems(symbol, "itemize");
+				if (rEnvelope.ship) rEnvelope.ship = D(symbol + "-dest-ship").textContent;
 				let receiptPackage = {currency: symbol, tx:sendResp, rEnvelope: JSON.stringify(rEnvelope)};
 				
 				if (keyCache[D(`${symbol}-dest`).value]) {
@@ -1980,9 +1973,8 @@ function toggleEdit(symbol) {
 	if (obj.style.maxHeight == "0px") {
      	showAccordion(obj);
      	obj.style.marginTop = "10px";
-     	obj.style.marginBottom = "20px";		
-		// ws.emit('getShippingCue', {currency:symbol, address:ccc[symbol].address });
-		D(symbol + "-set-shipping").value = localStorage.getItem("shipping");
+     	obj.style.marginBottom = "20px";
+		fetchDisplayName(symbol, "address");
 	} else {	
 		hideAccordion(obj);
      	obj.style.marginBottom = "0px";
@@ -2072,9 +2064,9 @@ function toggleInvoices(elt, symbol) {
 	filterTransactions(symbol);
 }
 
-function toggleShipping(elt) {
-	if (elt.classList.contains('active')) elt.classList.remove('active');
-	else elt.classList.add('active');
+function toggleShipping(symbol) {
+	if (D(symbol + '-shipping-button').classList.contains('active')) D(symbol + '-shipping-button').classList.remove('active');
+	else D(symbol + '-shipping-button').classList.add('active');
 	
 	shadeInvoice(D('primary').value);
 }
@@ -2099,8 +2091,7 @@ function addTotal(elt) {
 
 function descInputHandler(event, elt) {
 	if (D(D('primary').value + "-invoice").contains(elt)) shadeInvoice(D('primary').value);
-	if (event.keyCode == 27) elt.value = '';
-	
+	if (event.keyCode == 27) elt.value = '';	
 	if (event.keyCode == 13) {
 		let symbol = D('primary').value;
 		if (D(symbol + "-invoice").contains(elt)) prepareInvoiceTab(symbol);
@@ -2109,12 +2100,8 @@ function descInputHandler(event, elt) {
 }
 
 function amtInputHandler(event, elt) {
-	if (event.keyCode == 27) elt.value = '';
-	if (event.keyCode == 13) {
-		let symbol = D('primary').value;
-		if (D(symbol + "-invoice").contains(elt)) prepareInvoiceTab(symbol);
-		else preparePaymentTab(symbol);
-	} else addTotal(elt.parentNode.parentNode); 
+	descInputHandler(event, elt);
+	if (event.keyCode != 13) addTotal(elt.parentNode.parentNode); 
 }
 
 function amtKeyuphandler(event, elt) {
@@ -2152,10 +2139,10 @@ function addItem(elt) {
 }
 
 function shadeInvoice(symbol) {
-	D(symbol + '-invoice-url').style.opacity = "0.3";
-	D(symbol + '-invoice-url-signed').style.opacity = "0.3";
-	D(symbol + '-invoice-url-literal').style.opacity = "0.3";
-	D(symbol + '-invoice-url-literal-signed').style.opacity = "0.3";
+	D(symbol + '-invoiceURL').style.opacity = "0.3";
+	D(symbol + '-invoiceURL-signed').style.opacity = "0.3";
+	D(symbol + '-invoiceURL-literal').style.opacity = "0.3";
+	D(symbol + '-invoiceURL-literal-signed').style.opacity = "0.3";
 }
 
 function donate() {
@@ -2294,7 +2281,7 @@ window.qrcode.callback = res => {
 				const nano_scheme = /^(nano):.+$/g;
 				if (ccc[qrScanningSymbol].checkAddress(res)) {
 					inputEvent(D(qrScanningSymbol + qrScanningType), res);
-					showMsg("Destination address scanned.");
+					showMsg("Recipient address scanned.");
 				} else if (qrScanningSymbol == "XNO" && nano_scheme.test(res)) {
 					const url = new URL(res);
 					if (url.protocol === 'nano:' && ccc[qrScanningSymbol].checkAddress(url.pathname)) {
@@ -2577,7 +2564,8 @@ async function selectPrimary(symbol) {
 		ccc[symbol].qrCode = new QRCode(symbol + "-qrCodeImageBlock");
 		addItem(D(symbol + "-itemize"));
 		addItem(D(symbol + "-invoice"));	
-		D(symbol + '-withdrawal-fee').value = unitFromRaw(symbol, ccc[symbol].fee);			
+		if (ccc[symbol].fee) D(symbol + '-withdrawal-fee').value = unitFromRaw(symbol, ccc[symbol].fee);			
+		else D(symbol + '-withdrawal-fee').parentNode.parentNode.style.display = "none";
 		if (screen.width > 550 && screen.height > 550) D(symbol + "-transaction-refresh").style.display = "none";
 		if (ccc[symbol].faucet) D(`${symbol}-faucet`).style.display = "";	
 	
@@ -2676,7 +2664,7 @@ function generateHTML(symbol) {
 	ccc[symbol].sidebarElt.appendChild(loginDiv);
 	loginDiv.innerHTML = `<div class="objectWrapper">
 		<div class="clickFlash" style="display:flex; justify-content:space-between" 
-								onclick="toggleEdit('${symbol}'); fetchDisplayName('${symbol}', 'address')">
+								onclick="toggleEdit('${symbol}');">
 			<strong style="overflow:hidden"><div id="${symbol}-address-display" style="text-overflow:ellipsis; overflow:hidden; font-size:1.2em;" class="flash">✏️ My Account</div></strong>
 		</div>
 		
@@ -2687,7 +2675,7 @@ function generateHTML(symbol) {
 			</div>
 					
 			<div style="display:flex; justify-content:space-between; margin-top:15px;">
-				<input placeHolder="Shipping address (private) ..." onfocus="scrollPanel(this)" id="${symbol}-set-shipping" style="padding-right:30px; flex-grow:1; margin-right:10px;" type="text" maxlength="128" onkeyup="if (event.keyCode == 13) setShipping('${symbol}'); if (event.keyCode == 27) this.value = '';"><button  tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
+				<input placeHolder="Shipping address (encrypted) ..." onfocus="scrollPanel(this)" id="${symbol}-set-shipping" style="padding-right:30px; flex-grow:1; margin-right:10px;" type="text" maxlength="128" onkeyup="if (event.keyCode == 13) setShipping('${symbol}'); if (event.keyCode == 27) this.value = '';"><button  tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
 				<button style="font-size:0.85em" onclick="setShipping('${symbol}')">Set</button>
 			</div>
 		</div>		
@@ -2741,7 +2729,7 @@ function generateHTML(symbol) {
 	
 	makeTool("Transfer", 'dest-display', "payTool", 20, 
 		`<div style="display:flex; justify-content:space-between; margin-top:10px;">
-			<input placeholder="Destination address..." onfocus="scrollPanel(this)" style="padding-right:30px; flex-grow:1; margin-right:10px" id="${symbol}-dest" type="text" maxlength="128" onclick="this.select()" oninput="fetchDisplayName('${symbol}', 'dest'); D('${symbol}-paymentButton').disabled = true;">
+			<input placeholder="Recipient address..." onfocus="scrollPanel(this)" style="padding-right:30px; flex-grow:1; margin-right:10px" id="${symbol}-dest" type="text" maxlength="128" onclick="this.select()" oninput="fetchDisplayName('${symbol}', 'dest'); D('${symbol}-paymentButton').disabled = true;">
 			<button tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
 			<button tabindex="-1" id="${symbol}-qrButton2" style="font-size:0.85em" onclick="qrscan('${symbol}', '-dest', this)">QR</button>
 		</div>		
@@ -2770,10 +2758,10 @@ function generateHTML(symbol) {
 			<input id="${symbol}-withdrawal-amount-total" placeholder="0.00" style="text-align:right; flex-grow:1; flex-basis:1px" type="number" step="0.01" min="0" disabled>&nbsp;${symbol}
 		</div>
 		
-		<div class="flash leftRightBase" style="margin-top:5px;"><strong>Destination</strong><span id="${symbol}-dest-display-confirm" class="rightData"></span></div>		
-		<div class="flash leftRightBase" style="margin-top:5px;"><strong>Receipt privacy</strong><span id="${symbol}-dest-privacy" class="rightData"></span></div>
-		<div class="flash leftRightBase" style="display:none; margin-top:5px;"><strong>Invoice integrity</strong><span id="${symbol}-dest-sig" class="rightData"></span></div>		
-		<div class="flash leftRightBase" style="display:none; margin-top:5px;"><strong>Shipping address</strong><span id="${symbol}-dest-ship" class="rightData"></span></div>
+		<div class="flash leftRightBase" style="margin-top:4px;"><strong>Recipient</strong><span id="${symbol}-dest-display-confirm" class="rightData"></span></div>			
+		<div class="flash leftRightBase" style="display:none; margin-top:15px;"><strong>Shipping address</strong><span id="${symbol}-dest-ship" class="rightData"></span></div>	
+		<div class="flash leftRightBase" style="margin-top:15px;"><strong>Receipt privacy</strong><span id="${symbol}-dest-privacy" class="rightData"></span></div>
+		<div class="flash leftRightBase" style="display:none; margin-top:5px;"><strong>Invoice integrity</strong><span id="${symbol}-dest-sig" class="rightData"></span></div>
 		
 		<div style="text-align:center; margin-top:15px;">
 			<button id="${symbol}-paymentButton" onclick="withdraw('${symbol}', this)" disabled>Transfer ${symbol}</button>
@@ -2787,10 +2775,10 @@ function generateHTML(symbol) {
 		
 		<div class="leftRightBase">
 			<strong style="margin-right:5px;">Subtotal</strong>
-			<input placeholder="0.00" style="text-align:right; flex-grow:1; flex-basis:1px" type="number" step="0.01" min="0" disabled>&nbsp;${symbol}
+			<input id="${symbol}-invoice-amount"  placeholder="0.00" style="text-align:right; flex-grow:1; flex-basis:1px" type="number" step="0.01" min="0" disabled>&nbsp;${symbol}
 		</div>
 			
-		<div class="leftRightBase" style="margin-top:10px; margin-right:0px"><strong>Shipping address</strong><button id="${symbol}-shipping-button" style="font-size:0.85em" onclick="toggleShipping(this)">Require</button></div>
+		<div class="leftRightBase" style="margin-top:15px; margin-right:0px"><strong>Shipping address</strong><button id="${symbol}-shipping-button" style="font-size:0.85em" onclick="toggleShipping('${symbol}')">Require</button></div>
 		
 		<div style="text-align:center; margin-top:15px;"><button style="font-size:0.85em" onclick="prepareInvoiceTab('${symbol}')">Generate and Sign</button>`);
 		
@@ -2798,15 +2786,15 @@ function generateHTML(symbol) {
 	loginDiv.innerHTML += `<div class="accordion objectWrapper" style="max-height:0px; padding-top:0px; padding-bottom:0px; margin-top:0px;">	
 		<div class="leftRightBase" style="margin-right:0px;">				
 			<strong style="margin-right:5px;">Unsigned invoice</strong>	
-			<a id="${symbol}-invoice-url" class="flash" target="_blank" href=""><button style="font-size:0.85em">Link Demo</button></a>
+			<a id="${symbol}-invoiceURL" class="flash" target="_blank" href=""><button style="font-size:0.85em">Link Demo</button></a>
 		</div>		
-		<div id="${symbol}-invoice-url-literal" class='address' onclick="clickCopy(this, this.textContent)">&nbsp;</div>
+		<div id="${symbol}-invoiceURL-literal" class='address' onclick="clickCopy(this, this.textContent)">&nbsp;</div>
 		
 		<div class="leftRightBase" style="margin-right:0px;">				
 			<strong style="margin-right:5px;">Signed invoice</strong>	
-			<a id="${symbol}-invoice-url-signed" class="flash" target="_blank" href=""><button style="font-size:0.85em">Link Demo</button></a>
+			<a id="${symbol}-invoiceURL-signed" class="flash" target="_blank" href=""><button style="font-size:0.85em">Link Demo</button></a>
 		</div>		
-		<div id="${symbol}-invoice-url-literal-signed" class='address' onclick="clickCopy(this, this.textContent)">&nbsp;</div>
+		<div id="${symbol}-invoiceURL-literal-signed" class='address' onclick="clickCopy(this, this.textContent)">&nbsp;</div>
 		
 		<div style="text-align:center; margin-top:15px;">			
 			<a style="font-size:0.9em;" class="clickFlash" rel="noopener" target="_blank" href="https://warashibetrader.github.io/2022/02/17/invoices">Automated Integrations</a>
