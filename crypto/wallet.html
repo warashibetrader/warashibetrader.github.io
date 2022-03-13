@@ -1010,7 +1010,7 @@ function setupWebsocket(restart) {
 	});
 	ws.on('setNameFailedCue', function(data) { showMsg("\"Open\" this account first by receiving funds."); });	
 	
-	ws.on('setShipCompletedClue', async function(data) {
+	ws.on('setShipCompletedCue', async function(data) {
 		if (data.ship) {
 			showMsg("Shipping address set.");
 			displayShip(data.currency, data);
@@ -2828,7 +2828,7 @@ function generateHTML(symbol) {
 		
 		<div class="flash leftRightBase" style="margin-top:4px;"><strong>Recipient</strong><span id="${symbol}-dest-display-confirm" class="rightData"></span></div>			
 		<div class="flash leftRightBase" style="display:none; margin-top:15px;"><strong>Shipping address</strong><span id="${symbol}-dest-ship" class="rightData"></span></div>	
-		<div class="flash leftRightBase" style="display:none; margin-top:15px;"><strong>Email address</strong><span id="${symbol}-dest-email" class="rightData"></span></div>	
+		<div class="flash leftRightBase" style="display:none; margin-top:5px;"><strong>Email address</strong><span id="${symbol}-dest-email" class="rightData"></span></div>	
 		<div class="flash leftRightBase" style="margin-top:15px;"><strong>Receipt privacy</strong><span id="${symbol}-dest-privacy" class="rightData"></span></div>
 		<div class="flash leftRightBase" style="display:none; margin-top:5px;"><strong>Invoice integrity</strong><span id="${symbol}-dest-sig" class="rightData"></span></div>
 		
