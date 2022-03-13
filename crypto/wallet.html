@@ -132,7 +132,6 @@ if (localStorage.getItem('symbol')) document.getElementById('firstDiv').style.ba
 //////////////////////////////////////////////////////// global data
 
 var thisURL = 'https://warashibetrader.github.io/crypto/wallet';
-// var thisURL = 'file:///C:/Users/aialb/OneDrive/x1%20yoga%202%20190301/Overheard/warashibe%20211213/walletsrc/wallet.html';
 var paymentWindow = false;
 let imgsrc = localStorage.getItem("image");
 if (imgsrc) {
@@ -1384,9 +1383,9 @@ function setShip(symbol, name) {
 	if (!name) name = D(symbol + "-set-ship").value;
 	if (name.length > 128) showMsg("64 characters or fewer.");
 	else {
-		let shipPackage = { address: ccc[symbol].address, currency: symbol, nonce: nacl.randomBytes(24) };
-		shipPackage.ship = byteArrayToHex(nacl.box(enc.encode(name), shipPackage.nonce, hexToByteArray(keyCache[ccc[symbol].address]), ccc[symbol].encryptKey.secretKey));
-		shipPackage.nonce = byteArrayToHex(shipPackage.nonce);					
+		let shipPackage = { address: ccc[symbol].address, currency: symbol, sNonce: nacl.randomBytes(24) };
+		shipPackage.ship = byteArrayToHex(nacl.box(enc.encode(name), shipPackage.sNonce, hexToByteArray(keyCache[ccc[symbol].address]), ccc[symbol].encryptKey.secretKey));
+		shipPackage.sNonce = byteArrayToHex(shipPackage.sNonce);					
 		if (!ws.emit("setShipCue", shipPackage)) showMsg("Unable to connect to directory.");
 	}
 }
@@ -1395,9 +1394,9 @@ function setEmail(symbol, name) {
 	if (!name) name = D(symbol + "-set-email").value;
 	if (name.length > 128) showMsg("64 characters or fewer.");
 	else {
-		let emailPackage = { address: ccc[symbol].address, currency: symbol, nonce: nacl.randomBytes(24) };
-		emailPackage.email = byteArrayToHex(nacl.box(enc.encode(name), emailPackage.nonce, hexToByteArray(keyCache[ccc[symbol].address]), ccc[symbol].encryptKey.secretKey));
-		emailPackage.nonce = byteArrayToHex(emailPackage.nonce);					
+		let emailPackage = { address: ccc[symbol].address, currency: symbol, eNonce: nacl.randomBytes(24) };
+		emailPackage.email = byteArrayToHex(nacl.box(enc.encode(name), emailPackage.eNonce, hexToByteArray(keyCache[ccc[symbol].address]), ccc[symbol].encryptKey.secretKey));
+		emailPackage.eNonce = byteArrayToHex(emailPackage.eNonce);					
 		if (!ws.emit("setEmailCue", emailPackage)) showMsg("Unable to connect to directory.");
 	}
 }
@@ -1458,7 +1457,7 @@ function displayName(symbol, divString, address, displayString) {
 	
 function displayShip(symbol, data) {
 	if (data.ship) {
-		let shipAddr = dec.decode(nacl.box.open(hexToByteArray(data.ship), hexToByteArray(data.nonce), hexToByteArray(keyCache[data.address]), ccc[symbol].encryptKey.secretKey));
+		let shipAddr = dec.decode(nacl.box.open(hexToByteArray(data.ship), hexToByteArray(data.sNonce), hexToByteArray(keyCache[data.address]), ccc[symbol].encryptKey.secretKey));
 		if (D(symbol + "-set-ship")) D(symbol + "-set-ship").value = shipAddr;
 		clearLocalStorage(symbol);
 		localStorage.setItem(symbol + "-ship", shipAddr);
@@ -1467,7 +1466,7 @@ function displayShip(symbol, data) {
 
 function displayEmail(symbol, data) {
 	if (data.email) {
-		let theEmailAddr = dec.decode(nacl.box.open(hexToByteArray(data.email), hexToByteArray(data.nonce), hexToByteArray(keyCache[data.address]), ccc[symbol].encryptKey.secretKey));
+		let theEmailAddr = dec.decode(nacl.box.open(hexToByteArray(data.email), hexToByteArray(data.eNonce), hexToByteArray(keyCache[data.address]), ccc[symbol].encryptKey.secretKey));
 		if (D(symbol + "-set-email")) D(symbol + "-set-email").value = theEmailAddr;
 		clearLocalStorage(symbol);
 		localStorage.setItem(symbol + "-email", theEmailAddr);
