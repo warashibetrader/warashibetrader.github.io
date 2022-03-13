@@ -1008,15 +1008,22 @@ function setupWebsocket(restart) {
 			displayName(data.currency, "address", data.address, data.display);
 		}
 	});
+	ws.on('setNameFailedCue', function(data) { showMsg("\"Open\" this account first by receiving funds."); });	
 	
-	ws.on('setShippingCompletedCue', async function(data) {
-		if (data.shipping) {
+	ws.on('setShipCompletedClue', async function(data) {
+		if (data.ship) {
 			showMsg("Shipping address set.");
 			displayShip(data.currency, data);
-			if (D(data.currency + "-set-shipping")) flash(D(data.currency + "-set-shipping"));
+			if (D(data.currency + "-set-ship")) flash(D(data.currency + "-set-ship"));
+		}
+	});
+	ws.on('setEmailCompletedCue', async function(data) {
+		if (data.email) {
+			showMsg("Email address set.");
+			displayEmail(data.currency, data);
+			if (D(data.currency + "-set-email")) flash(D(data.currency + "-set-email"));
 		}
 	});	
-	ws.on('setNameFailedCue', function(data) { showMsg("\"Open\" this account first by receiving funds."); });	
 	
 	ws.on('getNameReplyCue', function(data) {
 		if ((data.display || data.publicKey) && !ccc[data.currency].verify(data.display + data.publicKey, data.signature, data.address)) {
@@ -1029,6 +1036,7 @@ function setupWebsocket(restart) {
 		}
 		displayName(data.currency, data.div, data.address, data.display);
 		displayShip(data.currency, data);
+		displayEmail(data.currency, data);
 	});
 	
 	ws.on('getReceiptReplyCue', function(data) {
@@ -1091,7 +1099,7 @@ function setupWebsocket(restart) {
 				else addresses[data.currency] = ccc[data.currency].address;
 			
 				invoiceSpan.textContent = "Invoice";
-				invoiceSpan.href = makePaymentURL(data.currency, addresses, rEnvelope.invoice, rEnvelope.iSig, !!rEnvelope.ship);
+				invoiceSpan.href = makePaymentURL(data.currency, addresses, rEnvelope.invoice, rEnvelope.iSig, !!rEnvelope.ship, !!rEnvelope.email);
 				invoiceSpan.target = "_blank";
 				invoiceSpan.rel='noopener';			
 				
@@ -1139,6 +1147,10 @@ function setupWebsocket(restart) {
 					let shipli = receiptLine("Shipping address", rEnvelope.ship);
 					shipli.style.marginTop = "5px";
 				}
+				if (rEnvelope.email) {
+					let emailli = receiptLine("Email address", rEnvelope.email);
+					emailli.style.marginTop = "5px";
+				}
 				
 				let buttonli = make('li');
 				buttonli.style = "font-size:0.85em; text-align: center; margin-top:15px; margin-bottom:20px;";
@@ -1164,10 +1176,10 @@ function setupWebsocket(restart) {
 
 //////////////////////////////////////////////////////// Final display setup
 
-function makePaymentURL(preferred, addresses, items, iSig, ship) {
+function makePaymentURL(preferred, addresses, items, iSig, ship, email) {
     const url = new URL(thisURL);
     url.search = new URLSearchParams({preferred:preferred, addresses:encodeURIComponent(JSON.stringify(addresses)), items:encodeURIComponent(JSON.stringify(items)), 
-										iSig:iSig, ship:ship});
+										iSig:iSig, ship:ship, email:email});
     return url;
 }
 
@@ -1188,7 +1200,7 @@ if (urlParams.has('preferred') && urlParams.has('addresses') && urlParams.has('i
 						addresses: JSON.parse(decodeURIComponent(urlParams.get('addresses'))), 
 						items: JSON.parse(decodeURIComponent(urlParams.get('items'))),
 						iSig: urlParams.get('iSig'),
-						ship: JSON.parse(urlParams.get('ship'))});
+						ship: JSON.parse(urlParams.get('ship')), email: JSON.parse(urlParams.get('email'))});
 } else {
 	if (localStorage.getItem('symbol')) D('primary').value = localStorage.getItem('symbol');
 	selectPrimary(D('primary').value);
@@ -1199,7 +1211,7 @@ if (urlParams.has('preferred') && urlParams.has('addresses') && urlParams.has('i
 }
 
 function loadPaymentsPage(data) {
-	paymentWindow = {invoice:data.items, iSig:data.iSig, ship:data.ship};
+	paymentWindow = {invoice:data.items, iSig:data.iSig, ship:data.ship, email:data.email};
 	let symbol = data.preferred;
 	D('primary').value = symbol;
 	D('primary').disabled = true;
@@ -1368,14 +1380,25 @@ function setName(symbol, name) {
 		showMsg("Unable to connect to directory.");
 }
 
-function setShipping(symbol, name) {
-	if (!name) name = D(symbol + "-set-shipping").value;
+function setShip(symbol, name) {
+	if (!name) name = D(symbol + "-set-ship").value;
 	if (name.length > 128) showMsg("64 characters or fewer.");
 	else {
-		let shippingPackage = { address: ccc[symbol].address, currency: symbol, nonce: nacl.randomBytes(24) };
-		shippingPackage.shipping = byteArrayToHex(nacl.box(enc.encode(name), shippingPackage.nonce, hexToByteArray(keyCache[ccc[symbol].address]), ccc[symbol].encryptKey.secretKey));
-		shippingPackage.nonce = byteArrayToHex(shippingPackage.nonce);					
-		if (!ws.emit("setShippingCue", shippingPackage)) showMsg("Unable to connect to directory.");
+		let shipPackage = { address: ccc[symbol].address, currency: symbol, nonce: nacl.randomBytes(24) };
+		shipPackage.ship = byteArrayToHex(nacl.box(enc.encode(name), shipPackage.nonce, hexToByteArray(keyCache[ccc[symbol].address]), ccc[symbol].encryptKey.secretKey));
+		shipPackage.nonce = byteArrayToHex(shipPackage.nonce);					
+		if (!ws.emit("setShipCue", shipPackage)) showMsg("Unable to connect to directory.");
+	}
+}
+
+function setEmail(symbol, name) {
+	if (!name) name = D(symbol + "-set-email").value;
+	if (name.length > 128) showMsg("64 characters or fewer.");
+	else {
+		let emailPackage = { address: ccc[symbol].address, currency: symbol, nonce: nacl.randomBytes(24) };
+		emailPackage.email = byteArrayToHex(nacl.box(enc.encode(name), emailPackage.nonce, hexToByteArray(keyCache[ccc[symbol].address]), ccc[symbol].encryptKey.secretKey));
+		emailPackage.nonce = byteArrayToHex(emailPackage.nonce);					
+		if (!ws.emit("setEmailCue", emailPackage)) showMsg("Unable to connect to directory.");
 	}
 }
 
@@ -1383,9 +1406,12 @@ function fetchDisplayName(symbol, divString, cache) {
 	if (divString == "address") {
 		if (nameCache[ccc[symbol].address]) D(symbol + "-set-display").value = nameCache[ccc[symbol].address];
 		else D(symbol + "-set-display").value = "";
-		if (ccc[symbol].address == localStorage.getItem(symbol + "-address") && localStorage.getItem(symbol + "-shipping")) 
-			D(symbol + "-set-shipping").value = localStorage.getItem(symbol + "-shipping");
-		else D(symbol + "-set-shipping").value = "";
+		if (ccc[symbol].address == localStorage.getItem(symbol + "-address") && localStorage.getItem(symbol + "-ship")) 
+			D(symbol + "-set-ship").value = localStorage.getItem(symbol + "-ship");
+		else D(symbol + "-set-ship").value = "";
+		if (ccc[symbol].address == localStorage.getItem(symbol + "-address") && localStorage.getItem(symbol + "-email")) 
+			D(symbol + "-set-email").value = localStorage.getItem(symbol + "-email");
+		else D(symbol + "-set-email").value = "";
 	}
 	let address = "";	
 	if (D(symbol + '-' + divString)) {
@@ -1431,11 +1457,20 @@ function displayName(symbol, divString, address, displayString) {
 }
 	
 function displayShip(symbol, data) {
-	if (data.shipping) {
-		let theShippingAddr = dec.decode(nacl.box.open(hexToByteArray(data.shipping), hexToByteArray(data.nonce), hexToByteArray(keyCache[data.address]), ccc[symbol].encryptKey.secretKey));
-		if (D(symbol + "-set-shipping")) D(symbol + "-set-shipping").value = theShippingAddr;
+	if (data.ship) {
+		let shipAddr = dec.decode(nacl.box.open(hexToByteArray(data.ship), hexToByteArray(data.nonce), hexToByteArray(keyCache[data.address]), ccc[symbol].encryptKey.secretKey));
+		if (D(symbol + "-set-ship")) D(symbol + "-set-ship").value = shipAddr;
 		clearLocalStorage(symbol);
-		localStorage.setItem(symbol + "-shipping", theShippingAddr);
+		localStorage.setItem(symbol + "-ship", shipAddr);
+	}
+}
+
+function displayEmail(symbol, data) {
+	if (data.email) {
+		let theEmailAddr = dec.decode(nacl.box.open(hexToByteArray(data.email), hexToByteArray(data.nonce), hexToByteArray(keyCache[data.address]), ccc[symbol].encryptKey.secretKey));
+		if (D(symbol + "-set-email")) D(symbol + "-set-email").value = theEmailAddr;
+		clearLocalStorage(symbol);
+		localStorage.setItem(symbol + "-email", theEmailAddr);
 	}
 }
 
@@ -1524,7 +1559,8 @@ function clearPayment(symbol) {
 
 function clearInvoice(symbol) {
 	D(symbol + "-invoice-amount").value = "";
-	D(symbol + '-shipping-button').classList.remove('active');
+	D(symbol + '-ship-button').classList.remove('active');
+	D(symbol + '-email-button').classList.remove('active');
 	clearInvoiceTab(symbol);
 	clearMemoList(symbol, "-invoice");
 }
@@ -1551,6 +1587,7 @@ function clearPaymentTab(symbol) {
 	D(symbol + '-dest-display-confirm').textContent = '';
 	D(symbol + '-dest-privacy').textContent = '';
 	D(symbol + '-dest-ship').textContent = '';
+	D(symbol + '-dest-email').textContent = '';
 	hideAccordion(D(symbol + "-payTool").nextElementSibling);
 	hideAccordionPadding(D(symbol + "-payTool").nextElementSibling);
 }
@@ -1590,7 +1627,8 @@ function clearLocalStorage(symbol) {
 		
 		localStorage.removeItem(`${symbol}-info`);
 		localStorage.removeItem(`${symbol}-transactions`);
-		localStorage.removeItem(`${symbol}-shipping`);
+		localStorage.removeItem(`${symbol}-ship`);
+		localStorage.removeItem(`${symbol}-email`);
 		
 		localStorage.setItem(symbol + "-address", ccc[symbol].address);
 	}
@@ -1707,11 +1745,20 @@ function preparePaymentTab(symbol) {
 		
 		if (paymentWindow.ship) {
 			D(symbol + "-dest-ship").parentNode.style.display = "";
-			if (!localStorage.getItem(symbol + '-shipping') || D(symbol + "-dest-ship").textContent != localStorage.getItem(symbol + '-shipping')) {
-				if (localStorage.getItem(symbol + '-shipping') && ccc[symbol].address == localStorage.getItem(`${symbol}-address`)) 
-					D(symbol + "-dest-ship").textContent = localStorage.getItem(symbol + '-shipping');
+			if (!localStorage.getItem(symbol + '-ship') || D(symbol + "-dest-ship").textContent != localStorage.getItem(symbol + '-ship')) {
+				if (localStorage.getItem(symbol + '-ship') && ccc[symbol].address == localStorage.getItem(`${symbol}-address`)) 
+					D(symbol + "-dest-ship").textContent = localStorage.getItem(symbol + '-ship');
 				else D(symbol + "-dest-ship").textContent = "(required - click account name to set)";
 				flash(D(symbol + '-dest-ship').parentNode);
+			}
+		}
+		if (paymentWindow.email) {
+			D(symbol + "-dest-email").parentNode.style.display = "";
+			if (!localStorage.getItem(symbol + '-email') || D(symbol + "-dest-email").textContent != localStorage.getItem(symbol + '-email')) {
+				if (localStorage.getItem(symbol + '-email') && ccc[symbol].address == localStorage.getItem(`${symbol}-address`)) 
+					D(symbol + "-dest-email").textContent = localStorage.getItem(symbol + '-email');
+				else D(symbol + "-dest-email").textContent = "(required - click account name to set)";
+				flash(D(symbol + '-dest-email').parentNode);
 			}
 		}
 	}
@@ -1725,7 +1772,9 @@ function preparePaymentTab(symbol) {
 		else D(symbol + "-dest-privacy").style.color = "";
 	}
 	
-	if (D(symbol + "-withdrawal-amount").value && D(symbol + "-dest-display").textContent && (!paymentWindow.ship || localStorage.getItem('shipping'))) D(symbol + "-paymentButton").disabled = false;
+	if (D(symbol + "-withdrawal-amount").value && D(symbol + "-dest-display").textContent 
+		&& (!paymentWindow.ship || localStorage.getItem(symbol + '-ship'))
+		&& (!paymentWindow.email || localStorage.getItem(symbol + '-email'))) D(symbol + "-paymentButton").disabled = false;
 	else D(symbol + "-paymentButton").disabled = true;
 		
 	showAccordion(D(symbol + "-payTool").nextElementSibling);	
@@ -1737,12 +1786,16 @@ function prepareInvoiceTab(symbol) {
 	
 	let addresses = {};
 	addresses[symbol] = ccc[symbol].address;
-	let theURL = makePaymentURL(symbol, addresses, packageItems(symbol, "invoice"), "", D(symbol + "-shipping-button").classList.contains('active'));
+	let theURL = makePaymentURL(symbol, addresses, packageItems(symbol, "invoice"), "", 
+								D(symbol + "-ship-button").classList.contains('active'),
+								D(symbol + "-email-button").classList.contains('active'));
 	D(symbol + '-invoiceURL').href = theURL;
 	flash(D(symbol + '-invoiceURL-literal'), theURL);
 	
 	let items = packageItems(symbol, "invoice");
-	theURL = makePaymentURL(symbol, addresses, items, ccc[symbol].sign(JSON.stringify(items)), D(symbol + "-shipping-button").classList.contains('active'));
+	theURL = makePaymentURL(symbol, addresses, items, ccc[symbol].sign(JSON.stringify(items)), 
+							D(symbol + "-ship-button").classList.contains('active'),
+							D(symbol + "-email-button").classList.contains('active'));
 	D(symbol + '-invoiceURL-signed').href = theURL;
 	flash(D(symbol + '-invoiceURL-literal-signed'), theURL);
 	D(symbol + '-invoiceURL').style.opacity = "";
@@ -1873,6 +1926,7 @@ async function withdraw(symbol, elt) {
 				if (!rEnvelope) rEnvelope = {};
 				rEnvelope.receipt = packageItems(symbol, "itemize");
 				if (rEnvelope.ship) rEnvelope.ship = D(symbol + "-dest-ship").textContent;
+				if (rEnvelope.email) rEnvelope.email = D(symbol + "-dest-email").textContent;
 				let receiptPackage = {currency: symbol, tx:sendResp, rEnvelope: JSON.stringify(rEnvelope)};
 				
 				if (keyCache[D(`${symbol}-dest`).value]) {
@@ -2067,9 +2121,16 @@ function toggleInvoices(elt, symbol) {
 	filterTransactions(symbol);
 }
 
-function toggleShipping(symbol) {
-	if (D(symbol + '-shipping-button').classList.contains('active')) D(symbol + '-shipping-button').classList.remove('active');
-	else D(symbol + '-shipping-button').classList.add('active');
+function toggleShip(symbol) {
+	if (D(symbol + '-ship-button').classList.contains('active')) D(symbol + '-ship-button').classList.remove('active');
+	else D(symbol + '-ship-button').classList.add('active');
+	
+	shadeInvoice(D('primary').value);
+}
+
+function toggleEmail(symbol) {
+	if (D(symbol + '-email-button').classList.contains('active')) D(symbol + '-email-button').classList.remove('active');
+	else D(symbol + '-email-button').classList.add('active');
 	
 	shadeInvoice(D('primary').value);
 }
@@ -2678,8 +2739,12 @@ function generateHTML(symbol) {
 			</div>
 					
 			<div style="display:flex; justify-content:space-between; margin-top:15px;">
-				<input placeHolder="Shipping address (encrypted) ..." onfocus="scrollPanel(this)" id="${symbol}-set-shipping" style="padding-right:30px; flex-grow:1; margin-right:10px;" type="text" maxlength="128" onkeyup="if (event.keyCode == 13) setShipping('${symbol}'); if (event.keyCode == 27) this.value = '';"><button  tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
-				<button style="font-size:0.85em" onclick="setShipping('${symbol}')">Set</button>
+				<input placeHolder="Shipping address (encrypted) ..." onfocus="scrollPanel(this)" id="${symbol}-set-ship" style="padding-right:30px; flex-grow:1; margin-right:10px;" type="text" maxlength="128" onkeyup="if (event.keyCode == 13) setShip('${symbol}'); if (event.keyCode == 27) this.value = '';"><button  tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
+				<button style="font-size:0.85em" onclick="setShip('${symbol}')">Set</button>
+			</div>
+			<div style="display:flex; justify-content:space-between; margin-top:15px;">
+				<input placeHolder="Email address (encrypted) ..." onfocus="scrollPanel(this)" id="${symbol}-set-email" style="padding-right:30px; flex-grow:1; margin-right:10px;" type="text" maxlength="128" onkeyup="if (event.keyCode == 13) setEmail('${symbol}'); if (event.keyCode == 27) this.value = '';"><button  tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
+				<button style="font-size:0.85em" onclick="setEmail('${symbol}')">Set</button>
 			</div>
 		</div>		
 		
@@ -2763,6 +2828,7 @@ function generateHTML(symbol) {
 		
 		<div class="flash leftRightBase" style="margin-top:4px;"><strong>Recipient</strong><span id="${symbol}-dest-display-confirm" class="rightData"></span></div>			
 		<div class="flash leftRightBase" style="display:none; margin-top:15px;"><strong>Shipping address</strong><span id="${symbol}-dest-ship" class="rightData"></span></div>	
+		<div class="flash leftRightBase" style="display:none; margin-top:15px;"><strong>Email address</strong><span id="${symbol}-dest-email" class="rightData"></span></div>	
 		<div class="flash leftRightBase" style="margin-top:15px;"><strong>Receipt privacy</strong><span id="${symbol}-dest-privacy" class="rightData"></span></div>
 		<div class="flash leftRightBase" style="display:none; margin-top:5px;"><strong>Invoice integrity</strong><span id="${symbol}-dest-sig" class="rightData"></span></div>
 		
@@ -2781,7 +2847,8 @@ function generateHTML(symbol) {
 			<input id="${symbol}-invoice-amount"  placeholder="0.00" style="text-align:right; flex-grow:1; flex-basis:1px" type="number" step="0.01" min="0" disabled>&nbsp;${symbol}
 		</div>
 			
-		<div class="leftRightBase" style="margin-top:15px; margin-right:0px"><strong>Shipping address</strong><button id="${symbol}-shipping-button" style="font-size:0.85em" onclick="toggleShipping('${symbol}')">Require</button></div>
+		<div class="leftRightBase" style="margin-top:15px; margin-right:0px"><strong>Shipping address</strong><button id="${symbol}-ship-button" style="font-size:0.85em" onclick="toggleShip('${symbol}')">Require</button></div>
+		<div class="leftRightBase" style="margin-top:15px; margin-right:0px"><strong>Email address</strong><button id="${symbol}-email-button" style="font-size:0.85em" onclick="toggleEmail('${symbol}')">Require</button></div>
 		
 		<div style="text-align:center; margin-top:15px;"><button style="font-size:0.85em" onclick="prepareInvoiceTab('${symbol}')">Generate and Sign</button>`);
 		
