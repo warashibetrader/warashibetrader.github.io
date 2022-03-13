@@ -1434,7 +1434,7 @@ function displayShip(symbol, data) {
 	if (data.shipping) {
 		let theShippingAddr = dec.decode(nacl.box.open(hexToByteArray(data.shipping), hexToByteArray(data.nonce), hexToByteArray(keyCache[data.address]), ccc[symbol].encryptKey.secretKey));
 		if (D(symbol + "-set-shipping")) D(symbol + "-set-shipping").value = theShippingAddr;
-		if (ccc[symbol].address != localStorage.getItem(`${symbol}-address`)) clearLocalStorage(symbol);
+		clearLocalStorage(symbol);
 		localStorage.setItem(symbol + "-shipping", theShippingAddr);
 	}
 }
@@ -1584,12 +1584,16 @@ function freezePayment(symbol, finalize) {
 }
 
 function clearLocalStorage(symbol) {
-	localStorage.removeItem(`${symbol}-address`); 
-	localStorage.removeItem(`${symbol}-display`); 
-	localStorage.removeItem(`${symbol}-rep-display`); 
-	localStorage.removeItem(`${symbol}-info`);
-	localStorage.removeItem(`${symbol}-transactions`);
-	localStorage.removeItem(`${symbol}-shipping`);
+	if (ccc[symbol].address != localStorage.getItem(`${symbol}-address`)) {
+		localStorage.removeItem(`${symbol}-display`); 
+		localStorage.removeItem(`${symbol}-rep-display`); 
+		
+		localStorage.removeItem(`${symbol}-info`);
+		localStorage.removeItem(`${symbol}-transactions`);
+		localStorage.removeItem(`${symbol}-shipping`);
+		
+		localStorage.setItem(symbol + "-address", ccc[symbol].address);
+	}
 }
 
 function clickClearWallet(symbol) {
@@ -1797,7 +1801,7 @@ function verifySignature(symbol) {
 
 function cacheBackup(data, symbol, type) {	
 	if (data) {
-		if (ccc[symbol].address != localStorage.getItem(`${symbol}-address`)) clearLocalStorage(symbol);
+		clearLocalStorage(symbol);
 		localStorage.setItem(symbol + "-" + type, JSON.stringify(data));
 	} else {
 		if (ccc[symbol].address == localStorage.getItem(`${symbol}-address`)) data = localStorage.getItem(symbol + "-" + type);
@@ -1978,7 +1982,6 @@ function toggleEdit(symbol) {
 	} else {	
 		hideAccordion(obj);
      	obj.style.marginBottom = "0px";
-		D(symbol + "-set-display").value = "";	
 	}
 }
 
