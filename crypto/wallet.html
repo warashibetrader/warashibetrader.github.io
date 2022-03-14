@@ -1456,7 +1456,7 @@ function displayName(symbol, divString, address, displayString) {
 }
 	
 function displayShip(symbol, data) {
-	if (data.ship) {
+	if (data.ship && data.address == ccc[data.currency].address) {
 		let shipAddr = dec.decode(nacl.box.open(hexToByteArray(data.ship), hexToByteArray(data.sNonce), hexToByteArray(keyCache[data.address]), ccc[symbol].encryptKey.secretKey));
 		if (D(symbol + "-set-ship")) D(symbol + "-set-ship").value = shipAddr;
 		clearLocalStorage(symbol);
@@ -1465,7 +1465,7 @@ function displayShip(symbol, data) {
 }
 
 function displayEmail(symbol, data) {
-	if (data.email) {
+	if (data.email && data.address == ccc[data.currency].address) {
 		let theEmailAddr = dec.decode(nacl.box.open(hexToByteArray(data.email), hexToByteArray(data.eNonce), hexToByteArray(keyCache[data.address]), ccc[symbol].encryptKey.secretKey));
 		if (D(symbol + "-set-email")) D(symbol + "-set-email").value = theEmailAddr;
 		clearLocalStorage(symbol);
