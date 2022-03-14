@@ -2279,6 +2279,7 @@ function closeCopy(obj) {
 function twoDigit(str) {
 	if (!str) return str;
 	let parts = str.toString().split(".");
+	if (parts[0].length == 0) parts[0] = "0";
 	let fraction = '';
 	if (parts.length > 1) fraction = parts[1];
 	while (fraction.length < 2) {
@@ -2296,7 +2297,7 @@ function unitFromRaw(symbol, str) {
 	let whole = n.substring(0, n.length - shift);
 	let cut = 0;
 	while (n[n.length - 1 - cut] == '0' && cut < shift - 2) cut++;
-	let fraction = n.substring(n.length - shift, n.length - cut);	
+	let fraction = n.substring(n.length - shift, n.length - cut);
 	return whole + '.' + fraction;	
 }
 
