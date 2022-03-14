@@ -1134,7 +1134,7 @@ function setupWebsocket(restart) {
 					
 					let amtSpan = make('span');
 					amtSpan.textContent = value;
-					amtSpan.style = "text-align:right; overflow:hidden; text-overflow:ellipsis";
+					amtSpan.style = "text-align:right; overflow:hidden; text-overflow:ellipsis; border-radius:5px";
 					
 					li.onmouseenter = function() { this.style.backgroundColor = ccc[data.currency].flashColor; };
 					li.onmouseleave = function() { this.style.backgroundColor = "";	};				
@@ -1150,13 +1150,13 @@ function setupWebsocket(restart) {
 				if (rEnvelope.ship) {
 					let shipli = receiptLine("Shipping address", rEnvelope.ship);
 					shipli.style.marginTop = "10px";
-					shipli.children[1].style = "cursor: pointer; border-radius: 5px;";
+					shipli.children[1].style.cursor = "pointer";
 					shipli.children[1].onclick = function() { clickCopy(this, this.textContent); };	
 				}
 				if (rEnvelope.email) {
 					let emailli = receiptLine("Email address", rEnvelope.email);
 					if (!rEnvelope.ship) emailli.style.marginTop = "10px";
-					emailli.children[1].style = "cursor: pointer; border-radius: 5px;";
+					emailli.children[1].style.cursor = "pointer";
 					emailli.children[1].onclick = function() { clickCopy(this, this.textContent); };	
 				}
 				
