@@ -13,6 +13,19 @@ body {
 	overflow:auto;
 }
 
+.msg {
+	padding:5px; 
+	z-index:4; 
+	box-shadow:#ccc 2px 2px 2px; 
+	background-color:#fff;
+	position:fixed; 
+	left:0px; 
+	top:0px; 
+	border-radius:5px; 
+	pointer-events:none; 
+	filter:opacity(0.9);
+}
+
 .containerdiv {	
 	display:flex;
 	height:100%;
