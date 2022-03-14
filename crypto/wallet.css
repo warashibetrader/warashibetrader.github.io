@@ -186,7 +186,7 @@ a:hover {
 	overflow:hidden; 
 	text-overflow:ellipsis;
 	text-align:right;
-	margin-left:5px;
+	margin-left:10px;
 }
 
 .address {
