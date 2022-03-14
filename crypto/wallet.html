@@ -21,8 +21,7 @@
 	
 <body>
 	<audio id="audio"><source src="https://streams.kqed.org/kqedradio.mp3" type="audio/mpeg"/></audio>
-	<strong id="msg" style="display:none; padding:5px; z-index:4; box-shadow:#ccc 2px 2px 2px; background-color:#fff;
-							  position:fixed; left:0px; top:0px; border-radius:5px; pointer-events:none; filter:opacity(0.9);"></strong>
+	<strong id="msg" class="msg" style="display:none;"></strong>
 	<div class="containerdiv">
 	<div id="firstDiv" class="firstDiv">				
 		<div id="quoteDisplay" style="display:none; margin-bottom:15px;">
@@ -1126,10 +1125,11 @@ function setupWebsocket(restart) {
 					
 					let itemSpan = make('span');
 					itemSpan.textContent = description;
-					itemSpan.style.marginRight = "10px";
+					itemSpan.style = "margin-right:10px; overflow:hidden; text-overflow:ellipsis";
 					
 					let amtSpan = make('span');
 					amtSpan.textContent = value;
+					amtSpan.style = "text-align:right; overflow:hidden; text-overflow:ellipsis";
 					
 					li.onmouseenter = function() { this.style.backgroundColor = ccc[data.currency].flashColor; };
 					li.onmouseleave = function() { this.style.backgroundColor = "";	};				
@@ -1144,11 +1144,15 @@ function setupWebsocket(restart) {
 				}				
 				if (rEnvelope.ship) {
 					let shipli = receiptLine("Shipping address", rEnvelope.ship);
-					shipli.style.marginTop = "5px";
+					shipli.style.marginTop = "10px";
+					shipli.children[1].style = "cursor: pointer; border-radius: 5px;";
+					shipli.children[1].onclick = function() { clickCopy(this, this.textContent); };	
 				}
 				if (rEnvelope.email) {
 					let emailli = receiptLine("Email address", rEnvelope.email);
-					if (!rEnvelope.ship) emailli.style.marginTop = "5px";
+					if (!rEnvelope.ship) emailli.style.marginTop = "10px";
+					emailli.children[1].style = "cursor: pointer; border-radius: 5px;";
+					emailli.children[1].onclick = function() { clickCopy(this, this.textContent); };	
 				}
 				
 				let buttonli = make('li');
@@ -2502,7 +2506,7 @@ function flash(elt, str) {
 	if (elt) {
 		if (str != undefined) elt.textContent = str;
 		elt.style.backgroundColor = ccc[D('primary').value].flashColor;	
-		setTimeout(function() {	elt.style.backgroundColor = "white";}, 500);
+		setTimeout(function() {	elt.style.backgroundColor = "";}, 500);
 	} else console.log("Element disappeared before display.");
 }
 
