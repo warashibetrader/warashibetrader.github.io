@@ -1696,6 +1696,9 @@ function clearWallet(symbol) {
 	flash(D(`${symbol}-balance`), "0.00");
 	flash(D(`${symbol}-balance-pending`), "0.00");
 	
+	// transfer tool
+	clearPaymentTab(symbol);
+	
 	// invoice tool
 	clearInvoiceTab(symbol);
 	
@@ -1753,6 +1756,7 @@ function preparePaymentTab(symbol) {
 		}
 		if (paymentWindow.email) {
 			D(symbol + "-dest-email").parentNode.style.display = "";
+			if (!paymentWindow.ship) D(symbol + "-dest-email").parentNode.style.marginTop = "15px";
 			if (!localStorage.getItem(symbol + '-email') || D(symbol + "-dest-email").textContent != localStorage.getItem(symbol + '-email')) {
 				if (localStorage.getItem(symbol + '-email') && ccc[symbol].address == localStorage.getItem(`${symbol}-address`)) 
 					D(symbol + "-dest-email").textContent = localStorage.getItem(symbol + '-email');
