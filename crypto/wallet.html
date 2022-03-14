@@ -1126,7 +1126,7 @@ function setupWebsocket(restart) {
 					
 					let itemSpan = make('span');
 					itemSpan.textContent = description;
-					itemSpan.style.marginRight = "5px";
+					itemSpan.style.marginRight = "10px";
 					
 					let amtSpan = make('span');
 					amtSpan.textContent = value;
@@ -2754,12 +2754,12 @@ function generateHTML(symbol) {
 		<div class='address' id="${symbol}-address" onclick="clickCopy(this, this.textContent)">&nbsp;</div>
 		
 		<div class="leftRightBase">
-			<strong style="flex-grow:1; margin-right:5px;">Balance</strong> 
+			<strong style="flex-grow:1; margin-right:10px;">Balance</strong> 
 			<span id="${symbol}-balance" class="clickFlash" style="overflow:hidden; text-overflow:ellipsis;" onclick="clickCopy(this, this.textContent)">0.00</span>&nbsp;${symbol}
 		</div>
 			
 		<div id="${symbol}-arriving-balance-panel" class="leftRightBase" style="margin-top:10px; margin-right:0px">
-			<strong style="flex-grow:1; white-space:nowrap; margin-right:5px;">Arriving funds</strong> 
+			<strong style="flex-grow:1; white-space:nowrap; margin-right:10px;">Arriving funds</strong> 
 			<span id="${symbol}-balance-pending" class="clickFlash" style="overflow:hidden; text-overflow:ellipsis;" onclick="clickCopy(this, this.textContent)">0.00</span>&nbsp;${symbol}
 			<button style="font-size:0.85em; margin-left:8px;" onclick="cyclePending('${symbol}', this)">Collect</button>
 		</div>
@@ -2858,13 +2858,13 @@ function generateHTML(symbol) {
 		
 	loginDiv.innerHTML += `<div class="accordion objectWrapper" style="max-height:0px; padding-top:0px; padding-bottom:0px; margin-top:0px;">	
 		<div class="leftRightBase" style="margin-right:0px;">				
-			<strong style="margin-right:5px;">Unsigned invoice</strong>	
+			<strong style="margin-right:10px;">Unsigned invoice</strong>	
 			<a id="${symbol}-invoiceURL" class="flash" target="_blank" href=""><button style="font-size:0.85em">Link Demo</button></a>
 		</div>		
 		<div id="${symbol}-invoiceURL-literal" class='address' onclick="clickCopy(this, this.textContent)">&nbsp;</div>
 		
 		<div class="leftRightBase" style="margin-right:0px;">				
-			<strong style="margin-right:5px;">Signed invoice</strong>	
+			<strong style="margin-right:10px;">Signed invoice</strong>	
 			<a id="${symbol}-invoiceURL-signed" class="flash" target="_blank" href=""><button style="font-size:0.85em">Link Demo</button></a>
 		</div>		
 		<div id="${symbol}-invoiceURL-literal-signed" class='address' onclick="clickCopy(this, this.textContent)">&nbsp;</div>
