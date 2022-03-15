@@ -14,15 +14,19 @@ Here is an up-to-date list of some of the more interesting features on [Transact
 
 4. Invoicing, payments, and receipts are integrated and extremely simple. Merchants create one-click invoice links, from which customers pay using the familiar app interface. Receipts are automatically saved and displayed in-app to both parties.
 
+Update (3/15/2022):
+
+5. Invoices can require the customer to attach shipping and email addresses. These address can be saved per public key, making checkout seamless. They are encrypted: Transact servers have no access.
+
 #### Security and privacy
 
 1. Transact uses a novel [security quote protocol]({% post_url 2022-02-02-security-quote-protocol %}), which makes the web app as secure as a native app or browser extension.
 
-Updates (3/11/2022):
+Update (3/11/2022):
 
 2. Invoices and receipts are end-to-end encrypted and hence entirely private.
 
-3. Merchants have the option to cryptographically sign invoices to give the customer peace of mind. Receipts are always signed to give the merchant peace of mind (by fixing the terms of the transaction).
+3. Merchants have the option to cryptographically sign invoices to give the customer peace of mind. At the other end, receipts are always signed to give the merchant peace of mind (by fixing the terms of the transaction).
 
 
 #### Distribution and usability
@@ -33,4 +37,4 @@ Updates (3/11/2022):
 
 3. The app has a minimal but feature-dense single-page design, facilitating speed and efficiency, while reducing the probability of user error.
 
-5. Transactions can be searched and filtered.
+4. Transactions can be searched and filtered.
