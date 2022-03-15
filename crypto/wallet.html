@@ -558,7 +558,6 @@ function displayTransaction(symbol, number, send, address, time, amt, tx) {
 	if (ccc[symbol].checkAddress(address)) displayNameSpan.onclick = function() { fetchDisplayName(symbol, number);	};
 	firstRow.children[0].appendChild(displayNameSpan);
 	firstRow.children[1].children[0].textContent = unitFromRaw(symbol, amt);
-	firstRow.onclick = function() {	if (!ws.emit('getReceiptCue', {currency:symbol, tx: tx, div: displayNameSpan.id, address:address })) showMsg("Unable to connect to directory."); }
 	firstRow.children[1].children[0].onclick = function() { event.stopPropagation(); clickCopy(this, this.textContent); };	
 
 	let secondRow = make('div');
@@ -589,9 +588,14 @@ function displayTransaction(symbol, number, send, address, time, amt, tx) {
     // ie: 2014-03-24, 3:00 PM
     secondRow.children[0].children[1].children[0].textContent = h + ':' + min + '\xa0' + ampm + ' ' + mm + '/' + dd + '/' + yyyy + " - #" + number + " - ID:";
     secondRow.children[0].children[1].children[1].textContent = tx;			
-	secondRow.lastChild.onclick = function() {
-		if (!ws.emit('getReceiptCue', {currency:symbol, tx: tx, div: displayNameSpan.id, address:address })) showMsg("Unable to connect to directory.");
+	secondRow.lastChild.onclick = function() {	
+		this.disabled = true;
+		if (!ws.emit('getReceiptCue', {currency:symbol, tx: tx, div: displayNameSpan.id, address:address })) {
+			showMsg("Unable to connect to directory."); 
+			this.disabled = false;
+		}
 	}
+	firstRow.onclick = function() { secondRow.lastChild.click(); }
 	
 	let ul = make('ul');
 	ul.classList.add('accordion');
@@ -1046,6 +1050,7 @@ function setupWebsocket(restart) {
 		if (D(data.div)) {
 			let ul = D(data.div).parentNode.parentNode.parentNode.lastElementChild;
 			let but = ul.previousElementSibling.lastElementChild;
+			but.disabled = false;
 			
 			let rEnvelope = {};
 			let sender = (but.textContent == "Receipt");
