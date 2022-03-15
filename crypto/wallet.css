@@ -166,7 +166,7 @@ button {
 }
 
 button:disabled, button[disabled] {
-	color:#aaa;
+	color:#aaa !important;
 	cursor:initial;
 }
 
