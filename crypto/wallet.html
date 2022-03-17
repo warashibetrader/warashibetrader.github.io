@@ -1511,7 +1511,8 @@ function importWallet(symbol) {
 		let existingWallet = ccc[symbol].address;
 		clearWallet(symbol);
 		
-		ccc[symbol].unpackSeed(seed, parseInt(index));
+		ccc[symbol].unpackSeed(seed, parseInt(index));		
+		D(symbol + "-current").disabled = false;
 		flash(D(`${symbol}-address`), ccc[symbol].address);	
 		addressQR(symbol);
 		D(symbol + "-gray").style.display = "";
@@ -1542,7 +1543,7 @@ function refreshData(symbol) {
 	if (!paymentWindow) transaction = ccc[symbol].getTransactions();
 	balance.then(function() {
 		transaction.then(function () {
-			D(symbol + "-transaction-refresh").disabled = false;
+			if (D(symbol + "-transaction-refresh")) D(symbol + "-transaction-refresh").disabled = false;
 			D("refresh").disabled = false;
 		});
 	});
@@ -1697,6 +1698,7 @@ function clearWallet(symbol) {
 	ccc[symbol].address = "";
 	ccc[symbol].index = "";
 	ccc[symbol].seed = "";
+	D(symbol + "-current").disabled = true;
 	ccc[symbol].encryptKey = "";	
 	localStorage.removeItem(`${symbol}-seed`); 
 	localStorage.removeItem(`${symbol}-index`); 
@@ -2031,14 +2033,17 @@ function toggleVisibility(symbol) {
 	if (x.type === "password") {
 		x.type = "text";
 		D(symbol + '-show').classList.add('active');
-		if (x.value.length == 0 && ccc[symbol].seed) {
-			x.value = ccc[symbol].seed;
-			D(`${symbol}-generateButton`).disabled = true;
-		}
 	} else {
 		x.type = "password";		
 		D(symbol + '-show').classList.remove('active');
 	}
+}
+
+function showCurrent(symbol) {
+	if (ccc[symbol].seed) {
+		D(`${symbol}-seed`).value = ccc[symbol].seed;
+		flash(D(`${symbol}-seed`));
+	} else showMsg("No seed loaded.");
 }
 
 function toggleEdit(symbol) {
@@ -2095,10 +2100,7 @@ function toggleAccount(symbol) {
 	if (obj.style.maxHeight == "0px") {	
 		if (ccc[symbol].index) D(`${symbol}-index`).value = ccc[symbol].index; 
 		else D(`${symbol}-index`).value = "";
-		if (ccc[symbol].seed) {
-			D(`${symbol}-seed`).value = ccc[symbol].seed; 
-			D(`${symbol}-generateButton`).disabled = true;
-		}
+		if (ccc[symbol].seed) D(`${symbol}-seed`).value = ccc[symbol].seed; 
 		
      	showAccordion(obj);
 		obj.style.padding = "";
@@ -2658,7 +2660,8 @@ async function selectPrimary(symbol) {
 			D(`${symbol}-seed`).maxLength = "64";
 			D(`${symbol}-seed`).placeholder = "Seed (store securely) ...";
 			D(`${symbol}-generateButton`).textContent = "Generate Seed";
-			D(`${symbol}-generateButton`).nextElementSibling.textContent = "Show Seed";
+			D(`${symbol}-show`).textContent = "Show"; // show seed
+			D(`${symbol}-current`).textContent = "Current Seed";
 			
 			D(`${symbol}-tool3`).style.marginTop = "5px";
 		}
@@ -2688,7 +2691,6 @@ async function selectPrimary(symbol) {
 		if (ccc[symbol].address) loadDisplay(symbol);
 		else if (localStorage.getItem(`${symbol}-seed`)) {
 			D(`${symbol}-seed`).value = localStorage.getItem(`${symbol}-seed`);
-			D(`${symbol}-generateButton`).disabled = true;
 			let index = localStorage.getItem(`${symbol}-index`);
 			if (index) D(`${symbol}-index`).value = index; 	
 			importWallet(symbol);
@@ -2727,13 +2729,14 @@ function generateHTML(symbol) {
 	<div id="${symbol}-tool1" class="accordion objectWrapper" style="max-height:0px; padding-top:0px; padding-bottom:0px; margin-top:0px">
 		<div style="text-align:center;">
 		<button tabindex="-1" id="${symbol}-generateButton" style="font-size:0.85em" onclick="generateWallet('${symbol}')">Generate Key</button>
-			<button id="${symbol}-show" tabindex="-1" style="font-size:0.85em" onclick="toggleVisibility('${symbol}')">Show Key</button>
+		<button id="${symbol}-current" tabindex="-1" style="font-size:0.85em" onclick="showCurrent('${symbol}')" disabled>Current Key</button>
 		<button style="font-size:0.85em" onclick="if (confirm('Clear all data for ${symbol}, including the current ' + ccc['${symbol}'].keyType + '?'))
 													{ clickClearWallet('${symbol}'); showMsg('${symbol} account cleared.'); }">Clear Account</button>
 		</div>
 		<div style="display:flex; justify-content:space-between; margin-top:15px;">
-			<input onfocus="scrollPanel(this)" placeholder="Private key (store securely) ..." id="${symbol}-seed" style="padding-right:30px; flex-grow:1; flex-basis:20px; margin-right:10px;" type="password" autocomplete="off" onclick="this.select()" oninput="importWallet('${symbol}'); D('${symbol}-generateButton').disabled = (this.value.length != 0);">
+			<input onfocus="scrollPanel(this)" placeholder="Private key (store securely) ..." id="${symbol}-seed" style="padding-right:30px; flex-grow:1; flex-basis:20px; margin-right:10px;" type="password" autocomplete="off" onclick="this.select()" oninput="importWallet('${symbol}');">
 			<button  tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>			
+			<button id="${symbol}-show" tabindex="-1" style="font-size:0.85em; margin-right:5px;" onclick="toggleVisibility('${symbol}')">Show</button>
 			<button tabindex="-1" id="${symbol}-qrButton1" style="font-size:0.85em" onclick="qrscan('${symbol}', '-seed', this)">QR</button>
 		</div>
 		<canvas style="width:100%; margin-top:10px;" hidden="" id="${symbol}-qr-canvas-seed"></canvas>
