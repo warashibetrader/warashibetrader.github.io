@@ -28,13 +28,13 @@ Since "commodity" can be very broadly defined, people get very excited about thi
 
 ### The oracle problem
 
-The problem with the previous proposal is that cryptography is not engrained inside, say, the walls of your house. Someone needs to link your house to some tokenized digital entity which can be integrated into the cryptosystem hoping to oversee its sale. 
+The problem with the previous proposal is that cryptography is not engrained inside, say, the walls of your house. A trusted party needs to link your house to some tokenized digital entity which can be integrated into the cryptosystem hoping to oversee its sale. 
 
-A distributed verification of this link would necessarily be complicated and correspondingly expensive. It is not clear that such a system would make things either more reliable or more efficient. Instead, the effect of such a system might just be pointless obfuscation, shifting trust from one centralized party to another, or from one centralized party to a slightly distributed collection of parties.
+A distributed verification of this link would necessarily be complicated and correspondingly expensive. It is not clear that such a system would make things either more reliable or more efficient. Instead, the effect of such a system might just be pointless obfuscation, shifting trust from one centralized party to another, or at best from one centralized party to a slightly distributed collection of parties.
 
 ### A comment about efficiency
 
-The crypto space is less efficient than traditional finance. This is easy to see by thinking in terms of specialization. Centralized entities are specialized and thus very efficient at what they do. Insisting on distributing the work of verification necessarily decreases efficiency in this regard.
+The crypto space is fundamentally less efficient than traditional finance. This is easy to see by thinking in terms of specialization. Centralized entities are specialized and thus very efficient at what they do. Insisting on distributing the work of verification necessarily decreases efficiency in this regard.
 
 On the other hand, centralization harms the _economics_ of finance, by creating monopolies which hold the power to misprice their services (upward) while lacking the incentive to innovate.
 
