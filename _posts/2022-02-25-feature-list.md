@@ -4,6 +4,20 @@ title: "A growing list of reasons to use Transact"
 
 Here is an up-to-date list of some of the more interesting features on [Transact](https://transactcc.github.io/):
 
+#### Objectives
+
+1. Vertically integrate payments processing, from merchants and invoicing, all the way to customers and receipts.
+
+2. Do so in a secure way. End-to-end encrypt everything that can be end-to-end encrypted. At the time of writing, this means that Transacts servers have access to _nothing_, other than your chosen display name - which everyone has access to.
+
+3. Do so in a way that makes adoption seamless, usage effortless, and everything as fast as possible.
+
+4. Everything which is free to maintain is free to use. Client code is open source and auditable.
+
+
+
+
+
 #### Main features
 
 1. Transact supports multiple assets curated for energy efficiency, speed, and low network fees: Nano, Banano, Solana, Stellar, and Algorand.
