@@ -26,11 +26,11 @@ Here is an up-to-date list of some of the more interesting features on [Transact
 
 3. Transactions are attached to invoices and receipts, automatically tracking and organizing orders for the merchant. Meanwhile, the customer has additional peace of mind, as they are able to see in-app exactly the same invoice and receipt that the merchant sees.
 
-4. Invoicing, payments, and receipts are integrated and extremely simple. Merchants create one-click invoice links, from which customers pay using the familiar app interface. Receipts are automatically saved and displayed in-app to both parties.
+4. Everything is integrated to make the payment process as simple and automated as possible. Merchants create one-click invoice links, from which customers pay using the familiar app interface. Receipts are automatically saved and displayed in-app to both parties.
 
 Update (3/15/2022):
 
-5. Invoices can require the customer to attach shipping and email addresses. These address can be saved per public key, making checkout seamless. They are encrypted: Transact servers have no access.
+5. Invoices can require the customer to attach shipping and email addresses. These addresss are saved per public key, making checkout seamless. They are encrypted: Transact servers never have access.
 
 #### Security and privacy
 
