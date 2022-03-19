@@ -1497,11 +1497,11 @@ function displayEmail(symbol, data) {
 function generateWallet(symbol) {
 	if (!ccc[symbol].address || confirm('Overwrite the current ' + ccc[symbol].keyType + '?')) {
 		let newSeed = ccc[symbol].generateSeed();
-		ccc[symbol].address = ccc[symbol].addressFromSeed(newSeed);
+		//ccc[symbol].address = ccc[symbol].addressFromSeed(newSeed);
 		inputEvent(D(`${symbol}-seed`), newSeed);
 		navigator.clipboard.writeText(newSeed);
 		clipboardText = newSeed;
-		showMsg("New " + ccc[symbol].keyType + " copied to clipboard. Save it securely, elsewhere and now!");
+		showMsg("New " + ccc[symbol].keyType + " copied to clipboard. Store it safely, elsewhere! (Click 'Account' button to find it again.)");
 	}
 }
 
