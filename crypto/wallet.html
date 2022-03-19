@@ -59,7 +59,7 @@
 		
 		<div id="donatePanel" style="text-align:center; margin-bottom:25px; margin-top:auto; width:100%">
 			<button id="nprButton" style="font-size:0.85em" onclick="npr()">NPR</button>	
-			<a href="https://warashibetrader.github.io/2022/02/25/feature-list"><button style="font-size:0.85em">Blog</button></a>
+			<a rel='noopener' target='_blank' href="https://warashibetrader.github.io/2022/02/25/feature-list"><button style="font-size:0.85em">Blog</button></a>
 			<button id="donateButton" style="font-size:0.85em;" onclick="donate()" disabled>Support the Developer</button>
 		</div>
 	</div>
@@ -1559,6 +1559,7 @@ function loadDisplay(symbol, keepAccount) {
 	D('donateButton').disabled = false;
 	if (!paymentWindow) makeSignature(symbol);
 	else {
+		openSubAccordion(D(symbol + "-payTool"));
 		D(symbol + "-tool2").style.display = "none";
 		D(symbol + "-tool3").style.display = "none";
 		D(symbol + "-tool4").style.display = "none";
