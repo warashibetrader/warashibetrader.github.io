@@ -997,6 +997,10 @@ function setupWebsocket(restart) {
 	};
 
 	// Custom commands	
+	ws.on('showMsgCue', function(data) {
+		showMsg(data);
+	});
+	
 	ws.on('serverMsgCue', function(data) {
 		if (typeof data === "string" && localStorage.getItem("serverMsg") != data) {
 			D('serverMsg').textContent = data;
@@ -1395,7 +1399,7 @@ function setName(symbol, name) {
 
 function setShip(symbol, name) {
 	if (!name) name = D(symbol + "-set-ship").value;
-	if (name.length > 128) showMsg("64 characters or fewer.");
+	if (name.length > 128) showMsg("128 characters or fewer.");
 	else {
 		let shipPackage = { address: ccc[symbol].address, currency: symbol, sNonce: nacl.randomBytes(24) };
 		shipPackage.ship = byteArrayToHex(nacl.box(enc.encode(name), shipPackage.sNonce, hexToByteArray(keyCache[ccc[symbol].address]), ccc[symbol].encryptKey.secretKey));
@@ -1406,7 +1410,7 @@ function setShip(symbol, name) {
 
 function setEmail(symbol, name) {
 	if (!name) name = D(symbol + "-set-email").value;
-	if (name.length > 128) showMsg("64 characters or fewer.");
+	if (name.length > 128) showMsg("128 characters or fewer.");
 	else {
 		let emailPackage = { address: ccc[symbol].address, currency: symbol, eNonce: nacl.randomBytes(24) };
 		emailPackage.email = byteArrayToHex(nacl.box(enc.encode(name), emailPackage.eNonce, hexToByteArray(keyCache[ccc[symbol].address]), ccc[symbol].encryptKey.secretKey));
