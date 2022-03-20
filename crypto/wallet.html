@@ -1765,6 +1765,8 @@ function preparePaymentTab(symbol) {
 	if (paymentWindow) {
 		D(symbol + "-dest-sig").parentNode.style.display = "";
 		console.log(paymentWindow.iSig);
+		console.log(JSON.stringify(paymentWindow.invoice));
+		console.log(D(symbol + "-dest").value);
 		if (ccc[symbol].verify(JSON.stringify(paymentWindow.invoice), paymentWindow.iSig, D(symbol + "-dest").value)) {
 			D(symbol + "-dest-sig").textContent = "digital signature";
 			D(symbol + "-dest-sig").style.color = "#097";
