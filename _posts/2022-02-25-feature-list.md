@@ -30,7 +30,7 @@ Here is an up-to-date list of some of the more interesting features on [Transact
 
 Update (3/15/2022):
 
-5. Invoices can require the customer to attach shipping and email addresses. These addresss are saved per public key, making checkout seamless. They are encrypted: Transact servers never have access.
+5. Invoices can require the customer to attach shipping and email addresses. These addresss are saved per public key, making checkout seamless. These addresses are encrypted: Transact servers never have access.
 
 #### Security and privacy
 
