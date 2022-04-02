@@ -52,15 +52,15 @@
 				<option value="ALGO">ALGO - Algorand</option>
 			</select>	
 			<div style="position:absolute; right:0px">
-				<button id="account" style="font-size:0.85em; border-top-right-radius:0px; border-bottom-right-radius:0px;" onclick="toggleAccount()">Account</button>				
-				<button id="refresh" style="font-size:0.85em; border-top-left-radius:0px; border-bottom-left-radius:0px;" onclick="hardRefresh();">Refresh</button>
+				<button id="account" style="font-size:0.85em; border-top-right-radius:5px; border-bottom-right-radius:5px;" onclick="toggleAccount()">Account</button>				
+				<button id="refresh" style="font-size:0.85em; border-top-left-radius:5px; border-bottom-left-radius:5px;" onclick="hardRefresh();">Refresh</button>
 			</div>
 		</div>		
 		
 		<div id="donatePanel" style="text-align:center; margin-bottom:25px; margin-top:auto; width:100%">
-			<button id="nprButton" style="font-size:0.85em; border-top-right-radius:0px; border-bottom-right-radius:0px;" onclick="npr()">NPR</button>	
-			<a rel='noopener' target='_blank' href="https://warashibetrader.github.io/2022/02/25/feature-list"><button style="font-size:0.85em; border-radius:0px;">Blog</button></a>
-			<button id="donateButton" style="font-size:0.85em; border-top-left-radius:0px; border-bottom-left-radius:0px;" onclick="donate()" disabled>Support the Developer</button>
+			<button id="nprButton" style="font-size:0.85em; border-top-right-radius:5px; border-bottom-right-radius:5px;" onclick="npr()">NPR</button>	
+			<a rel='noopener' target='_blank' href="https://warashibetrader.github.io/2022/02/25/feature-list"><button style="font-size:0.85em; border-radius:5px;">Blog</button></a>
+			<button id="donateButton" style="font-size:0.85em; border-top-left-radius:5px; border-bottom-left-radius:5px;" onclick="donate()" disabled>Support the Developer</button>
 		</div>
 	</div>
 	<div id="secondDiv" class="secondDiv">
@@ -94,7 +94,7 @@ if ('serviceWorker' in navigator) {
 				D('quote').textContent = "";
 				D('preview').src = "";
 				
-				showMsg("Installing update... Security quote deleted. Clearing DOM...");
+				showMsg("Security quote deleted. Clearing DOM...");
 				
 				if (ccc) {
 					for (let symbol in ccc) {
@@ -105,10 +105,10 @@ if ('serviceWorker' in navigator) {
 					}
 				}				
 				
-				showMsg("Installing update... Security quote deleted.");
+				showMsg("Security quote deleted. Installing update...");
 				let newWorker = reg.installing;
 				newWorker.addEventListener('statechange', () => {		
-					if (newWorker.state == 'activated') showMsg("Update installed. Security quote deleted.");
+					if (newWorker.state == 'activated') showMsg("Security quote deleted. Update installed.");
 				});
 			}
 		});
@@ -217,9 +217,8 @@ ccc['ALGO'].generateSeed = function() { return algosdk.secretKeyToMnemonic(algos
 ccc['XNO'].checkSeed = function(seed) {	return typeof seed === "string" && /^[0-9a-fA-F]{64}$/.test(seed);};
 ccc['BAN'].checkSeed = function(seed) { return typeof seed === "string" && /^[0-9a-fA-F]{64}$/.test(seed);};
 ccc['SOL'].checkSeed = function(seed) {	
-	let arrSeed = seed.split(',');
+	let arrSeed = stringToIntArray(seed);
 	for (let i = 0; i < arrSeed.length; i++) {
-		arrSeed[i] = parseInt(arrSeed[i].replace(/\D/g,''));
 		if (!(arrSeed[i] <= 255 && arrSeed[i] >= 0)) return false;
 	}
 	if (arrSeed.length != 64) return false;
@@ -263,10 +262,7 @@ ccc['XNO'].addressFromSeed = function(seed) {
 }
 ccc['BAN'].addressFromSeed = function(seed) { return ccc['XNO'].addressFromSeed(seed).replace('nano_', 'ban_'); };
 ccc['SOL'].addressFromSeed = function(seed) {
-	let arrSeed = seed.split(',');
-	for (let i = 0; i < arrSeed.length; i++) {
-		arrSeed[i] = parseInt(arrSeed[i].replace(/\D/g,''));
-	}
+	let arrSeed = stringToIntArray(seed);
 	return solanaWeb3.Keypair.fromSecretKey(new Uint8Array(arrSeed)).publicKey.toBase58();
 }
 ccc['XLM'].addressFromSeed = function(seed) { return StellarSdk.Keypair.fromSecret(seed).publicKey(); };
@@ -289,10 +285,7 @@ ccc['BAN'].unpackSeed = function(seed, index) {
 	ccc['BAN'].encryptKey = nacl.box.keyPair.fromSecretKey(hexToByteArray(ccc['BAN'].privateKey));
 };
 ccc['SOL'].unpackSeed = function(seed) {
-	let arrSeed = seed.split(',');
-	for (let i = 0; i < arrSeed.length; i++) {
-		arrSeed[i] = parseInt(arrSeed[i].replace(/\D/g,''));
-	}
+	let arrSeed = stringToIntArray(seed);
 	ccc['SOL'].seed = seed;
 	ccc['SOL'].privateKey = solanaWeb3.Keypair.fromSecretKey(new Uint8Array(arrSeed));
 	ccc['SOL'].publicKey = ccc['SOL'].privateKey.publicKey;
@@ -555,7 +548,7 @@ function displayTransaction(symbol, number, send, address, time, amt, tx) {
 	let displayNameSpan = make('span');
 	displayNameSpan.id = symbol + '-' + number + '-display';
 	displayNameSpan.style.borderRadius = '5px';
-	displayNameSpan.textContent = "Unknown";
+	displayNameSpan.textContent = "Anonymous";
 	if (ccc[symbol].checkAddress(address)) displayNameSpan.onclick = function() { fetchDisplayName(symbol, number);	};
 	firstRow.children[0].appendChild(displayNameSpan);
 	firstRow.children[1].children[0].textContent = unitFromRaw(symbol, amt);
@@ -591,7 +584,7 @@ function displayTransaction(symbol, number, send, address, time, amt, tx) {
     secondRow.children[0].children[1].children[1].textContent = tx;			
 	secondRow.lastChild.onclick = function() {	
 		this.disabled = true;
-		if (!ws.emit('getReceiptCue', {currency:symbol, tx: tx, div: displayNameSpan.id, address:address })) {
+		if (!ws.emit('getReceiptCue', {symbol:symbol, tx: tx, div: displayNameSpan.id, address:address })) {
 			showMsg("Unable to connect to directory."); 
 			this.disabled = false;
 		}
@@ -847,10 +840,9 @@ function fetchFrontier(symbol, accountInfo) {
 			link: fetchedFrontierBlock.link
 		}).block;	
 		if (fetchedFrontierBlock.signature != producedFrontierBlock.signature) {
-			console.error("Frontier failed verification. This should NOT happen.");
-			console.log(fetchedFrontierBlock);
-			console.log(producedFrontierBlock);
-			alert("Frontier block failed verification. This is fishy.");
+			console.error(fetchedFrontierBlock);
+			console.error(producedFrontierBlock);
+			alert("Frontier block failed verification. This should NOT happen.");
 			return false;
 		}
 		fetchedFrontierBlock.hash = accountInfo.frontier;
@@ -894,44 +886,43 @@ async function postBlock(symbol, subtype, workInput, previous, representative, b
 
 //////////////////////////////////////////////////////// Exchange websocket set and public username fetch
 
-let nanoCount = 0;
-let ninjaPromise = fetch('https://mynano.ninja/api/accounts/aliases').then(function(response) { response.json().then(function(data) { 
-	if (data) {
-		for (let i = 0; i < data.length; i++) {
-			if (!backupCache[data[i].account]) {
-				backupCache[data[i].account] = data[i].alias;
-				nanoCount++;
-			}
+var nanoCount = 0;
+function fetchProcess(url, func) {
+	return fetch(url).then(function(response) { 
+		return response.json().then(function(data) { 
+			if (data) func(data);
+		});
+	});
+}
+let ninjaPromise = fetchProcess('https://mynano.ninja/api/accounts/aliases', function(data) {
+	for (let i = 0; i < data.length; i++) {
+		if (!backupCache[data[i].account]) {
+			backupCache[data[i].account] = data[i].alias;
+			nanoCount++;
 		}
-	}	
+	}
 	console.log("Nano ninja count: " + nanoCount);
-});});
+});
 
-let lookerPromise = fetch('https://nanolooker.com/api/known-accounts-balance').then(function(response) { response.json().then(function(data) { 
-	if (data) {
-		for (let i = 0; i < data.length; i++) {
-			if (!backupCache[data[i].account]) {
-				backupCache[data[i].account] = data[i].alias;
-				nanoCount++;
-			}
+let lookerPromise = fetchProcess('https://nanolooker.com/api/known-accounts-balance', function(data) {
+	for (let i = 0; i < data.length; i++) {
+		if (!backupCache[data[i].account]) {
+			backupCache[data[i].account] = data[i].alias;
+			nanoCount++;
 		}
-	}		
+	}
 	console.log("Nano looker count: " + nanoCount);
-});});	
+});
 
-ninjaPromise.then(function() { lookerPromise.then(function() {
-fetch('https://nano.to/known').then(function(response) { response.json().then(function(data) { 
-	if (data) {
-		for (let i = 0; i < data.length; i++) {
-			if (!backupCache[data[i].address]) {
-				backupCache[data[i].address] = data[i].name;
-				nanoCount++;
-			}
+ninjaPromise.then(function() { lookerPromise.then(function() { fetchProcess('https://nano.to/known', function(data) { 
+	for (let i = 0; i < data.length; i++) {
+		if (!backupCache[data[i].address]) {
+			backupCache[data[i].address] = data[i].name;
+			nanoCount++;
 		}
 	}
 	console.log("Nano to count: " + nanoCount);
-});});
-});});
+});});});
 
 let bananoCount = 0;
 fetch('https://api.spyglass.pw/banano/v1/known/accounts',{ method: 'POST' }).then(function(response) { response.json().then(function(data) { 
@@ -946,17 +937,15 @@ fetch('https://api.spyglass.pw/banano/v1/known/accounts',{ method: 'POST' }).the
 	console.log("Banano spyglass count: " + bananoCount);
 });});
 
-fetch('https://bananolooker.com/api/known-accounts').then(function(response) { response.json().then(function(data) { 
-	if (data) {
-		for (let i = 0; i < data.length; i++) {
-			if (!backupCache[data[i].account]) {
-				backupCache[data[i].account] = data[i].alias;
-				bananoCount++;
-			}
+fetchProcess('https://bananolooker.com/api/known-accounts', function(data) { 
+	for (let i = 0; i < data.length; i++) {
+		if (!backupCache[data[i].account]) {
+			backupCache[data[i].account] = data[i].alias;
+			bananoCount++;
 		}
 	}
 	console.log("Banano looker count: " + bananoCount);
-});});
+});
 
 function exchangeURL() {
 	if ((new Date()).getDate() < 15) return 'wss://warashibetrader.herokuapp.com';
@@ -998,9 +987,7 @@ function setupWebsocket(restart) {
 	};
 
 	// Custom commands	
-	ws.on('showMsgCue', function(data) {
-		showMsg(data);
-	});
+	ws.on('showMsgCue', function(data) { showMsg(data);	});
 	
 	ws.on('serverMsgCue', function(data) {
 		if (typeof data === "string" && localStorage.getItem("serverMsg") != data) {
@@ -1012,33 +999,32 @@ function setupWebsocket(restart) {
 	});
 	
 	ws.on('setNameCompletedCue', async function(data) {
-		if (ccc[data.currency].verify(data.display + data.publicKey, data.signature, data.address)) {
+		if (ccc[data.symbol].verify(data.display + data.publicKey, data.signature, data.address)) {
 			if (!keyCache[data.address]) {
 				keyCache[data.address] = data.publicKey;
 				localStorage.setItem("publicKeys", JSON.stringify(keyCache));
 			}			
-			displayName(data.currency, "address", data.address, data.display);
+			displayName(data.symbol, "address", data.address, data.display);
 		}
 	});
-	ws.on('setNameFailedCue', function(data) { showMsg("\"Open\" this account first by receiving funds."); });	
 	
 	ws.on('setShipCompletedCue', async function(data) {
 		if (data.ship) {
 			showMsg("Shipping address set.");
-			displayShip(data.currency, data);
-			if (D(data.currency + "-set-ship")) flash(D(data.currency + "-set-ship"));
+			displayShip(data.symbol, data);
+			if (D(data.symbol + "-set-ship")) flash(D(data.symbol + "-set-ship"));
 		}
 	});
 	ws.on('setEmailCompletedCue', async function(data) {
 		if (data.email) {
 			showMsg("Email address set.");
-			displayEmail(data.currency, data);
-			if (D(data.currency + "-set-email")) flash(D(data.currency + "-set-email"));
+			displayEmail(data.symbol, data);
+			if (D(data.symbol + "-set-email")) flash(D(data.symbol + "-set-email"));
 		}
 	});	
 	
 	ws.on('getNameReplyCue', function(data) {
-		if ((data.display || data.publicKey) && !ccc[data.currency].verify(data.display + data.publicKey, data.signature, data.address)) {
+		if ((data.display || data.publicKey) && !ccc[data.symbol].verify(data.display + data.publicKey, data.signature, data.address)) {
 			showMsg("Corrupt signature for " + data.display);
 			return false;
 		}
@@ -1046,149 +1032,148 @@ function setupWebsocket(restart) {
 			keyCache[data.address] = data.publicKey;
 			localStorage.setItem("publicKeys", JSON.stringify(keyCache));
 		}
-		displayName(data.currency, data.div, data.address, data.display);
-		displayShip(data.currency, data);
-		displayEmail(data.currency, data);
+		displayName(data.symbol, data.div, data.address, data.display);
+		displayShip(data.symbol, data);
+		displayEmail(data.symbol, data);
 	});
 	
 	ws.on('getReceiptReplyCue', function(data) {
-		if (D(data.div)) {
-			let ul = D(data.div).parentNode.parentNode.parentNode.lastElementChild;
-			let but = ul.previousElementSibling.lastElementChild;
-			but.disabled = false;
-			
-			let rEnvelope = {};
-			let sender = (but.textContent == "Receipt");
-			let type = "Encrypted";	
-			let receiptString = "";
-			let error = false;
-			
-			if (data.rNonce) {
-				try { 
-					rEnvelope = JSON.parse(dec.decode(nacl.box.open(hexToByteArray(data.rEnvelope), hexToByteArray(data.rNonce), hexToByteArray(keyCache[data.address]), ccc[data.currency].encryptKey.secretKey)));
-				} catch (error) { console.error(error); showMsg('Decryption failed.'); return false;  }
-			} else if (data.rEnvelope) {
-				type = "Public";
-				rEnvelope = JSON.parse(data.rEnvelope);
-			}
-			
-			if (data.rEnvelope) {			
-				if (!sender && ccc[data.currency].verify(data.rEnvelope + data.tx, data.rSig, data.address)) receiptString = type + " receipt signed by other party";
-				else if (sender && ccc[data.currency].verify(data.rEnvelope + data.tx, data.rSig, ccc[data.currency].address)) receiptString = type + " receipt signed by me";
-				else {
-					receiptString = type + " receipt with no signature (should not happen!)";
-					error = true;
-				}
-			} else receiptString = "No invoice/receipt found";
-			
-			but.onclick = toggleReceipt;			
-			D(data.div).parentNode.parentNode.onclick = toggleReceipt;
-			function toggleReceipt() {
-				if (ul.style.maxHeight != "0px") {
-					hideAccordion(ul);
-					but.classList.remove('active');
-				} else {
-					showAccordion(ul);
-					but.classList.add('active');
-				}
-			}
-			
-			let li = make('li');
-			li.style = "overflow:hidden; text-overflow:ellipsis; margin:10px; padding-left:3px; white-space:nowrap; text-align:center";
-
-			let detailSpan = make('div');
-			detailSpan.textContent = receiptString;
-			detailSpan.style = "font-size: 0.85em";
-			if (error) detailSpan.style.color = "red";
-							
-			let invoiceSpan = make('a');
-			invoiceSpan.style = "font-size: 0.85em;";		
-			let invoiceLabelSpan = make('span');
-			invoiceLabelSpan.style = "font-size: 0.85em;";	
-			
-			if (rEnvelope.invoice) {
-				let addresses = {};
-				if (sender) addresses[data.currency] = data.address;
-				else addresses[data.currency] = ccc[data.currency].address;
-			
-				invoiceSpan.textContent = "Invoice";
-				invoiceSpan.href = makePaymentURL(data.currency, addresses, rEnvelope.invoice, rEnvelope.iSig, !!rEnvelope.ship, !!rEnvelope.email);
-				invoiceSpan.target = "_blank";
-				invoiceSpan.rel='noopener';			
-				
-				if (ccc[data.currency].verify(JSON.stringify(rEnvelope.invoice), rEnvelope.iSig, addresses[data.currency])) {
-					if (!sender) invoiceLabelSpan.textContent = " drafted and signed by me";
-					else invoiceLabelSpan.textContent = " drafted and signed by other party";
-				} else {				
-					if (!sender) invoiceLabelSpan.textContent = " drafted by me (unsigned)";
-					else invoiceLabelSpan.textContent = " drafted by other party (unsigned)";
-				}
-			} else if (data.rEnvelope) {
-				if (!sender) invoiceLabelSpan.textContent = "No invoice (transfer initiated by other party)";
-				else invoiceLabelSpan.textContent = "No invoice (transfer initiated by me)";
-			}
-			
-			li.appendChild(invoiceSpan);
-			li.appendChild(invoiceLabelSpan);			
-			li.appendChild(detailSpan);			
-			ul.appendChild(li);
-			
-			if (rEnvelope.receipt) {				
-				function receiptLine(description, value) {							
-					let li = make('li');
-					li.style = "display:flex; justify-content:space-between; font-size:0.9em; border-radius:5px; padding-left:5px; padding-right:5px;";
-					
-					let itemSpan = make('span');
-					itemSpan.textContent = description;
-					itemSpan.style = "margin-right:10px; overflow:hidden; text-overflow:ellipsis";
-					
-					let amtSpan = make('span');
-					amtSpan.textContent = value;
-					amtSpan.style = "text-align:right; overflow:hidden; text-overflow:ellipsis; border-radius:5px";
-					
-					li.onmouseenter = function() { this.style.backgroundColor = ccc[data.currency].flashColor; };
-					li.onmouseleave = function() { this.style.backgroundColor = "";	};				
-					li.appendChild(itemSpan);
-					li.appendChild(amtSpan);
-					ul.appendChild(li);
-					return li;
-				}
-				
-				for (let i = 0; i < rEnvelope.receipt.length; i++) {
-					receiptLine(rEnvelope.receipt[i].item, rEnvelope.receipt[i].amt || rEnvelope.receipt[i][data.currency]); 
-				}				
-				if (rEnvelope.ship) {
-					let shipli = receiptLine("Shipping address", rEnvelope.ship);
-					shipli.style.marginTop = "10px";
-					shipli.children[1].style.cursor = "pointer";
-					shipli.children[1].onclick = function() { clickCopy(this, this.textContent); };	
-				}
-				if (rEnvelope.email) {
-					let emailli = receiptLine("Email address", rEnvelope.email);
-					if (!rEnvelope.ship) emailli.style.marginTop = "10px";
-					emailli.children[1].style.cursor = "pointer";
-					emailli.children[1].onclick = function() { clickCopy(this, this.textContent); };	
-				}
-				
-				let buttonli = make('li');
-				buttonli.style = "font-size:0.85em; text-align: center; margin-top:15px; margin-bottom:20px;";
-				
-				let transferButton = make('button');
-				transferButton.textContent = "Autofill Transfer";
-				transferButton.style.marginRight = "3px";
-				transferButton.onclick = function() { populateItems(data.currency, data.address, rEnvelope.receipt, "itemize"); };
-				buttonli.appendChild(transferButton);
-				
-				let invoiceButton = make('button');
-				invoiceButton.textContent = "Autofill Invoice";
-				invoiceButton.onclick = function() { populateItems(data.currency, data.address, rEnvelope.receipt, "invoice"); };
-				buttonli.appendChild(invoiceButton);
-				ul.appendChild(buttonli);
-			}
-			
-			but.classList.add('active');
-			showAccordion(ul);
+		if (!D(data.div)) return false;
+		let ul = D(data.div).parentNode.parentNode.parentNode.lastElementChild;
+		let but = ul.previousElementSibling.lastElementChild;
+		but.disabled = false;
+		
+		let rEnvelope = {};
+		let sender = (but.textContent == "Receipt");
+		let type = "Encrypted";	
+		let receiptString = "";
+		let error = false;
+		
+		if (data.rNonce) {
+			try { 
+				rEnvelope = JSON.parse(dec.decode(nacl.box.open(hexToByteArray(data.rEnvelope), hexToByteArray(data.rNonce), hexToByteArray(keyCache[data.address]), ccc[data.symbol].encryptKey.secretKey)));
+			} catch (error) { console.error(error); showMsg('Decryption failed.'); return false;  }
+		} else if (data.rEnvelope) {
+			type = "Public";
+			rEnvelope = JSON.parse(data.rEnvelope);
 		}
+		
+		if (data.rEnvelope) {			
+			if (!sender && ccc[data.symbol].verify(data.rEnvelope + data.tx, data.rSig, data.address)) receiptString = type + " receipt signed by other party";
+			else if (sender && ccc[data.symbol].verify(data.rEnvelope + data.tx, data.rSig, ccc[data.symbol].address)) receiptString = type + " receipt signed by me";
+			else {
+				receiptString = type + " receipt with no signature (should not happen!)";
+				error = true;
+			}
+		} else receiptString = "No invoice/receipt found";
+		
+		but.onclick = toggleReceipt;			
+		D(data.div).parentNode.parentNode.onclick = toggleReceipt;
+		function toggleReceipt() {
+			if (ul.style.maxHeight != "0px") {
+				hideAccordion(ul);
+				but.classList.remove('active');
+			} else {
+				showAccordion(ul);
+				but.classList.add('active');
+			}
+		}
+		
+		let li = make('li');
+		li.style = "overflow:hidden; text-overflow:ellipsis; margin:10px; padding-left:3px; white-space:nowrap; text-align:center";
+
+		let detailSpan = make('div');
+		detailSpan.textContent = receiptString;
+		detailSpan.style = "font-size: 0.85em";
+		if (error) detailSpan.style.color = "red";
+						
+		let invoiceSpan = make('a');
+		invoiceSpan.style = "font-size: 0.85em;";		
+		let invoiceLabelSpan = make('span');
+		invoiceLabelSpan.style = "font-size: 0.85em;";	
+		
+		if (rEnvelope.invoice) {
+			let addresses = {};
+			if (sender) addresses[data.symbol] = data.address;
+			else addresses[data.symbol] = ccc[data.symbol].address;
+		
+			invoiceSpan.textContent = "Invoice";
+			invoiceSpan.href = makePaymentURL(data.symbol, addresses, rEnvelope.invoice, rEnvelope.iSig, !!rEnvelope.ship, !!rEnvelope.email);
+			invoiceSpan.target = "_blank";
+			invoiceSpan.rel='noopener';			
+			
+			if (ccc[data.symbol].verify(JSON.stringify(rEnvelope.invoice), rEnvelope.iSig, addresses[data.symbol])) {
+				if (!sender) invoiceLabelSpan.textContent = " drafted and signed by me";
+				else invoiceLabelSpan.textContent = " drafted and signed by other party";
+			} else {				
+				if (!sender) invoiceLabelSpan.textContent = " drafted by me (unsigned)";
+				else invoiceLabelSpan.textContent = " drafted by other party (unsigned)";
+			}
+		} else if (data.rEnvelope) {
+			if (!sender) invoiceLabelSpan.textContent = "No invoice (transfer initiated by other party)";
+			else invoiceLabelSpan.textContent = "No invoice (transfer initiated by me)";
+		}
+		
+		li.appendChild(invoiceSpan);
+		li.appendChild(invoiceLabelSpan);			
+		li.appendChild(detailSpan);			
+		ul.appendChild(li);
+		
+		if (rEnvelope.receipt) {				
+			function receiptLine(description, value) {							
+				let li = make('li');
+				li.style = "display:flex; justify-content:space-between; font-size:0.9em; border-radius:5px; padding-left:5px; padding-right:5px;";
+				
+				let itemSpan = make('span');
+				itemSpan.textContent = description;
+				itemSpan.style = "margin-right:10px; overflow:hidden; text-overflow:ellipsis";
+				
+				let amtSpan = make('span');
+				amtSpan.textContent = value;
+				amtSpan.style = "text-align:right; overflow:hidden; text-overflow:ellipsis; border-radius:5px";
+				
+				li.onmouseenter = function() { this.style.backgroundColor = ccc[data.symbol].flashColor; };
+				li.onmouseleave = function() { this.style.backgroundColor = "";	};				
+				li.appendChild(itemSpan);
+				li.appendChild(amtSpan);
+				ul.appendChild(li);
+				return li;
+			}
+			
+			for (let i = 0; i < rEnvelope.receipt.length; i++) {
+				receiptLine(rEnvelope.receipt[i].item, rEnvelope.receipt[i].amt || rEnvelope.receipt[i][data.symbol]); 
+			}
+			if (rEnvelope.ship) {
+				let shipli = receiptLine("Shipping address", rEnvelope.ship);
+				shipli.style.marginTop = "10px";
+				shipli.children[1].style.cursor = "pointer";
+				shipli.children[1].onclick = function() { clickCopy(this, this.textContent); };	
+			}
+			if (rEnvelope.email) {
+				let emailli = receiptLine("Email address", rEnvelope.email);
+				if (!rEnvelope.ship) emailli.style.marginTop = "10px";
+				emailli.children[1].style.cursor = "pointer";
+				emailli.children[1].onclick = function() { clickCopy(this, this.textContent); };	
+			}
+			
+			let buttonli = make('li');
+			buttonli.style = "font-size:0.85em; text-align: center; margin-top:15px; margin-bottom:20px;";
+			
+			let transferButton = make('button');
+			transferButton.textContent = "Autofill Transfer";
+			transferButton.style.marginRight = "3px";
+			transferButton.onclick = function() { populateItems(data.symbol, data.address, rEnvelope.receipt, "itemize"); };
+			buttonli.appendChild(transferButton);
+			
+			let invoiceButton = make('button');
+			invoiceButton.textContent = "Autofill Invoice";
+			invoiceButton.onclick = function() { populateItems(data.symbol, data.address, rEnvelope.receipt, "invoice"); };
+			buttonli.appendChild(invoiceButton);
+			ul.appendChild(buttonli);
+		}
+		
+		but.classList.add('active');
+		showAccordion(ul);
 	});
 }
 
@@ -1298,9 +1283,6 @@ window.addEventListener('keydown', function(evt) {
 			evt.preventDefault();
 			toggleAccount();
 		}
-		if (evt.keyCode == 87) {
-			evt.preventDefault();
-		}
 		if (evt.keyCode == 49) {
 			evt.preventDefault();
 			D('primary').focus();
@@ -1319,7 +1301,9 @@ window.addEventListener('beforeinstallprompt', function (evt) {  // CODELAB: Add
 	console.log("Detected that PWA can be installed.");
     deferredInstallPrompt = evt;
     evt.preventDefault();
+	D('audio').pause();
 	D('nprButton').textContent = "Native App";
+	D('nprButton').classList.remove('active');
     D('nprButton').onclick = function(event) {
 		deferredInstallPrompt.prompt();
 		
@@ -1393,7 +1377,7 @@ D('filetag').addEventListener("change", function(e) {
 function setName(symbol, name) {
 	if (!name) name = D(symbol + "-set-display").value;
 	if (name.length > 64) showMsg("64 characters or fewer.");
-	else if (!ws.emit("setNameCue", {address: ccc[symbol].address, currency: symbol, display: name, publicKey: byteArrayToHex(ccc[symbol].encryptKey.publicKey),
+	else if (!ws.emit("setNameCue", {address: ccc[symbol].address, symbol: symbol, display: name, publicKey: byteArrayToHex(ccc[symbol].encryptKey.publicKey),
 									signature: ccc[symbol].sign(name + byteArrayToHex(ccc[symbol].encryptKey.publicKey)) })) 
 		showMsg("Unable to connect to directory.");
 }
@@ -1402,7 +1386,7 @@ function setShip(symbol, name) {
 	if (!name) name = D(symbol + "-set-ship").value;
 	if (name.length > 128) showMsg("128 characters or fewer.");
 	else {
-		let shipPackage = { address: ccc[symbol].address, currency: symbol, sNonce: nacl.randomBytes(24) };
+		let shipPackage = { address: ccc[symbol].address, symbol: symbol, sNonce: nacl.randomBytes(24) };
 		shipPackage.ship = byteArrayToHex(nacl.box(enc.encode(name), shipPackage.sNonce, hexToByteArray(keyCache[ccc[symbol].address]), ccc[symbol].encryptKey.secretKey));
 		shipPackage.sNonce = byteArrayToHex(shipPackage.sNonce);					
 		if (!ws.emit("setShipCue", shipPackage)) showMsg("Unable to connect to directory.");
@@ -1413,7 +1397,7 @@ function setEmail(symbol, name) {
 	if (!name) name = D(symbol + "-set-email").value;
 	if (name.length > 128) showMsg("128 characters or fewer.");
 	else {
-		let emailPackage = { address: ccc[symbol].address, currency: symbol, eNonce: nacl.randomBytes(24) };
+		let emailPackage = { address: ccc[symbol].address, symbol: symbol, eNonce: nacl.randomBytes(24) };
 		emailPackage.email = byteArrayToHex(nacl.box(enc.encode(name), emailPackage.eNonce, hexToByteArray(keyCache[ccc[symbol].address]), ccc[symbol].encryptKey.secretKey));
 		emailPackage.eNonce = byteArrayToHex(emailPackage.eNonce);					
 		if (!ws.emit("setEmailCue", emailPackage)) showMsg("Unable to connect to directory.");
@@ -1440,8 +1424,8 @@ function fetchDisplayName(symbol, divString, cache) {
 	
 	if (ccc[symbol].checkAddress(address)) {
 		displayName(symbol, divString, address, nameCache[address]);	
-		if ((!nameCache[address] || !cache) && !ws.emit("getNameCue", {div: divString, address: address, currency: symbol})) {
-			setTimeout(function() {ws.emit("getNameCue", {div: divString, address: address, currency: symbol})}, 1000);
+		if ((!nameCache[address] || !cache) && !ws.emit("getNameCue", {div: divString, address: address, symbol: symbol})) {
+			setTimeout(function() {ws.emit("getNameCue", {div: divString, address: address, symbol: symbol})}, 1000);
 		}
 	} else D(symbol + "-" + divString + "-display").textContent = "";
 }
@@ -1468,14 +1452,14 @@ function displayName(symbol, divString, address, displayString) {
 			if (ccc[symbol].index === 0 || ccc[symbol].index > 0) displayString = "✏️ My Account #" + ccc[symbol].index;
 			else displayString = "✏️ My Account";
 		} else if (address == ccc[symbol].address) displayString = "(me)";
-		else displayString = "Unknown";
+		else displayString = "Anonymous";
 	} else if (divString != "address" && address == ccc[symbol].address) displayString += " (me)";
 	if (divString != "address" || div.textContent != displayString) flash(div, displayString);
 	if (D(symbol + "-transactions").contains(div)) checkli(div.parentNode.parentNode.parentNode, D(symbol + "-filter").value.toLowerCase(), symbol);
 }
 	
 function displayShip(symbol, data) {
-	if (data.ship && data.address == ccc[data.currency].address) {
+	if (data.ship && data.address == ccc[data.symbol].address) {
 		let shipAddr = dec.decode(nacl.box.open(hexToByteArray(data.ship), hexToByteArray(data.sNonce), hexToByteArray(keyCache[data.address]), ccc[symbol].encryptKey.secretKey));
 		if (D(symbol + "-set-ship")) D(symbol + "-set-ship").value = shipAddr;
 		clearLocalStorage(symbol);
@@ -1484,7 +1468,7 @@ function displayShip(symbol, data) {
 }
 
 function displayEmail(symbol, data) {
-	if (data.email && data.address == ccc[data.currency].address) {
+	if (data.email && data.address == ccc[data.symbol].address) {
 		let theEmailAddr = dec.decode(nacl.box.open(hexToByteArray(data.email), hexToByteArray(data.eNonce), hexToByteArray(keyCache[data.address]), ccc[symbol].encryptKey.secretKey));
 		if (D(symbol + "-set-email")) D(symbol + "-set-email").value = theEmailAddr;
 		clearLocalStorage(symbol);
@@ -1543,7 +1527,27 @@ function hardRefresh(symbol) {
 function refreshData(symbol) {
 	D(symbol + "-transaction-refresh").disabled = true;
 	D("refresh").disabled = true;	
-	let balance = refreshBalance(symbol);
+	
+	let balance = ccc[symbol].getAccountInfo().then(function(accountInfo) {
+		if (!ccc[symbol].address) return false;
+		if (accountInfo && D('msg').textContent.indexOf('Unable to connect to network.') != -1) showMsg(`Connected.`);
+		accountInfo = cacheBackup(accountInfo, symbol, "info");
+		
+		if (accountInfo) {
+			if (!paymentWindow && accountInfo.representative && D(`${symbol}-rep`) && D(`${symbol}-rep`).textContent != accountInfo.representative) {
+				flash(D(`${symbol}-rep`), accountInfo.representative);	
+				fetchDisplayName(symbol, "rep");
+			}
+			if (accountInfo.balance !== undefined) flash(D(`${symbol}-balance`), unitFromRaw(symbol, accountInfo.balance));
+			if (accountInfo.pending !== undefined) flash(D(`${symbol}-balance-pending`), unitFromRaw(symbol, accountInfo.pending));
+			
+			if (accountInfo.detail == "Unopened account.") {
+				if (symbol == "XNO" || symbol == "BAN") cyclePending(symbol);
+			}
+		}
+		
+		return accountInfo;
+	});
 	let transaction = new Promise(function(resolve, reject) { resolve(true); });
 	if (!paymentWindow) transaction = ccc[symbol].getTransactions();
 	balance.then(function() {
@@ -1889,29 +1893,6 @@ function cacheBackup(data, symbol, type) {
 	return data;
 }
 
-function refreshBalance(symbol) {
-	return ccc[symbol].getAccountInfo().then(function(accountInfo) {
-		if (!ccc[symbol].address) return false;
-		if (accountInfo && D('msg').textContent.indexOf('Unable to connect to network.') != -1) showMsg(`Connected.`);
-		accountInfo = cacheBackup(accountInfo, symbol, "info");
-		
-		if (accountInfo) {
-			if (!paymentWindow && accountInfo.representative && D(`${symbol}-rep`) && D(`${symbol}-rep`).textContent != accountInfo.representative) {
-				flash(D(`${symbol}-rep`), accountInfo.representative);	
-				fetchDisplayName(symbol, "rep");
-			}
-			if (accountInfo.balance !== undefined) flash(D(`${symbol}-balance`), unitFromRaw(symbol, accountInfo.balance));
-			if (accountInfo.pending !== undefined) flash(D(`${symbol}-balance-pending`), unitFromRaw(symbol, accountInfo.pending));
-			
-			if (accountInfo.detail == "Unopened account.") {
-				if (symbol == "XNO" || symbol == "BAN") cyclePending(symbol);
-			}
-		}
-		
-		return accountInfo;
-	});	
-}
-
 function cyclePending(symbol, elt) {
 	if (ccc[symbol].address) {
 		if (elt) {
@@ -1953,7 +1934,7 @@ async function withdraw(symbol, elt) {
 				rEnvelope.receipt = packageItems(symbol, "itemize");
 				if (rEnvelope.ship) rEnvelope.ship = D(symbol + "-dest-ship").textContent;
 				if (rEnvelope.email) rEnvelope.email = D(symbol + "-dest-email").textContent;
-				let receiptPackage = {currency: symbol, tx:sendResp, rEnvelope: JSON.stringify(rEnvelope)};
+				let receiptPackage = {symbol: symbol, tx:sendResp, rEnvelope: JSON.stringify(rEnvelope)};
 				
 				if (keyCache[D(`${symbol}-dest`).value]) {
 					receiptPackage.rNonce = nacl.randomBytes(24);
@@ -2013,7 +1994,7 @@ async function setRep(symbol, elt) {
 		showMsg("Updating representative...", null,true);
 		await ccc[symbol].changeRep(D(`${symbol}-new-rep`).value);
 		showMsg("Representative updated.");
-		refreshBalance(symbol);
+		refreshData(symbol);
 		elt.disabled = false;
 	}
 }
@@ -2245,7 +2226,7 @@ function toggleWipe() {
 		wipeKeys = false;
 		localStorage.removeItem("wipe");
 		D("wipeButton").classList.remove('active');		
-	} else if (confirm("This security setting clears your private keys right before updates are installed. This is a good idea, but updates are automatic and may arrive without advance notice. Ensure your keys are backed up elsewhere.")) {
+	} else if (confirm("This security setting clears your seed/private keys right before updates are installed. This is a good idea, but updates are automatic and may arrive without advance notice. Ensure your seed/keys are backed up elsewhere.")) {
 		wipeKeys = true;
 		localStorage.setItem("wipe", "true");
 		D("wipeButton").classList.add('active');
@@ -2460,6 +2441,14 @@ function generateQR(symbol, input) {
 }
 
 //////////////////////////////////////////////////////// General helper functions
+
+function stringToIntArray(seed) {
+	let arrSeed = seed.split(',');
+	for (let i = 0; i < arrSeed.length; i++) {
+		arrSeed[i] = parseInt(arrSeed[i].replace(/\D/g,''));
+	}
+	return arrSeed;
+}
 
 function hideServerMsg() {
 	D('serverMsg').parentNode.style.display = "none";
@@ -2717,8 +2706,8 @@ function generateHTML(symbol) {
 			
 			<input id="${symbol}-filter" placeholder="Transaction filter..." style="padding-right:30px; flex-grow:1; margin-right:10px" id="${symbol}-dest" type="text" maxlength="128" onkeyup="if (event.keyCode == 27) this.value = ''; filterTransactions('${symbol}');" oninput="filterTransactions('${symbol}')"><button tabindex="-1" class="close-icon" onclick="closeCopy(this.previousElementSibling)"></button>
 			
-			<button id="${symbol}-invoice-filter" style="font-size:0.85em; margin-right:5px; border-top-right-radius:0px; border-bottom-right-radius:0px;" onclick="toggleInvoices(this, '${symbol}')">Invoices</button>
-			<button id="${symbol}-transaction-refresh" style="font-size:0.85em; border-top-left-radius:0px; border-bottom-left-radius:0px;" onclick="hardRefresh('${symbol}');">Refresh</button>
+			<button id="${symbol}-invoice-filter" style="font-size:0.85em; margin-right:5px; border-top-right-radius:5px; border-bottom-right-radius:5px;" onclick="toggleInvoices(this, '${symbol}')">Invoices</button>
+			<button id="${symbol}-transaction-refresh" style="font-size:0.85em; border-top-left-radius:5px; border-bottom-left-radius:5px;" onclick="hardRefresh('${symbol}');">Refresh</button>
 		</div>
 		
 		<ul id="${symbol}-transactions" style="padding-left:0px; max-width:620px; list-style: none; margin-top:25px"></ul>
