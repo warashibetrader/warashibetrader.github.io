@@ -8,7 +8,7 @@ Here is an up-to-date list of some of the more interesting features on [Transact
 
 1. Vertically integrate payments processing, from merchants and invoicing, all the way to customers and receipts.
 
-2. Do so in a secure way. End-to-end encrypt everything that can be end-to-end encrypted. At the time of writing, this means that Transacts servers have access to _nothing_, other than your chosen display name - which everyone has access to.
+2. End-to-end encrypt everything that can be end-to-end encrypted. At the time of writing, this means that Transacts servers have access to _nothing_, other than your chosen display name - which everyone has access to.
 
 3. Do so in a way that makes adoption seamless, usage effortless, and everything as fast as possible.
 
