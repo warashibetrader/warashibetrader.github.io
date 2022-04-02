@@ -653,7 +653,7 @@ ccc['SOL'].sendTo = function(destination, amt) {
 		console.log(transaction);
 		// Sign transaction, broadcast, and confirm
 		return solanaWeb3.sendAndConfirmTransaction(ccc['SOL'].server, transaction, [ccc['SOL'].privateKey]).catch(function(error) {
-			showMsg(error.message);
+			showMsg("Transfer failed. Possible issue: Solana rent fee. Try leaving a little SOL in your account for rent.");
 			return false;
 		});
 	});
