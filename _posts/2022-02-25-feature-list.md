@@ -40,7 +40,7 @@ Update (3/11/2022):
 
 2. Invoices and receipts are end-to-end encrypted and hence entirely private.
 
-3. Merchants have the option to cryptographically sign invoices to give the customer peace of mind. At the other end, receipts are always signed to give the merchant peace of mind (by fixing the terms of the transaction).
+3. Merchants have the option to cryptographically sign invoices to give the customer additional peace of mind. At the other end, receipts are always signed, fixing the terms of the transaction to give the merchant additional peace of mind.
 
 
 #### Distribution and usability
