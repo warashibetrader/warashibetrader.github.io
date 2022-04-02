@@ -20,7 +20,7 @@ Here is an up-to-date list of some of the more interesting features on [Transact
 
 #### Main features
 
-1. Transact supports multiple assets curated for energy efficiency, speed, and low network fees: Nano, Banano, Solana, Stellar, and Algorand.
+1. Transact supports multiple assets curated for energy efficiency, speed, and no/low network fees: Nano, Banano, Solana, Stellar, and Algorand.
 
 2. Addresses are displayed alongside human-readable aliases/usernames, free for the address owner to set and update.
 
