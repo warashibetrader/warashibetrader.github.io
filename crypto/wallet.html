@@ -652,8 +652,12 @@ ccc['SOL'].sendTo = function(destination, amt) {
 		);
 		console.log(transaction);
 		// Sign transaction, broadcast, and confirm
-		try { return solanaWeb3.sendAndConfirmTransaction(ccc['SOL'].server, transaction, [ccc['SOL'].privateKey]); } 
-		catch { return unknownFailMsg(); }
+		try { 
+			let solanaReturn = solanaWeb3.sendAndConfirmTransaction(ccc['SOL'].server, transaction, [ccc['SOL'].privateKey]); 
+			console.log(solanaReturn);
+			return solanaReturn;
+		} 
+		catch { console.log("Solana fail"); return unknownFailMsg(); }
 	});
 };
 ccc['XLM'].sendTo = function(destination, amt) { 
