@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Keypair Account</title>
+    </head>
+    <body style="margin:30px">
+		<button onclick="clearSeed(); clearName();">Clear Everything</button>
+		
+		<br><br>
+		<input id="seed" placeholder="Seed..." autocomplete="off" type="text">
+		<button onclick="generateSeed()">Generate</button>
+		<button onclick="clearName(); setSeed()">Set</button>
+		
+		<br><br>
+		Address: <span id="address"></span>
+		
+		<br><br>
+		<input id="displayNameInput" placeholder="Display name..." autocomplete="off" type="text">
+		<button id="displayNameButton" onclick="submitDisplayName()" disabled>Submit</button>
+		
+		<br><br>
+		<strong>Display name with verified cryptographic signature:</strong> <span id="displayNameConfirmed"></span>
+    </body>
+
+
+<script src="nacl.js"></script>
+<script src="xno.js"></script>
+<script src="tweetnacl.js"></script>
+<script>
+
+
+// Convenient globals and macros
+
+const enc = new TextEncoder();
+const dec = new TextDecoder();
+function D(string) { return document.getElementById(string); }
+
+
+// Crypto class
+
+var XNO = {};
+
+// Crypto methods; can mostly ignore this; you never need to edit it, and the names are mostly semantic
+
+XNO.generateSeed = function() {
+	const seed = new Uint8Array(32);
+	crypto.getRandomValues(seed);
+	return Array.prototype.map.call(seed, (x) => ('00' + x.toString(16)).slice(-2)).join('').toUpperCase();
+};
+
+XNO.addressFromSeed = function(seed) {
+	let privateKey = XNO.derivePrivateKey(seed, 0);
+	let publicKey = XNO.pubFromPriv(privateKey);
+	return XNO.addrFromPub(publicKey);	
+}
+
+XNO.derivePrivateKey = function(seed, index) {
+  const indexBuffer = new ArrayBuffer(4)
+  const indexView = new DataView(indexBuffer)
+  indexView.setUint32(0, index)
+  const indexBytes = new Uint8Array(indexBuffer)
+
+  const context = blake2bInit(32)
+  blake2bUpdate(context, hexToByteArray(seed))
+  blake2bUpdate(context, indexBytes)
+  return byteArrayToHex(blake2bFinal(context))
+}
+
+XNO.pubFromPriv = function(privateKey) { return byteArrayToHex(derivePublicFromSecret(hexToByteArray(privateKey))); };
+XNO.addrFromPub = function(publicKey) { return 'nano_' + encodeNanoBase32(hexToByteArray(publicKey)) + encodeNanoBase32(blake2b(hexToByteArray(publicKey), null, 5).reverse()); }
+XNO.pubFromAddr = function(address) { return byteArrayToHex(decodeNanoBase32(address.substr(5, 52))); };
+
+XNO.sign = function(message) { return byteArrayToHex(signDetached(enc.encode(message), hexToByteArray(XNO.privateKey))); }
+XNO.verify = function(message, signature, address) {
+	try { return verifyDetached(enc.encode(message), hexToByteArray(signature), hexToByteArray(XNO.pubFromAddr(address))); }
+	catch { return false };
+}
+
+XNO.unpackSeed = function(seed, index) {
+	XNO.seed = seed;
+	XNO.privateKey = XNO.derivePrivateKey(seed, index);
+	XNO.publicKey = XNO.pubFromPriv(XNO.privateKey);
+	XNO.address = XNO.addrFromPub(XNO.publicKey);
+	XNO.encryptKey = nacl.box.keyPair.fromSecretKey(hexToByteArray(XNO.privateKey));
+}
+
+function byteArrayToHex(byteArray) {
+  if (!byteArray) return '';
+  let hexStr = '';
+  for (let i = 0; i < byteArray.length; i++) {
+    let hex = (byteArray[i] & 0xff).toString(16)
+    hex = hex.length === 1 ? `0${hex}` : hex;
+    hexStr += hex;
+  }
+  return hexStr.toUpperCase()
+}
+
+function hexToByteArray(hex) {
+  if (!hex) return new Uint8Array();
+  const a = [];
+  for (let i = 0; i < hex.length; i += 2) {
+    a.push(parseInt(hex.substr(i, 2), 16));
+  }
+  return new Uint8Array(a);
+}
+
+
+
+// Initializer: Fetch a local storage seed, if present
+
+D('seed').value = localStorage.getItem("seed");
+if (D('seed').value) {
+	setSeed();
+	getName();
+}
+
+
+// Button click functions
+
+function generateSeed() {
+	D('seed').value = XNO.generateSeed();
+}
+
+function setSeed() {
+	XNO.unpackSeed(D('seed').value, 0);
+	localStorage.setItem("seed", XNO.seed);
+	D('displayNameButton').disabled = false;
+	D('address').textContent = XNO.address;
+}
+
+function clearSeed() {
+	XNO.privateKey = "";
+	XNO.publicKey = "";
+	XNO.address = "";
+	XNO.seed = "";
+	XNO.encryptKey = "";
+	
+	D('seed').value = "";
+	D('address').textContent = "";
+	localStorage.removeItem("seed");
+	D('displayNameButton').disabled = true;
+}
+
+function getName() {
+	XNO.displayName = localStorage.getItem('displayName');
+	D('displayNameConfirmed').textContent = XNO.displayName;
+}
+
+function clearName() {
+	XNO.displayName = "";
+	D('displayNameInput').value = "";
+	D('displayNameConfirmed').textContent = "";
+	localStorage.removeItem("displayName");
+}
+
+function submitDisplayName() {
+	setDisplayName(D('displayNameInput').value, XNO.sign(D('displayNameInput').value), XNO.address);
+}
+
+function setDisplayName(name, signature, address) {
+	if (XNO.verify(name, signature, address)) {
+		XNO.displayName = name;
+		D('displayNameConfirmed').textContent = XNO.displayName;
+		localStorage.setItem("displayName", XNO.displayName);
+	}
+}
+
+
+</script>
+</html>
